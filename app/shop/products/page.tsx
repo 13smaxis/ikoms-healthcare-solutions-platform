@@ -21,7 +21,9 @@ const ProductsList: React.FC = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const search = params.get('q');
     const tp = params.get('type');
+    if (search) setQ(search);
     if (tp) setType(tp);
   }, []);
 
