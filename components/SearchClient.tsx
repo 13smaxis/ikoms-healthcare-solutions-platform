@@ -16,14 +16,22 @@ export default function SearchClient() {
     const t = setTimeout(() => {
       if (!q) { setResults([]); return; }
       setLoading(true);
-      supabase
-        .from('ecom_products')
-        .select('*')
-        .ilike('name', `%${q}%`)
-        .eq('status', 'active')
-        .limit(50)
-        .then(({ data }) => { setResults(data || []); setLoading(false); })
-        .catch(() => setLoading(false));
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from('ecom_products')
+            .select('*')
+            .ilike('name', `%${q}%`)
+            .eq('status', 'active')
+            .limit(50);
+
+          setResults(data || []);
+        } catch (err) {
+          // ignore search errors
+        } finally {
+          setLoading(false);
+        }
+      })();
     }, 250);
     return () => clearTimeout(t);
   }, [q]);
