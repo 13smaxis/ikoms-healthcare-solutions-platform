@@ -149,8 +149,12 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="mt-4 text-center text-xs text-slate-600">
-          Powered by
-          <span className="text-white font-medium"> SM AXIS</span>
+         <p>Powered by <a href="https://www.smaxis.co.za" 
+                           target="_blank" rel="noreferrer"
+                           className="text-green-300 hover:text-white underline"> 
+                  SMAXIS Digital Solutions
+            </a>
+          </p>
         </div>
       </div>
 

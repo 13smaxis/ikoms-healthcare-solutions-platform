@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
 
@@ -37,10 +37,32 @@ const overlayItemVariants = {
 
 export default function ShopOverlayMenu({ className }: { className?: string }) 
 {
-  const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const scrollYRef = useRef(0);
+  const bodyLockRef = useRef<{
+    overflow: string;
+    position: string;
+    top: string;
+    width: string;
+  } | null>(null);
+
+  const restoreBodyScroll = () => {
+    const body = document.body;
+    const lock = bodyLockRef.current;
+
+    if (!lock) {
+      return;
+    }
+
+    body.style.overflow = lock.overflow;
+    body.style.position = lock.position;
+    body.style.top = lock.top;
+    body.style.width = lock.width;
+    bodyLockRef.current = null;
+    window.scrollTo(0, scrollYRef.current);
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -50,23 +72,28 @@ export default function ShopOverlayMenu({ className }: { className?: string })
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  // simple scroll lock & focus management
   useEffect(() => {
-    const prev = document.body.style.overflow;
     if (open) {
-      document.body.style.overflow = 'hidden';
+      const body = document.body;
+      scrollYRef.current = window.scrollY;
+      bodyLockRef.current = {
+        overflow: body.style.overflow,
+        position: body.style.position,
+        top: body.style.top,
+        width: body.style.width,
+      };
+      body.style.overflow = 'hidden';
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollYRef.current}px`;
+      body.style.width = '100%';
     } else {
-      document.body.style.overflow = prev;
-      // restore focus to trigger
+      restoreBodyScroll();
       triggerRef.current?.focus();
     }
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      restoreBodyScroll();
+    };
   }, [open]);
-
-  const onNavigate = (handle: string) => {
-    setOpen(false);
-    router.push(`/shop/collections/${handle}`);
-  };
 
   return (
     <div className={className}>
