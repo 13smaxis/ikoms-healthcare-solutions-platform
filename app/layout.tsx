@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import SmoothScroll from "@/components/SmoothScroll";
@@ -30,7 +31,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SmoothScroll />
+        <Suspense fallback={null}>
+          <SmoothScroll />
+        </Suspense>
         <WishlistProvider>
           {children}
         </WishlistProvider>
