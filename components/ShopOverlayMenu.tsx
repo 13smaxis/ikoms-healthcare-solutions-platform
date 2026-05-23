@@ -1,36 +1,46 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowUpRight, X } from 'lucide-react';
 
-type NavItem = { id: string; title: string; handle: string };
+type NavigationItem = {
+  to: string;
+  label: string;
+  eyebrow: string;
+};
+
+const navigationItems: NavigationItem[] = [
+  { to: '/', label: 'Home', eyebrow: 'Start here' },
+  { to: '/recruitment', label: 'Recruitment', eyebrow: 'Staffing' },
+  { to: '/training', label: 'Training', eyebrow: 'Learning' },
+  { to: '/consultancy', label: 'Consultancy', eyebrow: 'Advisory' },
+  { to: '/shop', label: 'Shop', eyebrow: 'Supplies' },
+  { to: '/about', label: 'About', eyebrow: 'Who we are' },
+  { to: '/contact', label: 'Contact', eyebrow: 'Talk to us' },
+];
+
+const overlayItemVariants = {
+  hidden: { opacity: 0, y: 28, filter: 'blur(10px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.45,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  },
+} as const;
 
 export default function ShopOverlayMenu({ className }: { className?: string }) 
 {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<NavItem[]>([]);
-  const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {                                                                                             //-Fetch menu data once on mount
-    let mounted = true; 
-    fetch('/api/shop-nav')
-      .then((r) => r.json())
-      .then((data) => {
-        if (!mounted) return;
-        setItems(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {                                                                                            //-Fallback to sensible defaults
-        setItems([
-          { id: 'ppe-protective-gear', title: 'PPE & Protective Gear', handle: 'ppe-protective-gear' },
-          { id: 'equipment-supplies', title: 'Equipment & Supplies', handle: 'equipment-supplies' },
-          { id: 'uniforms-apparel', title: 'Uniforms & Apparel', handle: 'uniforms-apparel' },
-          { id: 'learning-resources', title: 'Learning Resources', handle: 'learning-resources' },
-        ]);
-      });
-    return () => { mounted = false; };
-  }, []);                                                                                                       //-[] run only once on mount
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,8 +55,6 @@ export default function ShopOverlayMenu({ className }: { className?: string })
     const prev = document.body.style.overflow;
     if (open) {
       document.body.style.overflow = 'hidden';
-      // move focus to panel
-      setTimeout(() => panelRef.current?.focus(), 10);
     } else {
       document.body.style.overflow = prev;
       // restore focus to trigger
@@ -61,7 +69,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
   };
 
   return (
-    <div>
+    <div className={className}>
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -87,46 +95,128 @@ export default function ShopOverlayMenu({ className }: { className?: string })
         </button>
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-stretch" aria-hidden={false}>
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-          />
-
-          <div
-            id="shop-overlay"
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="site-menu-overlay"
+            className="fixed inset-0 z-70"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="shop-overlay-title"
-            ref={panelRef}
-            tabIndex={-1}
-            className="relative m-auto flex h-full w-full max-w-4xl flex-col items-start justify-center gap-8 overflow-hidden bg-white px-8 py-12 text-slate-900 shadow-2xl focus:outline-none animate-menu-open"
-            style={{ borderRadius: '0.5rem' }}
+            aria-label="Site navigation menu"
+            initial={{ clipPath: 'circle(0% at 100% 0%)', opacity: 1 }}
+            animate={{
+              clipPath: 'circle(150% at 100% 0%)',
+              opacity: 1,
+              transition: {
+                duration: 0.9,
+                ease: [0.22, 1, 0.36, 1] as const,
+                when: 'beforeChildren',
+                staggerChildren: 0.08,
+                delayChildren: 0.32,
+              },
+            }}
+            exit={{ clipPath: 'circle(0% at 100% 0%)', opacity: 0, transition: { duration: 0.45, ease: [0.4, 0, 1, 1] as const } }}
           >
-            <div className="absolute top-6 right-6">
-              <button onClick={() => setOpen(false)} className="rounded-md bg-slate-100 px-3 py-2">Close</button>
-            </div>
+            <motion.button
+              type="button"
+              aria-label="Close menu backdrop"
+              className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+            />
 
-            <h2 id="shop-overlay-title" className="w-full text-4xl font-bold leading-tight">Shop</h2>
+            <motion.div
+              className="relative flex h-full w-full flex-col bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.18),transparent_40%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.98))] text-white"
+            >
+              <div className="mx-auto flex h-full w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+                <motion.div
+                  className="flex items-center justify-between gap-4"
+                  variants={overlayItemVariants}
+                >
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Menu</div>
+                    <div className="mt-1 text-sm text-white/60">Navigate the platform with a single gesture.</div>
+                  </div>
 
-            <nav className="w-full">
-              <ul className="flex flex-col gap-6">
-                {items.map((it) => (
-                  <li key={it.id}>
-                    <button
-                      onClick={() => onNavigate(it.handle)}
-                      className="text-3xl font-semibold text-slate-900 hover:text-rose-700"
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/15"
+                  >
+                    Close <X className="h-4 w-4" />
+                  </button>
+                </motion.div>
+
+                <div className="flex flex-1 items-center py-8 sm:py-10">
+                  <nav className="w-full">
+                    <ul className="grid gap-3 sm:gap-4">
+                      {navigationItems.map((item) => {
+                        const isActive = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
+
+                        return (
+                          <motion.li key={item.to} variants={overlayItemVariants}>
+                            <Link
+                              href={item.to}
+                              onClick={() => setOpen(false)}
+                              className={`group flex items-center justify-between gap-4 rounded-3xl border px-5 py-4 sm:px-7 sm:py-5 transition duration-300 ${
+                                isActive
+                                  ? 'border-white/25 bg-white/12 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]'
+                                  : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                              }`}
+                            >
+                              <span className="min-w-0">
+                                <span className="block text-4xl font-light tracking-tight sm:text-5xl lg:text-6xl">
+                                  {item.label}
+                                </span>
+                                <span className="mt-2 block text-xs uppercase tracking-[0.32em] text-white/45 group-hover:text-white/65">
+                                  {item.eyebrow}
+                                </span>
+                              </span>
+                              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white/70 transition group-hover:border-white/25 group-hover:bg-white/15 group-hover:text-white">
+                                <ArrowUpRight className="h-5 w-5" />
+                              </span>
+                            </Link>
+                          </motion.li>
+                        );
+                      })}
+                    </ul>
+                  </nav>
+                </div>
+
+                <motion.div
+                  className="grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-[1.4fr_0.6fr]"
+                  variants={overlayItemVariants}
+                >
+                  <div className="rounded-3xl border border-white/10 bg-white/6 p-5 sm:p-6">
+                    <div className="text-xs font-semibold uppercase tracking-[0.32em] text-emerald-300">Need help fast?</div>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/70">
+                      Speak with the team about staffing, training, consultancy, or clinical supplies.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:items-end sm:justify-end">
+                    <Link
+                      href="/contact"
+                      onClick={() => setOpen(false)}
+                      className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
                     >
-                      {it.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </div>
-      )}
+                      Contact us
+                    </Link>
+                    <Link
+                      href="/shop"
+                      onClick={() => setOpen(false)}
+                      className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/12"
+                    >
+                      Browse shop
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
