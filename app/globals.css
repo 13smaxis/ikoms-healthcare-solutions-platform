@@ -160,3 +160,23 @@
 .benefit-badge-marquee:hover .animate-marquee {
   animation-play-state: paused;
 }
+
+@keyframes menuSpread {
+  0% {
+    transform: translateY(6vh) scale(0.98);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-menu-open {
+  animation: menuSpread 420ms cubic-bezier(.2,.9,.2,1) forwards;
+}
+

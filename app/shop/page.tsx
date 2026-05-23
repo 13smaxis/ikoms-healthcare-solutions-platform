@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { ArrowRight } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/Marquee';
-import ShopQuickNav from '@/components/ShopQuickNav';
+import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 
 const ShopHome: React.FC = () => {
   const [featured, setFeatured] = useState<any[]>([]);
@@ -59,14 +59,17 @@ const ShopHome: React.FC = () => {
                   className="px-6 py-3 bg-emerald-600 rounded-lg font-semibold">
               View cart
             </Link>
+            {/* Overlay menu trigger (client) */}
+            <div className="flex items-center">
+              <ShopOverlayMenu />
+            </div>
           </div>
         </div>
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */ }
 
-      <ShopQuickNav />                                                                                          {/* Quick nav with categories and featured products, fetched client-side for freshness */ }
-
+     
       <section className="py-14 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
