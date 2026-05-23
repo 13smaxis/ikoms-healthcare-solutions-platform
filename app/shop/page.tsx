@@ -59,16 +59,14 @@ const ShopHome: React.FC = () => {
                   className="px-6 py-3 bg-emerald-600 rounded-lg font-semibold">
               View cart
             </Link>
-            {/* Overlay menu trigger (client) */}
-            <div className="flex items-center">
-              <ShopOverlayMenu />
-            </div>
           </div>
         </div>
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */ }
-
+<div className="flex items-center py-7 justify-end">                                                                 {/* Overlay menu trigger (client) */}
+              <ShopOverlayMenu />
+            </div>
      
       <section className="py-14 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
