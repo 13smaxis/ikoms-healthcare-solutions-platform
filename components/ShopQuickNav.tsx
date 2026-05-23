@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, Search, UserCircle2 } from 'lucide-react';
+import { ChevronDown, Menu, Search, UserCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Collection = {
   id: string;
@@ -132,63 +133,120 @@ export default function ShopQuickNav() {
   return (
     <div className="sticky top-20 z-40 mx-auto mt-8 max-w-7xl px-4 sm:top-24 sm:mt-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <nav className="w-fit shrink-0 rounded-full border border-white/50 bg-white/75 px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.10)] backdrop-blur-sm">
-        <div className="flex flex-nowrap items-center gap-2 whitespace-nowrap">
-          {visibleMenus.map(({ collection }, index) => (
-            <div
-              key={collection.id}
-              className="group relative"
-              style={{
-                opacity: 1,
-                transform: 'translateY(0)',
-                transition: 'opacity 320ms ease, transform 320ms ease',
-                transitionDelay: `${index * 120}ms`,
-              }}
-            >
-              <Link
-                href={`/shop/collections/${collection.handle}`}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-700 hover:text-white"
+        <nav className="hidden w-fit shrink-0 rounded-full border border-white/50 bg-white/75 px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.10)] backdrop-blur-sm lg:block">
+          <div className="flex flex-nowrap items-center gap-2 whitespace-nowrap">
+            {visibleMenus.map(({ collection }, index) => (
+              <div
+                key={collection.id}
+                className="group relative"
+                style={{
+                  opacity: 1,
+                  transform: 'translateY(0)',
+                  transition: 'opacity 320ms ease, transform 320ms ease',
+                  transitionDelay: `${index * 120}ms`,
+                }}
               >
-                {collection.title}
-                <ChevronDown className="h-4 w-4 opacity-70" />
-              </Link>
+                <Link
+                  href={`/shop/collections/${collection.handle}`}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-700 hover:text-white"
+                >
+                  {collection.title}
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                </Link>
 
-              <div className="invisible absolute left-1/2 top-full z-50 mt-3 w-88 -translate-x-1/2 translate-y-2 rounded-3xl border border-slate-200/70 bg-white/95 p-3 opacity-0 shadow-2xl shadow-slate-900/10 backdrop-blur-sm transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                <div className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  {collection.title} products
-                </div>
-                <div className="grid gap-2">
-                  {collection.id === quickNavItems[index]?.handle && menus[index]?.products?.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/shop/products/${product.handle}`}
-                      className="flex items-center gap-3 rounded-2xl px-3 py-2 transition hover:bg-rose-50"
-                    >
-                      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                        {product.images?.[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-semibold text-slate-900">{product.name}</div>
-                        <div className="text-xs text-slate-500">{product.product_type || collection.title}</div>
-                      </div>
-                      <div className="text-sm font-bold text-rose-700">{fmt(product.price)}</div>
-                    </Link>
-                  ))}
+                <div className="invisible absolute left-1/2 top-full z-50 mt-3 w-88 -translate-x-1/2 translate-y-2 rounded-3xl border border-slate-200/70 bg-white/95 p-3 opacity-0 shadow-2xl shadow-slate-900/10 backdrop-blur-sm transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    {collection.title} products
+                  </div>
+                  <div className="grid gap-2">
+                    {collection.id === quickNavItems[index]?.handle && menus[index]?.products?.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/shop/products/${product.handle}`}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-2 transition hover:bg-rose-50"
+                      >
+                        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                          {product.images?.[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                          ) : null}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold text-slate-900">{product.name}</div>
+                          <div className="text-xs text-slate-500">{product.product_type || collection.title}</div>
+                        </div>
+                        <div className="text-sm font-bold text-rose-700">{fmt(product.price)}</div>
+                      </Link>
+                    ))}
 
-                  {!(menus[index]?.products?.length) && (
-                    <div className="rounded-2xl border border-dashed border-slate-200 px-3 py-4 text-sm text-slate-500">
-                      Loading products...
-                    </div>
-                  )}
+                    {!(menus[index]?.products?.length) && (
+                      <div className="rounded-2xl border border-dashed border-slate-200 px-3 py-4 text-sm text-slate-500">
+                        Loading products...
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         </nav>
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label="Open shop menu"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition hover:bg-slate-50 lg:hidden"
+            >
+              <Menu className="h-4 w-4" />
+              Shop menu
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[88vw] overflow-y-auto border-slate-200 bg-white/95 p-0 sm:max-w-sm">
+            <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
+              <SheetTitle className="text-base font-semibold text-slate-900">Shop menu</SheetTitle>
+              <div className="text-sm text-slate-500">Browse collections and featured products.</div>
+            </SheetHeader>
+
+            <div className="space-y-5 px-4 py-4">
+              {visibleMenus.map(({ collection, products }) => (
+                <div key={collection.id} className="rounded-3xl border border-slate-200 bg-slate-50/80 p-3">
+                  <SheetClose asChild>
+                    <Link
+                      href={`/shop/collections/${collection.handle}`}
+                      className="flex items-center justify-between rounded-2xl px-2 py-2 text-sm font-semibold text-slate-900 transition hover:bg-white"
+                    >
+                      <span>{collection.title}</span>
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                    </Link>
+                  </SheetClose>
+
+                  <div className="mt-3 grid gap-2">
+                    {products.slice(0, 4).map((product) => (
+                      <SheetClose asChild key={product.id}>
+                        <Link
+                          href={`/shop/products/${product.handle}`}
+                          className="flex items-center gap-3 rounded-2xl bg-white px-3 py-2.5 transition hover:bg-rose-50"
+                        >
+                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                            {product.images?.[0] ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                            ) : null}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-medium text-slate-900">{product.name}</div>
+                            <div className="text-xs text-slate-500">{product.product_type || collection.title}</div>
+                          </div>
+                        </Link>
+                      </SheetClose>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         <div className="flex items-center gap-3 self-start lg:self-auto lg:shrink-0">
           <Link
