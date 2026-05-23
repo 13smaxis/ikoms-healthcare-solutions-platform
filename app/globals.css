@@ -180,3 +180,22 @@
   animation: menuSpread 420ms cubic-bezier(.2,.9,.2,1) forwards;
 }
 
+@keyframes flip360 {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+.flip-parent {
+  perspective: 1000px;
+}
+
+.flip-on-hover {
+  display: inline-flex;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.flip-on-hover:hover {
+  animation: flip360 700ms ease;
+}
+

@@ -1,16 +1,26 @@
 "use client";
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import SiteLayout from '@/components/layout/SiteLayout';
+import { supabase } from '@/lib/supabase';
 import { fmt, addToCart } from '@/lib/cart';
 import { Search } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 export default function SearchClient() {
-  const [q, setQ] = useState('');
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(searchParams?.get('q') ?? '');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // keep input in sync if query param changes
+    const param = searchParams?.get('q') ?? '';
+    if (param !== q) setQ(param);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -35,7 +45,6 @@ export default function SearchClient() {
     }, 250);
     return () => clearTimeout(t);
   }, [q]);
-
   const quickAdd = (p: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();

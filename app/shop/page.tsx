@@ -4,7 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
-import { ArrowRight } from 'lucide-react';
+import { UserCircle2 } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { fmt, addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/Marquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
@@ -26,6 +28,9 @@ const ShopHome: React.FC = () => {
     addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: p.images?.[0] }, 1);
   };
 
+  const router = useRouter();
+  const [q, setQ] = useState('');
+
   return (
     <SiteLayout>                                                                                                
       <section className="relative bg-linear-to-br from-rose-800 to-pink-700 text-white py-20">           {/* Hero section */ }
@@ -41,32 +46,53 @@ const ShopHome: React.FC = () => {
               PPE, equipment, uniforms, books and digital toolkits
                — everything healthcare teams need, in one store.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/shop/products" 
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/shop/account" 
                   className="
-                              px-6 py-3 
-                              bg-white 
-                              text-rose-800 font-semibold 
-                              rounded-lg 
-                              inline-flex items-center 
-                              gap-2
+                              inline-flex items-center gap-2 flex-nowrap whitespace-nowrap 
+                              text-sm font-semibold text-slate-700 
+                              px-4 py-2 
+                              bg-white/90 
+                              rounded-full 
+                              shadow-sm shrink-0
+                              hover:bg-slate-100
                             "
             >
-                Shop all 
-              <ArrowRight className="w-4 h-4" />
+                <UserCircle2 size={20} className="shrink-0" />
+                  Account
             </Link>
-            <Link href="/shop/cart" 
-                  className="px-6 py-3 bg-emerald-600 rounded-lg font-semibold">
-              View cart
-            </Link>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (q.trim()) router.push(`/shop/search?q=${encodeURIComponent(q)}`);
+              }}
+              className="
+                flex items-center
+                min-w-0
+                bg-white
+                border border-slate-200
+                rounded-lg
+                overflow-hidden
+              "
+            >
+              <input 
+                      value={q} 
+                      onChange={e => setQ(e.target.value)} placeholder="Search products..." 
+                      className="text-gray-500 px-3 py-2 text-sm w-44 sm:w-64 min-w-0" 
+              />
+              <button 
+                      type="submit" 
+                      className="px-3 py-2 text-gray-500 text-sm">
+                        <Search className="w-4 h-4" /></button>
+            </form>
+
+            <ShopOverlayMenu />
           </div>
         </div>
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */ }
-<div className="flex items-center py-7 justify-end">                                                                 {/* Overlay menu trigger (client) */}
-              <ShopOverlayMenu />
-            </div>
      
       <section className="py-14 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

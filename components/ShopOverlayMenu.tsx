@@ -5,24 +5,23 @@ import { useRouter } from 'next/navigation';
 
 type NavItem = { id: string; title: string; handle: string };
 
-export default function ShopOverlayMenu() {
+export default function ShopOverlayMenu({ className }: { className?: string }) 
+{
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NavItem[]>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
 
-  useEffect(() => {
-    // fetch menu data once on mount
-    let mounted = true;
+  useEffect(() => {                                                                                             //-Fetch menu data once on mount
+    let mounted = true; 
     fetch('/api/shop-nav')
       .then((r) => r.json())
       .then((data) => {
         if (!mounted) return;
         setItems(Array.isArray(data) ? data : []);
       })
-      .catch(() => {
-        // fallback to sensible defaults
+      .catch(() => {                                                                                            //-Fallback to sensible defaults
         setItems([
           { id: 'ppe-protective-gear', title: 'PPE & Protective Gear', handle: 'ppe-protective-gear' },
           { id: 'equipment-supplies', title: 'Equipment & Supplies', handle: 'equipment-supplies' },
@@ -31,7 +30,7 @@ export default function ShopOverlayMenu() {
         ]);
       });
     return () => { mounted = false; };
-  }, []);
+  }, []);                                                                                                       //-[] run only once on mount
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -65,12 +64,24 @@ export default function ShopOverlayMenu() {
     <div>
       <div className="flex items-center gap-3">
         <button
+          type="button"
           ref={triggerRef}
           onClick={() => setOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls="shop-overlay"
-          className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-100"
+          className={`
+                        inline-flex items-center gap-2 flex-nowrap whitespace-nowrap shrink-0
+                        rounded-full
+                        bg-white/90
+                        px-4 py-2
+                        text-sm font-semibold
+                        text-slate-700
+                        border-0 border-none outline-none ring-0 appearance-none
+                        shadow-sm
+                        hover:bg-slate-100
+                        ${className ?? ''}
+                    `}
         >
           Shop menu
         </button>
