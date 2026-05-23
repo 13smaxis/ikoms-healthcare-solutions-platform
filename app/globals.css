@@ -199,3 +199,8 @@
   animation: flip360 700ms ease;
 }
 
+/* Ensure links show pointer cursor (hand) across the app */
+a, a:link, a:visited, a:hover, a:active, [role="link"] {
+  cursor: pointer;
+}
+
