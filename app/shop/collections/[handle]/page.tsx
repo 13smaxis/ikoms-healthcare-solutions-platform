@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { fmt, addToCart } from '@/lib/cart';
+import SHOP_MENU from '@/components/shop-menu-config';
+import CategorySubList from '@/components/CategorySubList';
 
 const CollectionPage: React.FC = () => {
   const params = useParams<{ handle?: string | string[] }>();
@@ -18,6 +20,13 @@ const CollectionPage: React.FC = () => {
     const run = async () => {
       if (!handle) return;
       setLoading(true);
+      const menuMatch = SHOP_MENU.find(m => m.handle === handle);
+      if (menuMatch) {
+        setCol({ title: menuMatch.title, description: '' });
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
       const { data: c } = await supabase.from('ecom_collections').select('*').eq('handle', handle).single();
       if (!c) { setLoading(false); return; }
       setCol(c);
@@ -56,7 +65,11 @@ const CollectionPage: React.FC = () => {
       </section>
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading ? <div className="text-center py-12 text-slate-500">Loading...</div> : products.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12 text-slate-500">Loading...</div>
+          ) : SHOP_MENU.find(m => m.handle === handle) ? (
+            <CategorySubList title={SHOP_MENU.find(m => m.handle === handle)!.title} items={SHOP_MENU.find(m => m.handle === handle)!.items} handle={handle || ''} />
+          ) : products.length === 0 ? (
             <div className="text-center py-12 text-slate-500">No products in this collection yet. <Link href="/shop/products" className="text-rose-700">Browse all</Link></div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

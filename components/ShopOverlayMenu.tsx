@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
+import SHOP_MENU from './shop-menu-config';
 
 type NavigationItem = {
   to: string;
@@ -176,39 +177,29 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                 </motion.div>
 
                 <div className="flex flex-1 items-center py-8 sm:py-10">
-                  <nav className="w-full">
-                    <ul className="grid gap-3 sm:gap-4">
-                      {navigationItems.map((item) => {
-                        const isActive = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
-
-                        return (
-                          <motion.li key={item.to} variants={overlayItemVariants}>
+                    <nav className="w-full">
+                      <div className="grid gap-3 sm:gap-4">
+                        {SHOP_MENU.map((cat) => (
+                          <motion.div key={cat.handle} variants={overlayItemVariants}>
                             <Link
-                              href={item.to}
+                              href={`/shop/collections/${cat.handle}`}
                               onClick={() => setOpen(false)}
-                              className={`group flex items-center justify-between gap-4 rounded-3xl border px-5 py-4 sm:px-7 sm:py-5 transition duration-300 ${
-                                isActive
-                                  ? 'border-white/25 bg-white/12 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]'
-                                  : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                              }`}
+                              className={`group flex items-center justify-between gap-4 rounded-3xl border px-5 py-4 sm:px-7 sm:py-5 transition duration-300 bg-white/5 hover:bg-white/10`}
                             >
                               <span className="min-w-0">
-                                <span className="block text-4xl font-light tracking-tight sm:text-5xl lg:text-6xl">
-                                  {item.label}
+                                <span className="block text-3xl sm:text-4xl font-semibold tracking-tight">
+                                  {cat.title}
                                 </span>
-                                <span className="mt-2 block text-xs uppercase tracking-[0.32em] text-white/45 group-hover:text-white/65">
-                                  {item.eyebrow}
-                                </span>
+                                <span className="mt-2 block text-xs uppercase tracking-[0.32em] text-white/45">Products</span>
                               </span>
                               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white/70 transition group-hover:border-white/25 group-hover:bg-white/15 group-hover:text-white">
                                 <ArrowUpRight className="h-5 w-5" />
                               </span>
                             </Link>
-                          </motion.li>
-                        );
-                      })}
-                    </ul>
-                  </nav>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </nav>
                 </div>
 
                 <motion.div
