@@ -126,7 +126,7 @@ const Home: React.FC = () => {
                 Healthcare Excellence,<br />
                 <span className="bg-linear-to-r from-emerald-300 to-teal-200 bg-clip-text text-transparent">Delivered End-to-End</span>
               </h1>
-              <p className="text-lg text-blue-100 mb-8 max-w-xl">
+              <p className="hidden sm:block text-lg text-blue-100 mb-8 max-w-xl">
                 From clinical recruitment to accredited training, strategic consultancy and clinical supplies — the complete partner for modern healthcare organisations.
               </p>
               <div className="mt-2 flex flex-wrap gap-3 mb-8">
@@ -262,12 +262,12 @@ const Home: React.FC = () => {
               Ready to transform your healthcare operation?
             </h2>
             <p className="text-blue-100 max-w-2xl mx-auto mb-8">
-              Speak with our team to find out how the right mix of staffing, training, consultancy 
+              Speak with our team to find out how the right mix of staffing, training, consultancy
               and supplies can accelerate your organisation.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/contact" 
-                    className="
+              <Link href="/contact"
+                className="
                                 px-6 py-3 
                                 bg-white 
                                 text-blue-800 
@@ -278,8 +278,8 @@ const Home: React.FC = () => {
               >
                 Contact Sales
               </Link>
-              <Link href="/consultancy/topics" 
-                    className="
+              <Link href="/consultancy/topics"
+                className="
                                 px-6 py-3 
                                 bg-emerald-600 
                                 text-white rounded-lg font-semibold 
