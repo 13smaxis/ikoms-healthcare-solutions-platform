@@ -164,7 +164,6 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                 >
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Menu</div>
-                    <div className="mt-1 text-sm text-white/60">Navigate the platform with a single gesture.</div>
                   </div>
 
                   <button

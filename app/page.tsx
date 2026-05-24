@@ -116,10 +116,19 @@ const Home: React.FC = () => {
           className="absolute inset-0 pointer-events-none opacity-20 bg-cover bg-center bg-fixed"
           style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600)' }}
         />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-15">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-white">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-medium mb-6">
+              <div className="
+                                inline-flex 
+                                items-center gap-2 
+                                px-3 py-1 
+                                rounded-full 
+                                bg-white/10 
+                                border border-white/20 
+                                text-xs font-medium mb-6
+                              "
+              >
                 <Shield className="w-3.5 h-3.5" /> Trusted by 200+ UK healthcare providers
               </div>
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
@@ -137,7 +146,7 @@ const Home: React.FC = () => {
                 the complete partner for modern healthcare organisations.
               </p>
               
-              <div className="block sm:hidden h-60" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
+              <div className="block sm:hidden h-70" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
               
               <div className="mt-2 flex flex-wrap gap-3 mb-8">
                 <Link href="/recruitment/jobs" 
