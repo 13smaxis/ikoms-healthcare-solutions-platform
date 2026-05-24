@@ -130,36 +130,17 @@ const Header: React.FC = () => {
             {cartCount > 0 && (
               <Link
                 href="/shop/cart"
-                className="
-                            relative 
-                            inline-flex items-center justify-center 
-                            rounded-md 
-                            p-2 
-                            text-gray-200 
-                            transition 
-                            hover:bg-white/10 hover:text-white sm:hidden
-                          "
+                className="relative inline-flex items-center justify-center rounded-full p-1 text-gray-200 transition hover:bg-white/10 hover:text-white sm:hidden"
                 aria-label={`Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}`}
-              >                                                                                                 {/* Shows cart icon with badge on mobile only when there are items in the cart */ }
-                <ShoppingCart className="h-5 w-5" />
+              >
+                <ShoppingCart className="h-4 w-4" />
                 <motion.span
                   key={cartCount}
-                  className="
-                              absolute -right-0.5 -top-0.5 
-                              flex h-4 
-                              min-w-4 
-                              items-center justify-center 
-                              rounded-full 
-                              bg-emerald-600 
-                              px-1 
-                              text-[10px] 
-                              leading-none 
-                              text-white shadow-sm
-                            "
+                  className="absolute -right-0.5 -top-0.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-emerald-600 px-0.5 text-[9px] leading-none text-white shadow-sm"
                   initial={{ opacity: 0, rotate: 0, scale: 0.85 }}
                   animate={{ opacity: 1, rotate: 360, scale: 1 }}
                   transition={{ duration: 0.55, ease: 'easeOut' }}
-                >                                                                                               {/* Animated badge showing the number of items in the cart */ }
+                >
                   {cartCount}
                 </motion.span>
               </Link>

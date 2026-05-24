@@ -124,14 +124,38 @@ const Home: React.FC = () => {
               </div>
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
                 Healthcare Excellence,<br />
-                <span className="bg-linear-to-r from-emerald-300 to-teal-200 bg-clip-text text-transparent">Delivered End-to-End</span>
+                <span className="
+                                  bg-linear-to-r from-emerald-300 to-teal-200 
+                                  bg-clip-text text-transparent
+                                "
+                >
+                    Delivered End-to-End
+                  </span>
               </h1>
-              <p className="hidden sm:block text-lg text-blue-100 mb-8 max-w-xl">
-                From clinical recruitment to accredited training, strategic consultancy and clinical supplies — the complete partner for modern healthcare organisations.
+              <p className="hidden sm:block text-lg text-blue-100 mb-8 max-w-xl">                             {/* Hides 'hidden' text on small screen and visible on larger screens 'sm:block" */}
+                From clinical recruitment to accredited training, strategic consultancy and clinical supplies — 
+                the complete partner for modern healthcare organisations.
               </p>
+              
+              <div className="block sm:hidden h-6" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
+              
               <div className="mt-2 flex flex-wrap gap-3 mb-8">
-                <Link href="/recruitment/jobs" className="relative z-10 inline-flex items-center gap-2 px-4 py-2.5 text-sm sm:px-6 sm:py-3 bg-white text-blue-800 rounded-lg font-semibold hover:bg-slate-100 transition">
-                  Browse Jobs <ArrowRight className="w-4 h-4" />
+                <Link href="/recruitment/jobs" 
+                      className="
+                                  relative z-10 inline-flex 
+                                  items-center 
+                                  gap-2 
+                                  px-4 py-2.5
+                                  text-sm 
+                                  sm:px-6 sm:py-3 
+                                  bg-white 
+                                  text-blue-800 
+                                  rounded-lg 
+                                  font-semibold 
+                                  hover:bg-slate-100 transition
+                                "
+                >
+                      Browse Jobs <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/contact" className="relative z-10 inline-flex items-center gap-2 px-4 py-2.5 text-sm sm:px-6 sm:py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-500 transition">
                   Talk to an Expert
