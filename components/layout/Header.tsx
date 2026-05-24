@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
 import { COMPANY } from '@/lib/constants';
 
@@ -48,13 +49,13 @@ const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-[rgb(42,61,130)] border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-2">
-          <Link href="/" className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-3 py-2 sm:gap-4">
+          <Link href="/" className="flex items-center gap-2 min-w-0 shrink-0">
             <img
-              src= {COMPANY.logo}
+              src={COMPANY.logo}
               alt="IKOMS Logo"
-              className="h-28 w-auto block"
+              className="block h-14 w-auto max-w-34 object-contain sm:h-20 sm:max-w-none lg:h-28"
             />
           </Link>
 
@@ -103,14 +104,44 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link href="/shop/cart" className="relative p-2 text-gray-200 hover:text-white rounded-md hover:bg-white/10 transition">
-              <ShoppingCart className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+            {cartCount > 0 && (
+              <Link
+                href="/shop/cart"
+                className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-200 transition hover:bg-white/10 hover:text-white sm:hidden"
+                aria-label={`Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <motion.span
+                  key={cartCount}
+                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] leading-none text-white shadow-sm"
+                  initial={{ opacity: 0, rotate: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, rotate: 360, scale: 1 }}
+                  transition={{ duration: 0.55, ease: 'easeOut' }}
+                >
                   {cartCount}
-                </span>
+                </motion.span>
+              </Link>
+            )}
+
+            <Link
+              href="/shop/cart"
+              className={`relative hidden items-center justify-center rounded-md p-2 text-gray-200 transition hover:bg-white/10 hover:text-white sm:inline-flex ${cartCount === 0 ? 'opacity-80' : ''}`}
+              aria-label={cartCount > 0 ? `Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart'}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] leading-none text-white shadow-sm"
+                  initial={{ opacity: 0, rotate: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, rotate: 360, scale: 1 }}
+                  transition={{ duration: 0.55, ease: 'easeOut' }}
+                >
+                  {cartCount}
+                </motion.span>
               )}
             </Link>
+
             <Link
               href="/admin"
               className="hidden sm:inline-block px-4 py-2 text-sm font-semibold text-white bg-blue-700 rounded-md hover:bg-blue-800 transition"
