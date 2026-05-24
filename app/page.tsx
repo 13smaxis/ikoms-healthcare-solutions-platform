@@ -137,7 +137,7 @@ const Home: React.FC = () => {
                 the complete partner for modern healthcare organisations.
               </p>
               
-              <div className="block sm:hidden h-6" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
+              <div className="block sm:hidden h-60" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
               
               <div className="mt-2 flex flex-wrap gap-3 mb-8">
                 <Link href="/recruitment/jobs" 
