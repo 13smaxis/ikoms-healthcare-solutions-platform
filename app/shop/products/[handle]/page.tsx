@@ -7,6 +7,7 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { ShoppingCart, ArrowLeft, Check, Truck, Shield } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
+import { getProductByHandle } from '@/lib/shop-catalog';
 
 const ProductDetail: React.FC = () => {
   const params = useParams<{ handle?: string | string[] }>();
@@ -20,7 +21,7 @@ const ProductDetail: React.FC = () => {
   useEffect(() => {
     if (!handle) return;
     supabase.from('ecom_products').select('*').eq('handle', handle).single()
-      .then(({ data }) => { setProduct(data); setLoading(false); });
+      .then(({ data }) => { setProduct(data || getProductByHandle(handle) || null); setLoading(false); });
   }, [handle]);
 
   if (loading) return <SiteLayout><div className="py-20 text-center">Loading...</div></SiteLayout>;

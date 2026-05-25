@@ -138,14 +138,14 @@ const Checkout: React.FC = () => {
               <form onSubmit={continueToPay} className="space-y-4">
                 <h2 className="font-bold text-slate-900">Shipping address</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input required placeholder="Full name" value={addr.name} onChange={e => setAddr({ ...addr, name: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required type="email" placeholder="Email" value={addr.email} onChange={e => setAddr({ ...addr, email: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="Phone" value={addr.phone} onChange={e => setAddr({ ...addr, phone: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="Country" value={addr.country} onChange={e => setAddr({ ...addr, country: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required placeholder="Address" value={addr.address} onChange={e => setAddr({ ...addr, address: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required placeholder="City" value={addr.city} onChange={e => setAddr({ ...addr, city: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="County / state" value={addr.state} onChange={e => setAddr({ ...addr, state: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required placeholder="Postcode / ZIP" value={addr.zip} onChange={e => setAddr({ ...addr, zip: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="name" required placeholder="Full name" value={addr.name} onChange={e => setAddr({ ...addr, name: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="email" required type="email" placeholder="Email" value={addr.email} onChange={e => setAddr({ ...addr, email: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="phone" placeholder="Phone" value={addr.phone} onChange={e => setAddr({ ...addr, phone: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="country" placeholder="Country" value={addr.country} onChange={e => setAddr({ ...addr, country: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="address" required placeholder="Address" value={addr.address} onChange={e => setAddr({ ...addr, address: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="city" required placeholder="City" value={addr.city} onChange={e => setAddr({ ...addr, city: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="state" placeholder="County / state" value={addr.state} onChange={e => setAddr({ ...addr, state: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="zip" required placeholder="Postcode / ZIP" value={addr.zip} onChange={e => setAddr({ ...addr, zip: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
                 </div>
                 <button type="submit" className="mt-3 px-6 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold">Continue to payment</button>
               </form>

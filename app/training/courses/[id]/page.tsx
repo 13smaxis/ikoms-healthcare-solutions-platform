@@ -101,10 +101,10 @@ const CourseDetail: React.FC = () => {
               ) : (
                 <form onSubmit={book} className="space-y-2">
                   <div className="text-sm font-semibold text-slate-700 mb-1">Request a booking</div>
-                  <input required placeholder="Full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="Organisation" value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="full_name" required placeholder="Full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="email" required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="phone" placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="organization" placeholder="Organisation" value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
                   <button type="submit" disabled={submitting} className="w-full py-2.5 border border-emerald-700 text-emerald-700 rounded-lg font-semibold hover:bg-emerald-50 disabled:opacity-50 text-sm">
                     {submitting ? 'Sending...' : 'Request booking'}
                   </button>

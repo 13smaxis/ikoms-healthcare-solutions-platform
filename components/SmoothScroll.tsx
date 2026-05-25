@@ -10,6 +10,14 @@ export default function SmoothScroll() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString();
 
+  const clearBodyLock = () => {
+    const body = document.body;
+    body.style.overflow = '';
+    body.style.position = '';
+    body.style.top = '';
+    body.style.width = '';
+  };
+
   useEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
@@ -28,7 +36,12 @@ export default function SmoothScroll() {
     let rafId = 0;
 
     function raf(time: number) {
-      lenis.raf(time);
+      // If the site overlay menu is open, avoid calling Lenis.raf so nested scrollable containers
+      // (like the overlay menu) can receive native wheel events. Lenis will resume when overlay
+      // is removed because the RAF loop continues and the condition will be false.
+      if (!document.getElementById('site-menu-overlay')) {
+        lenis.raf(time);
+      }
       rafId = requestAnimationFrame(raf);
     }
 
@@ -53,6 +66,7 @@ export default function SmoothScroll() {
   }, []);
 
   useEffect(() => {
+    clearBodyLock();
     lenisRef.current?.scrollTo(0, { duration: 1.8, immediate: false });
   }, [pathname, searchParamsString]);
 

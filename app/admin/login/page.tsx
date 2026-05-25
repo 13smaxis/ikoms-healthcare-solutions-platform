@@ -77,8 +77,8 @@ const AdminLogin: React.FC = () => {
 
           {mode === 'signin' && (
             <form onSubmit={signIn} className="space-y-3">
-              <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Email" />
-              <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Password" />
+              <input name="email" required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Email" />
+              <input name="password" required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Password" />
               {error && <div className="text-red-600 text-sm">{error}</div>}
               {info && <div className="text-emerald-700 text-sm">{info}</div>}
               <button type="submit" disabled={loading} className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"><Lock className="w-4 h-4" /> {loading ? 'Signing in...' : 'Sign in'}</button>
@@ -90,7 +90,7 @@ const AdminLogin: React.FC = () => {
 
           {mode === 'reset' && (
             <form onSubmit={reset} className="space-y-3">
-              <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
+              <input name="email" required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
               {error && <div className="text-red-600 text-sm">{error}</div>}
               {info && <div className="text-emerald-700 text-sm">{info}</div>}
               <button type="submit" disabled={loading} className="w-full py-3 bg-slate-800 text-white rounded-lg font-semibold disabled:opacity-50">{loading ? 'Sending...' : 'Send reset link'}</button>

@@ -100,14 +100,14 @@ const JobDetail: React.FC = () => {
               ) : (
                 <form onSubmit={submit} className="space-y-3">
                   <h3 className="text-lg font-bold text-slate-900 mb-2">Apply for this role</h3>
-                  <input required placeholder="Full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <textarea rows={4} placeholder="Brief cover note (optional)" value={form.cover_letter} onChange={e => setForm({ ...form, cover_letter: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="full_name" required placeholder="Full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="email" required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="phone" placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <textarea name="cover_letter" rows={4} placeholder="Brief cover note (optional)" value={form.cover_letter} onChange={e => setForm({ ...form, cover_letter: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
                   <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-sm cursor-pointer hover:border-blue-500">
                     <Upload className="w-4 h-4 text-slate-500" />
                     <span className="text-slate-600 truncate">{cv ? cv.name : 'Upload your CV (PDF/DOC)'}</span>
-                    <input type="file" accept=".pdf,.doc,.docx" onChange={e => setCv(e.target.files?.[0] || null)} className="hidden" />
+                    <input name="cv" type="file" accept=".pdf,.doc,.docx" onChange={e => setCv(e.target.files?.[0] || null)} className="hidden" />
                   </label>
                   {error && <div className="text-sm text-red-600">{error}</div>}
                   <button type="submit" disabled={submitting} className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold disabled:opacity-50">

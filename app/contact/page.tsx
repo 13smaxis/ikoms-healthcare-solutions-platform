@@ -52,17 +52,17 @@ const Contact: React.FC = () => {
               <form onSubmit={submit} className="space-y-4">
                 <h2 className="text-2xl font-bold text-slate-900 mb-4">Send us a message</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <input required placeholder="Full name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
-                  <input required type="email" placeholder="Email address" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                  <input name="name" required placeholder="Full name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+                  <input name="email" required type="email" placeholder="Email address" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
                 </div>
-                <select value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg">
+                <select name="subject" value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg">
                   <option>General enquiry</option>
                   <option>Recruitment - hire staff</option>
                   <option>Training booking</option>
                   <option>Consultancy</option>
                   <option>Shop / products</option>
                 </select>
-                <textarea required rows={6} placeholder="How can we help?" value={form.message} onChange={e => setForm({...form, message: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg" />
+                <textarea name="message" required rows={6} placeholder="How can we help?" value={form.message} onChange={e => setForm({...form, message: e.target.value})} className="w-full px-4 py-3 border border-slate-300 rounded-lg" />
                 <button type="submit" disabled={status === 'sending'} className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 disabled:opacity-50">
                   <Send className="w-4 h-4" /> {status === 'sending' ? 'Sending...' : 'Send message'}
                 </button>

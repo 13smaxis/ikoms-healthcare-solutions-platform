@@ -199,8 +199,13 @@
   animation: flip360 700ms ease;
 }
 
-/* Ensure links show pointer cursor (hand) across the app */
-a, a:link, a:visited, a:hover, a:active, [role="link"] {
+/* Ensure clickable controls show pointer cursor (hand) across the app */
+a, a:link, a:visited, a:hover, a:active, [role="link"],
+button:not(:disabled),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
   cursor: pointer;
 }
 

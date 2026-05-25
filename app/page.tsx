@@ -172,6 +172,7 @@ const Home: React.FC = () => {
               </div>
               <form onSubmit={joinList} className="flex gap-2 max-w-md">
                 <input
+                  name="newsletter_email"
                   type="email" required value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="Get our monthly insights..."
                   className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 text-sm focus:outline-none focus:bg-white/15"

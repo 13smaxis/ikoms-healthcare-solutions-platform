@@ -10,16 +10,14 @@ import { useRouter } from 'next/navigation';
 import { fmt, addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/Marquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
+import { getFeaturedShopProducts, mergeShopProducts } from '@/lib/shop-catalog';
 
 const ShopHome: React.FC = () => {
   const [featured, setFeatured] = useState<any[]>([]);
-  const [collections, setCollections] = useState<any[]>([]);
 
   useEffect(() => {
     supabase.from('ecom_products').select('*').eq('status', 'active').contains('tags', ['featured']).limit(8)
-      .then(({ data }) => setFeatured(data || []));
-    supabase.from('ecom_collections').select('*').eq('is_visible', true).limit(4)
-      .then(({ data }) => setCollections(data || []));
+      .then(({ data }) => setFeatured(mergeShopProducts(data || [], getFeaturedShopProducts())));
   }, []);
 
   const quickAdd = (p: any, e: React.MouseEvent) => {

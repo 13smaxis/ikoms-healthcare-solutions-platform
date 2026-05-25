@@ -74,6 +74,10 @@ export default function ShopOverlayMenu({ className }: { className?: string })
   }, [open]);
 
   useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (open) {
       const body = document.body;
       scrollYRef.current = window.scrollY;
@@ -156,9 +160,9 @@ export default function ShopOverlayMenu({ className }: { className?: string })
             />
 
             <motion.div
-              className="relative flex h-full w-full flex-col bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.18),transparent_40%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.98))] text-white"
+              className="relative flex h-full w-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.18),transparent_40%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.98))] text-white"
             >
-              <div className="mx-auto flex h-full w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+              <div className="mx-auto flex h-full w-full max-w-7xl flex-col min-h-0 px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
                 <motion.div
                   className="flex items-center justify-between gap-4"
                   variants={overlayItemVariants}
@@ -176,30 +180,30 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                   </button>
                 </motion.div>
 
-                <div className="flex flex-1 items-center py-8 sm:py-10">
-                    <nav className="w-full">
-                      <div className="grid gap-3 sm:gap-4">
-                        {SHOP_MENU.map((cat) => (
-                          <motion.div key={cat.handle} variants={overlayItemVariants}>
-                            <Link
-                              href={`/shop/collections/${cat.handle}`}
-                              onClick={() => setOpen(false)}
-                              className={`group flex items-center justify-between gap-4 rounded-3xl border px-5 py-4 sm:px-7 sm:py-5 transition duration-300 bg-white/5 hover:bg-white/10`}
-                            >
-                              <span className="min-w-0">
-                                <span className="block text-3xl sm:text-4xl font-semibold tracking-tight">
-                                  {cat.title}
-                                </span>
-                                <span className="mt-2 block text-xs uppercase tracking-[0.32em] text-white/45">Products</span>
+                <div className="flex-1 min-h-0 overflow-y-auto py-8 sm:py-10 pr-1">
+                  <nav className="w-full">
+                    <div className="grid gap-3 sm:gap-4">
+                      {SHOP_MENU.map((cat) => (
+                        <motion.div key={cat.handle} variants={overlayItemVariants}>
+                          <Link
+                            href={`/shop/collections/${cat.handle}`}
+                            onClick={() => setOpen(false)}
+                            className="group flex items-center justify-between gap-4 rounded-3xl border px-5 py-4 sm:px-7 sm:py-5 transition duration-300 bg-white/5 hover:bg-white/10"
+                          >
+                            <span className="min-w-0">
+                              <span className="block text-3xl sm:text-4xl font-semibold tracking-tight">
+                                {cat.title}
                               </span>
-                              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white/70 transition group-hover:border-white/25 group-hover:bg-white/15 group-hover:text-white">
-                                <ArrowUpRight className="h-5 w-5" />
-                              </span>
-                            </Link>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </nav>
+                              <span className="mt-2 block text-xs uppercase tracking-[0.32em] text-white/45">Products</span>
+                            </span>
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white/70 transition group-hover:border-white/25 group-hover:bg-white/15 group-hover:text-white">
+                              <ArrowUpRight className="h-5 w-5" />
+                            </span>
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </nav>
                 </div>
 
                 <motion.div
