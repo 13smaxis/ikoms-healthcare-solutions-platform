@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { getCart, fmt, clearCart, CartItem } from '@/lib/cart';
 import { Lock, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 declare global { interface Window { Stripe?: any } }
 
@@ -119,11 +120,26 @@ const Checkout: React.FC = () => {
   };
 
   if (cart.length === 0) {
-    return <SiteLayout><div className="py-20 text-center text-slate-500">Your cart is empty.</div></SiteLayout>;
+    return (
+      <SiteLayout>
+        <section className="border-b border-slate-200 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'Checkout' }]} />
+          </div>
+        </section>
+        <div className="py-20 text-center text-slate-500">Your cart is empty.</div>
+      </SiteLayout>
+    );
   }
 
   return (
     <SiteLayout>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'Checkout' }]} />
+        </div>
+      </section>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Checkout</h1>
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">

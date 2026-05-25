@@ -42,6 +42,7 @@ const Footer: React.FC = () => {
             </p>
             <form onSubmit={subscribe} className="flex gap-2 max-w-sm">
               <input
+                name="footer_email"
                 type="email" required value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="

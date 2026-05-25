@@ -7,10 +7,11 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { fmt, addToCart } from '@/lib/cart';
 import SHOP_MENU from '@/components/shop-menu-config';
-import CategorySubList from '@/components/CategorySubList';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { Heart } from 'lucide-react';
 import { getProductsForCollectionHandle } from '@/lib/shop-catalog';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
+import ShopCategoryIntro from '@/components/ShopCategoryIntro';
 
 /*
  * This component represents a collection page. 
@@ -72,53 +73,40 @@ const CollectionPage: React.FC = () => {
     return 'bg-rose-100 text-rose-700';
   };
 
+  const collectionTitle = col?.title || SHOP_MENU.find((menu) => menu.handle === handle)?.title || 'Collection';
+  const collectionDescription = col?.description || 'Browse hot buys, highlights, and products in this collection.';
+
   return (
     <SiteLayout>
-      {/* Collection pages: only show product grid (no hero / subcategory / featured heading) */}
-      <section className="py-10">
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ShopBreadcrumbs
+            variant="hero"
+            className="mb-4"
+            items={[
+              { label: 'Shop', href: '/shop' },
+              { label: collectionTitle },
+            ]}
+          />
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Category</div>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">{collectionTitle}</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-100 sm:text-base">{collectionDescription}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-8 sm:py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ShopCategoryIntro handle={handle || ''} />
+
           {loading ? (
             <div className="text-center py-12 text-slate-500">Loading...</div>
-          ) : SHOP_MENU.find(m => m.handle === handle) ? (
-            // For menu-defined collections we also show only the product grid (no hero/sublist/featured)
-            products.length === 0 ? (
-              <div className="text-slate-500">No products are available yet.</div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                {products.map(p => {
-                  const pid = String(p.id);
-                  return (
-                    <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
-                      <div className="aspect-square bg-slate-100"><img src={p.images?.[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" /></div>
-                      <div className="p-4">
-                        <div className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2">{p.name}</div>
-                        <div className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold mb-3 ${availabilityClass(p)}`}>
-                          {availabilityLabel(p)}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="font-bold">{fmt(p.price)}</div>
-                          <div className="flex items-center gap-2">
-                            <WishlistHeart productId={pid} />
-                            <button
-                              onClick={(e) => quickAdd(p, e)}
-                              disabled={p.inventory_qty === 0}
-                              className="text-xs font-semibold px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-md disabled:cursor-not-allowed disabled:bg-slate-300"
-                            >
-                              Add
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )
           ) : products.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">No products in this collection yet. <Link href="/shop/products" className="text-rose-700">Browse all</Link></div>
+            <div className="py-12 text-center text-slate-500">No products in this collection yet. <Link href="/shop/products" className="text-rose-700">Browse all</Link></div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-              {products.map(p => {
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 pb-12">
+              {products.map((p) => {
                 const pid = String(p.id);
                 return (
                   <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">

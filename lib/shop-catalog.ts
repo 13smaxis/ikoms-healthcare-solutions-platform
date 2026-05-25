@@ -14,6 +14,12 @@ export type ShopCatalogProduct = {
   inventory_qty: number | null;
 };
 
+export type CollectionShowcase = {
+  title: string;
+  hotBuys: ShopCatalogProduct[];
+  marqueeImages: string[];
+};
+
 const normalizeTag = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 type CollectionSeed = {
@@ -24,12 +30,18 @@ type CollectionSeed = {
   stockBase: number;
 };
 
+export const CLINICAL_SUPPLIES_CAROUSEL_IMAGES = [
+  '/images/clinical-supplies/products/face-masks.jpg',
+  '/images/clinical-supplies/products/surgical-gloves.jpg',
+  '/images/clinical-supplies/products/gauze-bandages.jpg',
+  '/images/clinical-supplies/products/syringes.jpg',
+];
+
 const COLLECTION_SEEDS: Record<string, CollectionSeed> = {
   'clinical-supplies': {
     handle: 'clinical-supplies',
     images: [
-      'https://images.unsplash.com/photo-1583947215259-38e31be0ad4f?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80',
+      ...CLINICAL_SUPPLIES_CAROUSEL_IMAGES,
     ],
     priceBase: 450,
     priceStep: 90,
@@ -107,6 +119,75 @@ const COLLECTION_SEEDS: Record<string, CollectionSeed> = {
   },
 };
 
+const SHARED_MARQUEE_IMAGES = [
+  '/images/clinical-supplies/alcohol-swabs.jpg',
+  '/images/clinical-supplies/face-masks.jpg',
+  '/images/clinical-supplies/gauze-bandages.jpg',
+  '/images/clinical-supplies/iv-cannulas.jpg',
+  '/images/clinical-supplies/surgical-gloves.jpg',
+  '/images/clinical-supplies/syringes.jpg',
+];
+
+const COLLECTION_MARQUEE_IMAGES: Record<string, string[]> = {
+  'clinical-supplies': SHARED_MARQUEE_IMAGES,
+  'ppe-safety-equipment': [
+    '/images/clinical-supplies/face-masks.jpg',
+    '/images/clinical-supplies/surgical-gloves.jpg',
+    '/images/clinical-supplies/disposable-aprons.jpg',
+    '/images/clinical-supplies/medical-tape.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/catheters.jpg',
+  ],
+  'diagnostic-equipment': [
+    '/images/clinical-supplies/iv-cannulas.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/alcohol-swabs.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/syringes.jpg',
+    '/images/clinical-supplies/medical-tape.jpg',
+  ],
+  'hospital-clinic-furniture': [
+    '/images/clinical-supplies/disposable-aprons.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/face-masks.jpg',
+    '/images/clinical-supplies/catheters.jpg',
+    '/images/clinical-supplies/medical-tape.jpg',
+  ],
+  'training-educational-supplies': [
+    '/images/clinical-supplies/alcohol-swabs.jpg',
+    '/images/clinical-supplies/syringes.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/iv-cannulas.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/disposable-aprons.jpg',
+  ],
+  'home-care-patient-support': [
+    '/images/clinical-supplies/medical-tape.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/alcohol-swabs.jpg',
+    '/images/clinical-supplies/surgical-gloves.jpg',
+    '/images/clinical-supplies/catheters.jpg',
+  ],
+  'emergency-first-aid': [
+    '/images/clinical-supplies/wound-dressings.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/alcohol-swabs.jpg',
+    '/images/clinical-supplies/syringes.jpg',
+    '/images/clinical-supplies/medical-tape.jpg',
+    '/images/clinical-supplies/iv-cannulas.jpg',
+  ],
+  'healthcare-technology': [
+    '/images/clinical-supplies/iv-cannulas.jpg',
+    '/images/clinical-supplies/syringes.jpg',
+    '/images/clinical-supplies/alcohol-swabs.jpg',
+    '/images/clinical-supplies/face-masks.jpg',
+    '/images/clinical-supplies/gauze-bandages.jpg',
+    '/images/clinical-supplies/wound-dressings.jpg',
+  ],
+};
+
 const slugify = (value: string) => normalizeTag(value);
 
 const buildCatalog = (): ShopCatalogProduct[] => SHOP_MENU.flatMap((collection, collectionIndex) => {
@@ -166,3 +247,17 @@ export const getProductsForCollectionHandle = (handle: string) => SHOP_CATALOG.f
 export const getProductByHandle = (handle: string) => SHOP_CATALOG.find((product) => product.handle === handle);
 
 export const normalizeShopTag = normalizeTag;
+
+export const getCollectionShowcase = (handle: string): CollectionShowcase => {
+  const normalizedHandle = normalizeTag(handle);
+  const title = SHOP_MENU.find((collection) => normalizeTag(collection.handle) === normalizedHandle)?.title || 'Shop';
+  const collectionProducts = getProductsForCollectionHandle(normalizedHandle);
+  const hotBuys = collectionProducts.filter((product) => product.tags.includes('featured')).slice(0, 4);
+  const marqueeImages = COLLECTION_MARQUEE_IMAGES[normalizedHandle] || SHARED_MARQUEE_IMAGES;
+
+  return {
+    title,
+    hotBuys: hotBuys.length > 0 ? hotBuys : collectionProducts.slice(0, 4),
+    marqueeImages,
+  };
+};

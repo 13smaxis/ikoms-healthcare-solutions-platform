@@ -8,7 +8,12 @@ import { supabase } from '@/lib/supabase';
 import { ShoppingCart, ArrowLeft, Check, Truck, Shield } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
 import { getProductByHandle } from '@/lib/shop-catalog';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
+/*
+ * This component represents the product detail page. 
+ * It fetches the product based on the handle from the URL, displays its details and allows adding it to the cart or buying it immediately.
+ */
 const ProductDetail: React.FC = () => {
   const params = useParams<{ handle?: string | string[] }>();
   const handle = Array.isArray(params?.handle) ? params.handle[0] : params?.handle;
@@ -18,30 +23,90 @@ const ProductDetail: React.FC = () => {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
+  /*
+   * We first try to find the product by handle in our local catalog (which includes some hardcoded products not in the DB).
+   * If not found, we query the DB for a product with the given handle. 
+   * This allows us to have products that are not in the local catalog but still accessible by their handle.
+   */
   useEffect(() => {
     if (!handle) return;
-    supabase.from('ecom_products').select('*').eq('handle', handle).single()
+    supabase.from('ecom_products').select('*').eq('handle', handle).single()                                    //-Fetch product by handle from DB
       .then(({ data }) => { setProduct(data || getProductByHandle(handle) || null); setLoading(false); });
   }, [handle]);
 
-  if (loading) return <SiteLayout><div className="py-20 text-center">Loading...</div></SiteLayout>;
-  if (!product) return <SiteLayout><div className="py-20 text-center">Product not found. <Link href="/shop/products" className="text-rose-700">Browse all</Link></div></SiteLayout>;
+  if (loading)                                                                                                  //-Show loading state while fetching product
+    return 
+    <SiteLayout>                                                                                                
+      <div className="py-20 text-center">
+        Loading...
+      </div>
+    </SiteLayout>; 
 
-  const inStock = product.inventory_qty == null || product.inventory_qty > 0;
+  if (!product)                                                                                                 //-Show not found state if no product matches the handle
+    return 
+    <SiteLayout>
+      <div className="py-20 text-center">
+        Product not found. 
+        <Link href="/shop/products" 
+              className="text-rose-700">                                                                      //-Link back to products listing
+                Browse all
+        </Link> 
+      </div>
+    </SiteLayout>;
 
+  const inStock = product.inventory_qty == null || product.inventory_qty > 0;                                   //-Determine stock status based on inventory quantity
+
+  /*
+   * Handle adding the product to the cart. 
+   * We add the product with the selected quantity and show a temporary "Added!" state.
+   */
   const add = () => {
-    addToCart({ product_id: product.id, name: product.name, sku: product.sku, price: product.price, image: product.images?.[0] }, qty);
+    addToCart(
+              { 
+                product_id: product.id, 
+                name: product.name, 
+                sku: product.sku, 
+                price: product.price, 
+                image: product.images?.[0] 
+              }, 
+                qty                                                                                             //-Add the specified quantity of the product to the cart
+            );
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), 2000);                                                                    //-Reset "Added!" state after 2 seconds
   };
 
+  /*
+   * Handle the "Buy it now" action. 
+   * We add the product to the cart and immediately navigate to the checkout page.
+   */
   const buyNow = () => {
-    addToCart({ product_id: product.id, name: product.name, sku: product.sku, price: product.price, image: product.images?.[0] }, qty);
+    addToCart(
+              { 
+                product_id: product.id, 
+                name: product.name, 
+                sku: product.sku, 
+                price: product.price, 
+                image: product.images?.[0] 
+              }, 
+                qty                                                                                             //-Add the specified quantity of the product to the cart
+            );
     nav.push('/shop/checkout');
   };
 
   return (
     <SiteLayout>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ShopBreadcrumbs
+            items={[
+              { label: 'Shop', href: '/shop' },
+              { label: 'All products', href: '/shop/products' },
+              { label: product.name },
+            ]}
+          />
+        </div>
+      </section>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Link href="/shop/products" className="inline-flex items-center gap-1 text-slate-600 text-sm mb-6 hover:text-rose-700"><ArrowLeft className="w-4 h-4" /> All products</Link>
         <div className="grid lg:grid-cols-2 gap-10">

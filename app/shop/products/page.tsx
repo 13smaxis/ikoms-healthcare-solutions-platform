@@ -8,6 +8,7 @@ import { Search, Heart } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
 import { SHOP_CATALOG, mergeShopProducts, normalizeShopTag } from '@/lib/shop-catalog';
 import { useWishlist } from '@/contexts/WishlistContext';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ProductsList: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -68,6 +69,12 @@ const ProductsList: React.FC = () => {
 
   return (
     <SiteLayout>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'All products' }]} />
+        </div>
+      </section>
+
       <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">Shop · All products</div>

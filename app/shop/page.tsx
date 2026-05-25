@@ -11,6 +11,7 @@ import { fmt, addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/Marquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import { getFeaturedShopProducts, mergeShopProducts } from '@/lib/shop-catalog';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {
   const [featured, setFeatured] = useState<any[]>([]);
@@ -31,6 +32,12 @@ const ShopHome: React.FC = () => {
 
   return (
     <SiteLayout>                                                                                                
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }]} />
+        </div>
+      </section>
+
       <section className="relative bg-linear-to-br from-rose-800 to-pink-700 text-white py-20">           {/* Hero section */ }
         <div
           className="absolute inset-0 opacity-20 bg-cover bg-center bg-fixed"
@@ -74,11 +81,12 @@ const ShopHome: React.FC = () => {
                 overflow-hidden
               "
             >
-              <input 
+                    <input 
+                      name="q"
                       value={q} 
                       onChange={e => setQ(e.target.value)} placeholder="Search products..." 
                       className="text-gray-500 px-3 py-2 text-sm w-44 sm:w-64 min-w-0" 
-              />
+                    />
               <button 
                       type="submit" 
                       className="px-3 py-2 text-gray-500 text-sm">

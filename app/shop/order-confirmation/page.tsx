@@ -6,6 +6,7 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, Package } from 'lucide-react';
 import { fmt } from '@/lib/cart';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const OrderConfirmation: React.FC = () => {
   const [oid, setOid] = useState<string | null>(null);
@@ -25,6 +26,12 @@ const OrderConfirmation: React.FC = () => {
 
   return (
     <SiteLayout>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'Order confirmation' }]} />
+        </div>
+      </section>
+
       <div className="max-w-3xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
           <div className="w-16 h-16 mx-auto bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mb-4">

@@ -36,7 +36,7 @@ const CoursesList: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6 grid md:grid-cols-3 gap-3">
             <div className="md:col-span-2 relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search courses..." className="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
+              <input name="q" value={q} onChange={e => setQ(e.target.value)} placeholder="Search courses..." className="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
             </div>
             <select value={cat} onChange={e => setCat(e.target.value)} className="px-3 py-2.5 border border-slate-300 rounded-lg text-sm">
               {cats.map(c => <option key={c} value={c}>{c === 'all' ? 'All categories' : c}</option>)}

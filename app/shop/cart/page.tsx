@@ -5,6 +5,7 @@ import Link from 'next/link';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { Trash2, ShoppingCart, ArrowRight, Truck } from 'lucide-react';
 import { getCart, updateQty, removeFromCart, cartSubtotal, fmt, CartItem } from '@/lib/cart';
+import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const Cart: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -21,6 +22,12 @@ const Cart: React.FC = () => {
   if (cart.length === 0) {
     return (
       <SiteLayout>
+        <section className="border-b border-slate-200 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'Cart' }]} />
+          </div>
+        </section>
+
         <div className="max-w-3xl mx-auto px-4 py-14 sm:py-20 text-center">
           <ShoppingCart className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-slate-300 mb-4" />
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Your cart is empty</h1>
@@ -36,6 +43,12 @@ const Cart: React.FC = () => {
 
   return (
     <SiteLayout>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: 'Cart' }]} />
+        </div>
+      </section>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">                                            {/* Page header */ }
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Your cart</h1>
         <p className="text-sm sm:text-base text-slate-600 mb-6 sm:mb-8">{cart.reduce((s, i) => s + i.quantity, 0)} item(s)</p>

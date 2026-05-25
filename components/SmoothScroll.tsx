@@ -22,45 +22,61 @@ export default function SmoothScroll() {
     const previousScrollRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
 
-    const lenis = new Lenis({
-      duration: 1.8,
-      smoothWheel: true,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    });
-    lenisRef.current = lenis;
+    function createLenis() {
+      const instance = new Lenis({
+        duration: 1.8,
+        smoothWheel: true,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      lenisRef.current = instance;
+      // ensure scroll position is sane when (re)creating
+      instance.scrollTo(0, { duration: 1.8, immediate: false });
+    }
 
-    const resetScrollState = () => {
-      lenis.scrollTo(0, { duration: 1.8, immediate: false });
-    };
+    createLenis();
 
     let rafId = 0;
 
     function raf(time: number) {
-      // If the site overlay menu is open, avoid calling Lenis.raf so nested scrollable containers
-      // (like the overlay menu) can receive native wheel events. Lenis will resume when overlay
-      // is removed because the RAF loop continues and the condition will be false.
+      // Call Lenis.raf only when an instance exists and the overlay is not present.
+      // When the overlay exists we destroy the Lenis instance so native wheel events
+      // can reach overlay's internal scrollable container without being prevented.
       if (!document.getElementById('site-menu-overlay')) {
-        lenis.raf(time);
+        lenisRef.current?.raf(time);
       }
       rafId = requestAnimationFrame(raf);
     }
 
-    resetScrollState();
     rafId = requestAnimationFrame(raf);
 
     const onPageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        resetScrollState();
+        lenisRef.current?.scrollTo(0, { duration: 1.8, immediate: false });
       }
     };
 
     window.addEventListener("pageshow", onPageShow);
 
+    // Observe DOM changes to detect when the overlay is added/removed.
+    const observer = new MutationObserver(() => {
+      const overlayPresent = Boolean(document.getElementById('site-menu-overlay'));
+      if (overlayPresent && lenisRef.current) {
+        // destroy lenis so it stops intercepting wheel events
+        try { lenisRef.current.destroy(); } catch (e) { /* ignore */ }
+        lenisRef.current = null;
+      } else if (!overlayPresent && !lenisRef.current) {
+        // recreate lenis when overlay removed
+        createLenis();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       window.removeEventListener("pageshow", onPageShow);
       cancelAnimationFrame(rafId);
-      lenis.destroy();
+      try { lenisRef.current?.destroy(); } catch (e) { /* ignore */ }
       lenisRef.current = null;
+      observer.disconnect();
       window.history.scrollRestoration = previousScrollRestoration;
     };
   }, []);
