@@ -16,7 +16,7 @@ export default function ShopImageMarquee({ images, title }: { images: string[]; 
         {doubled.map((src, index) => (
           <div
             key={`${src}-${index}`}
-            className="flex h-28 w-44 shrink-0 overflow-hidden rounded-2xl bg-slate-100 sm:h-32 sm:w-52"
+            className="flex h-20 w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-100 sm:h-24 sm:w-44"
           >
             <img src={src} alt="Shop showcase" className="h-full w-full object-cover" />
           </div>

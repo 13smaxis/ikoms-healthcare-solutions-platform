@@ -26,9 +26,9 @@ export default function ShopCategoryIntro({ handle }: { handle: string }) {
             {carouselImages.map((src, index) => {
               return (
                 <CarouselItem key={`${src}-${index}`}>
-                  <div className="overflow-hidden rounded-3xl bg-slate-100">
-                    <div className="aspect-16/10">
-                      <img src={src} alt="Carousel slide" className="h-full w-full object-cover" />
+                  <div className="overflow-hidden rounded-3xl bg-[rgb(42,61,130)]">
+                    <div className="h-48 sm:h-56 md:h-64 lg:h-72 flex items-center justify-center">
+                      <img src={src} alt="Carousel slide" className="h-4/4 w-auto object-contain" />
                     </div>
                   </div>
                 </CarouselItem>
