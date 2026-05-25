@@ -3,7 +3,7 @@
 import React from 'react';
 
 export default function ShopImageMarquee({ images, title }: { images: string[]; title?: string }) {
-  const doubled = [...images, ...images];
+  const doubled = [...images, ...images, ...images];
 
   return (
     <section className="relative overflow-hidden rounded-3xl bg-white py-4 sm:py-5">
@@ -12,7 +12,7 @@ export default function ShopImageMarquee({ images, title }: { images: string[]; 
       <div className="mb-3 px-4 sm:px-5">
         <div className="text-xs font-semibold uppercase tracking-[0.32em] text-rose-700">{title || 'Shop gallery'}</div>
       </div>
-      <div className="flex w-max animate-marquee gap-4 px-4 sm:px-5">
+      <div className="flex w-max animate-marquee px-0">
         {doubled.map((src, index) => (
           <div
             key={`${src}-${index}`}

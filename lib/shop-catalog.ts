@@ -119,13 +119,17 @@ const COLLECTION_SEEDS: Record<string, CollectionSeed> = {
   },
 };
 
-const SHARED_MARQUEE_IMAGES = [
+export const SHARED_MARQUEE_IMAGES = [
   '/images/clinical-supplies/alcohol-swabs.jpg',
+  '/images/clinical-supplies/catheters.jpg',
+  '/images/clinical-supplies/disposable-aprons.jpg',
   '/images/clinical-supplies/face-masks.jpg',
   '/images/clinical-supplies/gauze-bandages.jpg',
   '/images/clinical-supplies/iv-cannulas.jpg',
+  '/images/clinical-supplies/medical-tape.jpg',
   '/images/clinical-supplies/surgical-gloves.jpg',
   '/images/clinical-supplies/syringes.jpg',
+  '/images/clinical-supplies/wound-dressings.jpg',
 ];
 
 const COLLECTION_MARQUEE_IMAGES: Record<string, string[]> = {
