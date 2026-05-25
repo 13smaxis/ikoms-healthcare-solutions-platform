@@ -43,10 +43,8 @@ export default function ShopOverlayMenu({ className }: { className?: string })
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const scrollYRef = useRef(0);
   const bodyLockRef = useRef<{
-    overflow: string;
-    position: string;
-    top: string;
-    width: string;
+    bodyOverflow: string;
+    docOverflow: string;
   } | null>(null);
 
   const restoreBodyScroll = () => {
@@ -57,11 +55,15 @@ export default function ShopOverlayMenu({ className }: { className?: string })
       return;
     }
 
-    body.style.overflow = lock.overflow;
-    body.style.position = lock.position;
-    body.style.top = lock.top;
-    body.style.width = lock.width;
+    body.style.overflow = lock.bodyOverflow;
+    // also restore html/documentElement overflow if we touched it
+    try {
+      document.documentElement.style.overflow = lock.docOverflow;
+    } catch (e) {
+      // ignore
+    }
     bodyLockRef.current = null;
+    // ensure visual scroll position is preserved for any smooth scroller
     window.scrollTo(0, scrollYRef.current);
   };
 
@@ -82,15 +84,12 @@ export default function ShopOverlayMenu({ className }: { className?: string })
       const body = document.body;
       scrollYRef.current = window.scrollY;
       bodyLockRef.current = {
-        overflow: body.style.overflow,
-        position: body.style.position,
-        top: body.style.top,
-        width: body.style.width,
+        bodyOverflow: body.style.overflow,
+        docOverflow: document.documentElement.style.overflow,
       };
+      // Use overflow-only lock instead of position:fixed to avoid scroll restoration races
       body.style.overflow = 'hidden';
-      body.style.position = 'fixed';
-      body.style.top = `-${scrollYRef.current}px`;
-      body.style.width = '100%';
+      try { document.documentElement.style.overflow = 'hidden'; } catch (e) { /* ignore */ }
     } else {
       restoreBodyScroll();
       triggerRef.current?.focus();

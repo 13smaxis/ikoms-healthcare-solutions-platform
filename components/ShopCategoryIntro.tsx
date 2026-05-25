@@ -21,22 +21,23 @@ export default function ShopCategoryIntro({ handle }: { handle: string }) {
   return (
     <section className="space-y-6 py-6 sm:py-8">
       <div className="rounded-4xl bg-white p-4 sm:p-6 lg:p-8">
-        <Carousel opts={{ align: 'center', loop: true }} setApi={setApi} className="w-full">
-          <CarouselContent>
-            {carouselImages.map((src, index) => {
-              return (
-                <CarouselItem key={`${src}-${index}`}>
-                  <div className="overflow-hidden rounded-3xl bg-[rgb(42,61,130)]">
-                    <div className="h-48 sm:h-56 md:h-64 lg:h-72 flex items-center justify-center">
+        <div className="relative overflow-hidden rounded-3xl bg-[rgb(42,61,130)]">
+          <div className="pointer-events-none absolute inset-0 bg-[rgb(42,61,130)]" />
+          <Carousel opts={{ align: 'center', loop: true }} setApi={setApi} className="relative z-10 w-full">
+            <CarouselContent>
+              {carouselImages.map((src, index) => {
+                return (
+                  <CarouselItem key={`${src}-${index}`}>
+                    <div className="h-48 sm:h-56 md:h-64 lg:h-72 flex items-center justify-center bg-transparent">
                       <img src={src} alt="Carousel slide" className="h-4/4 w-auto object-contain" />
                     </div>
-                  </div>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
 
-        </Carousel>
+          </Carousel>
+        </div>
 
         {/** autoplay: continuous looping via embla api */}
         {api && (

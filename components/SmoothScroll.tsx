@@ -29,8 +29,12 @@ export default function SmoothScroll() {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       });
       lenisRef.current = instance;
-      // ensure scroll position is sane when (re)creating
-      instance.scrollTo(0, { duration: 1.8, immediate: false });
+        // initialize Lenis at the current native scroll position to avoid jumps
+        try {
+          instance.scrollTo(window.scrollY || 0, { immediate: true });
+        } catch (e) {
+          // ignore errors during initialization
+        }
     }
 
     createLenis();
@@ -82,8 +86,14 @@ export default function SmoothScroll() {
   }, []);
 
   useEffect(() => {
+    // Ensure any body lock state is cleared (compat layer) and let Lenis recompute bounds.
     clearBodyLock();
-    lenisRef.current?.scrollTo(0, { duration: 1.8, immediate: false });
+    if (lenisRef.current) {
+      try {
+        lenisRef.current.resize();
+        lenisRef.current.scrollTo(window.scrollY || 0, { immediate: true });
+      } catch (e) { /* ignore */ }
+    }
   }, [pathname, searchParamsString]);
 
   return null;
