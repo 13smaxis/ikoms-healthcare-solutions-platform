@@ -31,29 +31,33 @@ const ShopHome: React.FC = () => {
   const [q, setQ] = useState('');
 
   return (
-    <SiteLayout>                                                                                                
-      <section className="border-b border-slate-200 bg-white">
+    <SiteLayout>
+      <section className="relative bg-linear-to-br from-rose-800 to-pink-700 text-white py-10">           {/* Hero section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }]} />
         </div>
-      </section>
-
-      <section className="relative bg-linear-to-br from-rose-800 to-pink-700 text-white py-20">           {/* Hero section */ }
         <div
-          className="absolute inset-0 opacity-20 bg-cover bg-center bg-fixed"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1600)' }}
+          className="
+                      absolute 
+                      inset-0 
+                      opacity-20 
+                      bg-cover bg-center bg-fixed
+                    "
+          style={
+                  { backgroundImage: 'url(https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1600)' }
+                }
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 max-w-3xl">
-              Clinical supplies, delivered fast
+            Clinical supplies, delivered fast
           </h1>
           <p className="text-lg text-pink-100 max-w-2xl mb-8">
-              PPE, equipment, uniforms, books and digital toolkits
-               — everything healthcare teams need, in one store.
+            PPE, equipment, uniforms, books and digital toolkits
+            — everything healthcare teams need, in one store.
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/shop/account" 
-                  className="
+            <Link href="/shop/account"
+              className="
                               inline-flex items-center gap-2 flex-nowrap whitespace-nowrap 
                               text-sm font-semibold text-slate-700 
                               px-4 py-2 
@@ -63,8 +67,8 @@ const ShopHome: React.FC = () => {
                               hover:bg-slate-100
                             "
             >
-                <UserCircle2 size={20} className="shrink-0" />
-                  Account
+              <UserCircle2 size={20} className="shrink-0" />
+              Account
             </Link>
 
             <form
@@ -81,16 +85,16 @@ const ShopHome: React.FC = () => {
                 overflow-hidden
               "
             >
-                    <input 
-                      name="q"
-                      value={q} 
-                      onChange={e => setQ(e.target.value)} placeholder="Search products..." 
-                      className="text-gray-500 px-3 py-2 text-sm w-44 sm:w-64 min-w-0" 
-                    />
-              <button 
-                      type="submit" 
-                      className="px-3 py-2 text-gray-500 text-sm">
-                        <Search className="w-4 h-4" /></button>
+              <input
+                name="q"
+                value={q}
+                onChange={e => setQ(e.target.value)} placeholder="Search products..."
+                className="text-gray-500 px-3 py-2 text-sm w-44 sm:w-64 min-w-0"
+              />
+              <button
+                type="submit"
+                className="px-3 py-2 text-gray-500 text-sm">
+                <Search className="w-4 h-4" /></button>
             </form>
 
             <ShopOverlayMenu />
@@ -98,8 +102,8 @@ const ShopHome: React.FC = () => {
         </div>
       </section>
 
-      <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */ }
-     
+      <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */}
+
       <section className="py-14 bg-white border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
