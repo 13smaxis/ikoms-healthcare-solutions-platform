@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { COMPANY } from '@/lib/constants';
+import { subscribeEmail } from '@/lib/crm';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,11 +17,7 @@ const Footer: React.FC = () => {
     if (!email) return;
     setStatus('sending');
     try {
-      await fetch('https://famous.ai/api/crm/69ea64be485fe0443f9c974c/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'footer-signup', tags: ['newsletter'] })
-      });
+      await subscribeEmail({ email, source: 'footer-signup', tags: ['newsletter'] });
       setStatus('success'); setEmail('');
     } catch { setStatus('error'); }
   };

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { getCart, fmt, clearCart, CartItem } from '@/lib/cart';
+import { subscribeEmail } from '@/lib/crm';
 import { Lock, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
@@ -110,10 +111,7 @@ const Checkout: React.FC = () => {
       await supabase.from('ecom_order_items').insert(items);
     }
 
-    fetch('https://famous.ai/api/crm/69ea64be485fe0443f9c974c/subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }),
-    }).catch(() => {});
+    try { await subscribeEmail({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }); } catch {}
 
     clearCart();
     nav.push(`/shop/order-confirmation?oid=${order?.id || ''}`);

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SiteLayout from '@/components/layout/SiteLayout';
+import { subscribeEmail } from '@/lib/crm';
 import { Users, GraduationCap, Briefcase, ShoppingBag, ArrowRight, Shield, Award, Building2, CheckCircle2 } from 'lucide-react';
 
 const modules = [
@@ -95,10 +96,9 @@ const Home: React.FC = () => {
   const joinList = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    await fetch('https://famous.ai/api/crm/69ea64be485fe0443f9c974c/subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, source: 'home-hero', tags: ['newsletter', 'home'] })
-    });
+    try {
+      await subscribeEmail({ email, source: 'home-hero', tags: ['newsletter', 'home'] });
+    } catch {}
     setSent(true); setEmail('');
   };
 

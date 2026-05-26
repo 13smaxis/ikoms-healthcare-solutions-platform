@@ -12,6 +12,7 @@ import { Heart } from 'lucide-react';
 import { getProductsForCollectionHandle } from '@/lib/shop-catalog';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import ShopCategoryIntro from '@/components/ShopCategoryIntro';
+import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 
 /*
  * This component represents a collection page. 
@@ -80,14 +81,16 @@ const CollectionPage: React.FC = () => {
     <SiteLayout>
       <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ShopBreadcrumbs
-            variant="hero"
-            className="mb-4"
-            items={[
-              { label: 'Shop', href: '/shop' },
-              { label: collectionTitle },
-            ]}
-          />
+          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap mb-4">
+            <ShopBreadcrumbs
+              variant="hero"
+              items={[
+                { label: 'Shop', href: '/shop' },
+                { label: collectionTitle },
+              ]}
+            />
+            <ShopOverlayMenu />
+          </div>
           <div className="max-w-3xl">
             <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Category</div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">{collectionTitle}</h1>

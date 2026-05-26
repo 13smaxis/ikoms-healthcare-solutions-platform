@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
+import { subscribeEmail } from '@/lib/crm';
 import { COMPANY } from '@/lib/constants';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 
@@ -13,10 +14,7 @@ const Contact: React.FC = () => {
     e.preventDefault();
     setStatus('sending');
     try {
-      await fetch('https://famous.ai/api/crm/69ea64be485fe0443f9c974c/subscribe', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, name: form.name, source: 'contact-form', tags: ['contact', form.subject] })
-      });
+      await subscribeEmail({ email: form.email, name: form.name, source: 'contact-form', tags: ['contact', form.subject] });
     } catch {}
     setStatus('done');
     setForm({ name: '', email: '', subject: 'General enquiry', message: '' });

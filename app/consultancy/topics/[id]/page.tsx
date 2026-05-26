@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
+import { subscribeEmail } from '@/lib/crm';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, ArrowLeft, Calendar } from 'lucide-react';
 import { fmt } from '@/lib/cart';
@@ -28,10 +29,7 @@ const TopicDetail: React.FC = () => {
     if (!topic || !id) return;
     setSubmitting(true);
     await supabase.from('biz_consultancy_bookings').insert({ topic_id: id, ...form });
-    fetch('https://famous.ai/api/crm/69ea64be485fe0443f9c974c/subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.email, name: form.full_name, source: 'consultancy-booking', tags: ['consultancy', topic.title] })
-    }).catch(() => {});
+    try { await subscribeEmail({ email: form.email, name: form.full_name, source: 'consultancy-booking', tags: ['consultancy', topic.title] }); } catch {}
     setSubmitting(false); setDone(true);
   };
 
