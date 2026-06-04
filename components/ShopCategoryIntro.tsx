@@ -10,13 +10,12 @@ import {
   
 } from '@/components/ui/carousel';
 import ShopImageMarquee from '@/components/ShopImageMarquee';
-import { CLINICAL_SUPPLIES_CAROUSEL_IMAGES, SHARED_MARQUEE_IMAGES } from '@/lib/shop-catalog';
+import { getCollectionMedia } from '@/lib/shop-media';
 import { useEffect, useState } from 'react';
 
 export default function ShopCategoryIntro({ handle }: { handle: string }) {
-  const carouselImages = CLINICAL_SUPPLIES_CAROUSEL_IMAGES;
-  const marqueeImages = SHARED_MARQUEE_IMAGES;
   const [api, setApi] = useState<any>(null);
+  const { carouselImages, marqueeImages } = getCollectionMedia(handle);
 
   return (
     <section className="space-y-6 py-6 sm:py-8">

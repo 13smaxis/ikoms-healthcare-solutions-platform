@@ -9,6 +9,7 @@ import { ShoppingCart, ArrowLeft, Check, Truck, Shield } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
 import { getProductByHandle } from '@/lib/shop-catalog';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
+import { resolveShopProductImage } from '@/lib/shop-media';
 
 /*
  * This component represents the product detail page. 
@@ -67,7 +68,7 @@ const ProductDetail: React.FC = () => {
                 name: product.name, 
                 sku: product.sku, 
                 price: product.price, 
-                image: product.images?.[0] 
+                image: resolveShopProductImage(product) 
               }, 
                 qty                                                                                             //-Add the specified quantity of the product to the cart
             );
@@ -86,7 +87,7 @@ const ProductDetail: React.FC = () => {
                 name: product.name, 
                 sku: product.sku, 
                 price: product.price, 
-                image: product.images?.[0] 
+                image: resolveShopProductImage(product) 
               }, 
                 qty                                                                                             //-Add the specified quantity of the product to the cart
             );
@@ -108,11 +109,21 @@ const ProductDetail: React.FC = () => {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <Link href="/shop/products" className="inline-flex items-center gap-1 text-slate-600 text-sm mb-6 hover:text-rose-700"><ArrowLeft className="w-4 h-4" /> All products</Link>
+        <Link href="/shop/products" 
+              className="
+                          inline-flex 
+                          items-center gap-1 
+                          text-slate-600 text-sm mb-6 
+                          hover:text-rose-700
+                        "
+       >
+          <ArrowLeft className="w-4 h-4" /> 
+            All products
+        </Link>
         <div className="grid lg:grid-cols-2 gap-10">
           <div>
             <div className="aspect-square bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <img src={product.images?.[0]} alt={product.name} className="w-full h-full object-cover" />
+              <img src={resolveShopProductImage(product)} alt={product.name} className="w-full h-full object-cover" />
             </div>
           </div>
           <div>

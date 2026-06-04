@@ -37,129 +37,49 @@ package.json
 postcss.config.mjs
 README.md
 tsconfig.json
-app/
-	globals.css
-	layout.tsx
-	not-found.tsx
-	page.tsx
-	about/
-		page.tsx
-	admin/
-		layout.tsx
-		page.tsx
-		consultancy/
-			page.tsx
-		courses/
-			page.tsx
-		jobs/
-			page.tsx
-		login/
-			page.tsx
-		orders/
-			page.tsx
-	consultancy/
-		page.tsx
-		topics/
-			page.tsx
-			[id]/
-				page.tsx
-	contact/
-		page.tsx
-	recruitment/
-		page.tsx
-		jobs/
-			page.tsx
-			[id]/
-				page.tsx
-	shop/
-		page.tsx
-		cart/
-			page.tsx
-		checkout/
-			page.tsx
-		collections/
-			[handle]/
-				page.tsx
-		order-confirmation/
-			page.tsx
-		products/
-			page.tsx
-			[handle]/
-				page.tsx
-	training/
-		page.tsx
-		courses/
-			page.tsx
-			[id]/
-				page.tsx
-components/
-	AppLayout.tsx
-	theme-provider.tsx
-	layout/
-		AdminLayout.tsx
-		Footer.tsx
-		Header.tsx
-		SiteLayout.tsx
-ui/
-	accordion.tsx
-	alert-dialog.tsx
-	alert.tsx
-	aspect-ratio.tsx
-	avatar.tsx
-	badge.tsx
-	breadcrumb.tsx
-	button.tsx
-	calendar.tsx
-	card.tsx
-	carousel.tsx
-	chart.tsx
-	checkbox.tsx
-	collapsible.tsx
-	command.tsx
-	context-menu.tsx
-	dialog.tsx
-	drawer.tsx
-	dropdown-menu.tsx
-	form.tsx
-	hover-card.tsx
-	input-otp.tsx
-	input.tsx
-	label.tsx
-	menubar.tsx
-	navigation-menu.tsx
-	pagination.tsx
-	popover.tsx
-	progress.tsx
-	radio-group.tsx
-	resizable.tsx
-	scroll-area.tsx
-	select.tsx
-	separator.tsx
-	sheet.tsx
-	sidebar.tsx
-	skeleton.tsx
-	slider.tsx
-	sonner.tsx
-	switch.tsx
-	table.tsx
-	tabs.tsx
-	textarea.tsx
-	toast.tsx
-	toaster.tsx
-	toggle-group.tsx
-	toggle.tsx
-	tooltip.tsx
-	use-toast.ts
-hooks/
-	use-mobile.tsx
-	use-toast.ts
-lib/
-	cart.ts
-	constants.ts
-	supabase.ts
-	utils.ts
-public/
-```
+.
+├── app/
+│   ├── layout.tsx
+│   ├── api/shop-nav/route.ts
+│   └── shop/
+│       ├── page.tsx
+│       ├── products/page.tsx
+│       ├── products/[handle]/page.tsx
+│       ├── collections/[handle]/page.tsx
+│       ├── cart/page.tsx
+│       ├── checkout/page.tsx
+│       ├── wishlist/page.tsx
+│       ├── account/page.tsx
+│       ├── orders/page.tsx
+│       ├── search/page.tsx
+│       └── order-confirmation/page.tsx
+├── components/
+│   ├── layout/SiteLayout.tsx
+│   ├── layout/Header.tsx
+│   ├── layout/Footer.tsx
+│   ├── ShopBreadcrumbs.tsx
+│   ├── ShopOverlayMenu.tsx
+│   ├── ShopCategoryIntro.tsx
+│   ├── ShopImageMarquee.tsx
+│   ├── Marquee.tsx
+│   ├── shop-menu-config.ts
+│   ├── SearchClient.tsx
+│   ├── WishlistClient.tsx
+│   ├── AccountClient.tsx
+│   ├── OrdersClient.tsx
+│   ├── ui/breadcrumb.tsx
+│   ├── ui/carousel.tsx
+│   └── ui/button.tsx
+├── contexts/
+│   └── WishlistContext.tsx
+├── lib/
+│   ├── cart.ts
+│   ├── shop-catalog.ts
+│   ├── shop-media.ts
+│   ├── supabase.ts
+│   └── crm.ts
+└── public/images/
+    └── collection and product image assets used by the shop```
 
 ## Notes
 

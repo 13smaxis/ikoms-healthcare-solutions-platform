@@ -11,6 +11,7 @@ import { fmt, addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/Marquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import { getFeaturedShopProducts, mergeShopProducts } from '@/lib/shop-catalog';
+import { resolveShopProductImage } from '@/lib/shop-media';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {
@@ -24,7 +25,7 @@ const ShopHome: React.FC = () => {
   const quickAdd = (p: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: p.images?.[0] }, 1);
+    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: resolveShopProductImage(p) }, 1);
   };
 
   const router = useRouter();
@@ -97,14 +98,14 @@ const ShopHome: React.FC = () => {
                 <Search className="w-4 h-4" /></button>
             </form>
 
-            <ShopOverlayMenu />
+            <ShopOverlayMenu />                                                                                 {/* Hamburger menu for mobile */}
           </div>
         </div>
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */}
 
-      <section className="py-14 bg-white border-t border-slate-200">
+      <section className="py-14 bg-white border-t border-slate-200">                                        {/* Featured products section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-900">Featured products</h2>
@@ -114,7 +115,7 @@ const ShopHome: React.FC = () => {
             {featured.map(p => (
               <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={p.images?.[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                  <img src={resolveShopProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                 </div>
                 <div className="p-4">
                   <div className="text-xs text-slate-500 mb-1">{p.product_type}</div>

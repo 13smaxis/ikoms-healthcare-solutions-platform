@@ -13,6 +13,7 @@ import { getProductsForCollectionHandle } from '@/lib/shop-catalog';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import ShopCategoryIntro from '@/components/ShopCategoryIntro';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
+import { resolveShopProductImage } from '@/lib/shop-media';
 
 /*
  * This component represents a collection page. 
@@ -61,7 +62,7 @@ const CollectionPage: React.FC = () => {
   const quickAdd = (p: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: p.images?.[0] }, 1);
+    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: resolveShopProductImage(p) }, 1);
   };
 
   const availabilityLabel = (product: any) => {
@@ -113,7 +114,7 @@ const CollectionPage: React.FC = () => {
                 const pid = String(p.id);
                 return (
                   <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
-                    <div className="aspect-square bg-slate-100"><img src={p.images?.[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" /></div>
+                    <div className="aspect-square bg-slate-100"><img src={resolveShopProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" /></div>
                     <div className="p-4">
                       <div className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2">{p.name}</div>
                       <div className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold mb-3 ${availabilityClass(p)}`}>
