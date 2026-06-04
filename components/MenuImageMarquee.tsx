@@ -2,18 +2,18 @@
 
 import React from 'react';
 
-export default function ShopImageMarquee({ images, title }: { images: string[]; title?: string }) {
+export default function MenuImageMarquee({ images, title }: { images: string[]; title?: string }) {
   const doubled = [...images, ...images, ...images];
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-white py-4 sm:py-5">
+    <section className="relative overflow-hidden rounded-3xl py-4 sm:py-5">
       <div className="
                         pointer-events-none 
                         absolute inset-y-0 
                         left-0 
                         z-10 w-24 
                         bg-linear-to-r 
-                        from-white to-transparent
+                       
                     " 
     />
       <div className="
@@ -22,7 +22,7 @@ export default function ShopImageMarquee({ images, title }: { images: string[]; 
                         inset-y-0 
                         right-0 
                         z-10 w-24 
-                        bg-linear-to-l from-white to-transparent
+                        
                     " 
     />
       <div className="flex w-max animate-marquee px-0">

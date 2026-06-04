@@ -21,8 +21,11 @@ import { Heart } from 'lucide-react';
 import { getCategoryByHandle } from '@/lib/categories';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import ShopCategoryIntro from '@/components/ShopCategoryIntro';
+import ShopImageMarquee from '@/components/MenuImageMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
+import { getCategoryMarqueeImages } from '@/lib/category-marquee';
 import { getProducts, getProductImage } from '@/lib/products';
+// ShopCategoryIntro removed to avoid duplicate intros
 
 /*
  * Fetches the collection based on the handle from the URL, displays its title and description, and lists the products in that collection.
@@ -66,6 +69,7 @@ const CollectionPage: React.FC = () => {
 
   const collectionTitle = col?.title || getCategoryByHandle(handle || '')?.title || 'Collection';
   const collectionDescription = col?.description || 'Browse hot buys, highlights, and products in this collection.';
+  const marqueeImages = getCategoryMarqueeImages(handle || '');
 
   return (
     <SiteLayout>
@@ -89,9 +93,14 @@ const CollectionPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-slate-50 py-8 sm:py-10">
+      <section className="bg-slate-50 py-8 sm:py-10"> 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ShopCategoryIntro handle={handle || ''} />
+
+          {marqueeImages.length > 0 ? (
+            <div className="pb-6 sm:pb-8"> 
+              <ShopImageMarquee images={marqueeImages} />                                                       {/* Displays a marquee of category-specific images */}
+            </div>
+          ) : null}
 
           {loading ? (
             <div className="text-center py-12 text-slate-500">Loading...</div>

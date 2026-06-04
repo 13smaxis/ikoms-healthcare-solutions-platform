@@ -21,7 +21,7 @@ const badges = [
  * It duplicates the badges array to create a seamless scrolling effect and fades both edges.
  * The marquee pauses on hover, allowing users to read the badges without distraction.
  */
-export function Marquee()                                                                             
+export function ShopMarquee()                                                                             
 {
   const doubled = [...badges, ...badges];                                                                       
 
@@ -62,4 +62,4 @@ export function Marquee()
     </section>
   );
 }
-export default Marquee;
+export default ShopMarquee;
