@@ -1,3 +1,10 @@
+/*
+ * shop-menu-config.ts
+ * This file defines the configuration for the shop menu, including the categories and their corresponding items.
+ * Each category has a title, a handle (used for routing), and a list of items that belong to that category.
+ * This configuration is used throughout the shop-related components to display the menu and organize products.
+ */
+
 const SHOP_MENU = [
   {
     title: 'Clinical Supplies',

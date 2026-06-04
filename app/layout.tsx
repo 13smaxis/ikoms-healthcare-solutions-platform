@@ -1,3 +1,12 @@
+
+/*
+ * layout.tsx
+ * This is the root layout for the entire application. It wraps all pages and components, providing a consistent structure and styling across the site.
+ * It includes the HTML structure, global styles, and context providers that are needed throughout the app.
+ * The layout uses the Geist font from Google Fonts and applies it globally. It also includes a Suspense component for lazy loading the SmoothScroll component, which enhances the scrolling experience on the site.
+ * The WishlistProvider is included here to ensure that the wishlist context is available across all pages of the application.  
+*/
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";

@@ -1,4 +1,14 @@
-import SHOP_MENU from '@/components/shop-menu-config';
+
+/*
+ * shop-media.ts
+ * This module manages how product and collection images are selected and displayed across the shop section of the application.
+ * It standardizes product and collection names using a slug system, then uses those normalized values to 
+ *  match items in the shop menu and map them to the correct image assets.
+ * It provides functions to resolve a single product image, as well as generate full sets of 
+ *  images (carousel and marquee) for entire collections, using predefined mappings or fallback logic when needed.
+ * Overall, it ensures that every product and collection has consistent, predictable visual representation throughout the site.
+ */
+import SHOP_MENU from '@/lib/shop-menu-config';
 
 const slugify = (value: string) =>
   value

@@ -1,4 +1,4 @@
-import SHOP_MENU from '@/components/shop-menu-config';
+import SHOP_MENU from '@/lib/shop-menu-config';
 import { getCollectionMedia, getProductImagePath } from '@/lib/shop-media';
 
 export type ShopCatalogProduct = {

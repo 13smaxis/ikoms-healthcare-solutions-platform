@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
-import SHOP_MENU from './shop-menu-config';
+import SHOP_MENU from '@/lib/shop-menu-config';
 
 type NavigationItem = {
   to: string;
@@ -41,7 +41,8 @@ export default function ShopOverlayMenu({ className }: { className?: string })
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const scrollYRef = useRef(0);
+  const scrollRef = useRef<HTMLDivElement | null>(null);                                                        //- ref for the scrollable menu container
+  const scrollYRef = useRef(0);                                                                                 //- ref to store the scrollY position before locking scroll, so we can restore it on close
   const bodyLockRef = useRef<{
     bodyOverflow: string;
     docOverflow: string;
@@ -69,8 +70,43 @@ export default function ShopOverlayMenu({ className }: { className?: string })
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) setOpen(false);
+      if (e.key === 'Escape' && open)                                                                           //-Always allow Escape to close the menu
+      {
+        setOpen(false);
+        return;
+      }
+
+      if (!open) return;
+
+      
+      const active = document.activeElement as HTMLElement | null;                                              //-Avoid interfering when user is typing in an input/textarea/contenteditable
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+
+      const el = scrollRef.current;                                                                             //-Get the scrollable menu container
+      if (!el) return;                                                                                          //-If for some reason we don't have the ref, bail out
+
+      if (e.key === 'ArrowDown')                                                                                //-Arrow and paging controls: scroll the menu container
+      {
+        e.preventDefault();
+        el.scrollBy({ top: 80, behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        el.scrollBy({ top: -80, behavior: 'smooth' });
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        el.scrollBy({ top: Math.floor(el.clientHeight * 0.9), behavior: 'smooth' });
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        el.scrollBy({ top: -Math.floor(el.clientHeight * 0.9), behavior: 'smooth' });
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        el.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      }
     };
+
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
@@ -179,7 +215,15 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                   </button>
                 </motion.div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto py-8 sm:py-10 pr-1">
+                <div ref={scrollRef} 
+                     className="
+                                flex-1 
+                                min-h-0 
+                                overflow-y-auto 
+                                py-8 sm:py-10 pr-1 
+                                hide-scrollbar
+                              "
+                >
                   <nav className="w-full">
                     <div className="grid gap-3 sm:gap-4">
                       {SHOP_MENU.map((cat) => (

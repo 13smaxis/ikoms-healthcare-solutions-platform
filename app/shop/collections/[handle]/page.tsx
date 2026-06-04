@@ -1,3 +1,14 @@
+
+/*
+ * CollectionPage.tsx
+ * This component renders a dynamic shop collection page based on the URL handle.
+ * It determines whether the collection exists in the local SHOP_MENU or in the Supabase database,
+ *  then fetches the appropriate products either from a local catalog or from the database.
+ * It displays the collection header (title, description, breadcrumbs, and category intro)
+ *  and renders a responsive grid of product cards with image, price, availability, wishlist, and add-to-cart functionality.
+ * It also integrates cart management, wishlist state, and image resolution logic to ensure consistent product display across the shop.
+ */
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -6,7 +17,7 @@ import { useParams } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { fmt, addToCart } from '@/lib/cart';
-import SHOP_MENU from '@/components/shop-menu-config';
+import SHOP_MENU from '@/lib/shop-menu-config';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { Heart } from 'lucide-react';
 import { getProductsForCollectionHandle } from '@/lib/shop-catalog';
