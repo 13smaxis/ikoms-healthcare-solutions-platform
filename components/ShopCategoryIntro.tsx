@@ -3,81 +3,27 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  
-} from '@/components/ui/carousel';
-import ShopImageMarquee from '@/components/ShopImageMarquee';
-import { getCollectionMedia } from '@/lib/shop-media';
-import { useEffect, useState } from 'react';
+import { getCategoryByHandle } from '@/lib/categories';
 
 export default function ShopCategoryIntro({ handle }: { handle: string }) {
-  const [api, setApi] = useState<any>(null);
-  const { carouselImages, marqueeImages } = getCollectionMedia(handle);
+  const category = getCategoryByHandle(handle);
 
   return (
-    <section className="space-y-6 py-6 sm:py-8">
-      <div className="rounded-4xl bg-white p-4 sm:p-6 lg:p-8">
-        <div className="relative overflow-hidden rounded-3xl bg-[rgb(42,61,130)]">
-          <div className="pointer-events-none absolute inset-0 bg-[rgb(42,61,130)]" />
-          <Carousel opts={{ align: 'center', loop: true }} setApi={setApi} className="relative z-10 w-full">
-            <CarouselContent>
-              {carouselImages.map((src, index) => {
-                return (
-                  <CarouselItem key={`${src}-${index}`}>
-                    <div className="h-48 sm:h-56 md:h-64 lg:h-72 flex items-center justify-center bg-transparent">
-                      <img src={src} alt="Carousel slide" className="h-4/4 w-auto object-contain" />
-                    </div>
-                  </CarouselItem>
-                );
-              })}
-            </CarouselContent>
-
-          </Carousel>
-        </div>
-
-        {/** autoplay: continuous looping via embla api */}
-        {api && (
-          <AutoplayController api={api} />
-        )}
-
-        <div className="mt-6 flex justify-end">
+    <section className="space-y-4 py-6 sm:py-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 lg:p-8">
+        <div className="text-xs font-semibold uppercase tracking-[0.35em] text-rose-700">Category</div>
+        <div className="mt-2 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">{category?.title || 'Shop collection'}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+              Browse products in this category. Product data and images now come directly from the product source.
+            </p>
+          </div>
           <Link href="/shop/products" className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700 hover:text-rose-800">
             View all products <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
-
-      <ShopImageMarquee images={marqueeImages} title="Shop gallery" />
     </section>
   );
-}
-
-function AutoplayController({ api }: { api: any }) {
-  useEffect(() => {
-    if (!api) return;
-    let raf: number | null = null;
-    let mounted = true;
-
-    const step = () => {
-      if (!mounted) return;
-      try {
-        api.scrollNext();
-      } catch (e) {
-        // ignore
-      }
-      raf = window.setTimeout(step, 3000) as unknown as number;
-    };
-
-    raf = window.setTimeout(step, 3000) as unknown as number;
-
-    return () => {
-      mounted = false;
-      if (raf) window.clearTimeout(raf as unknown as number);
-    };
-  }, [api]);
-
-  return null;
 }

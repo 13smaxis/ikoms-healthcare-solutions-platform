@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
-import SHOP_MENU from '@/lib/shop-menu-config';
+import { SHOP_CATEGORIES } from '@/lib/categories';
 
 type NavigationItem = {
   to: string;
@@ -226,7 +226,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                 >
                   <nav className="w-full">
                     <div className="grid gap-3 sm:gap-4">
-                      {SHOP_MENU.map((cat) => (
+                      {SHOP_CATEGORIES.map((cat) => (
                         <motion.div key={cat.handle} variants={overlayItemVariants}>
                           <Link
                             href={`/shop/collections/${cat.handle}`}

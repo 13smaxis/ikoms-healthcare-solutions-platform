@@ -1,14 +1,11 @@
 "use client";
-"use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import SiteLayout from '@/components/layout/SiteLayout';
-import { supabase } from '@/lib/supabase';
 import { fmt, addToCart } from '@/lib/cart';
 import { Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { resolveShopProductImage } from '@/lib/shop-media';
+import { getProductImage, searchProducts } from '@/lib/products';
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -29,14 +26,7 @@ export default function SearchClient() {
       setLoading(true);
       (async () => {
         try {
-          const { data } = await supabase
-            .from('ecom_products')
-            .select('*')
-            .ilike('name', `%${q}%`)
-            .eq('status', 'active')
-            .limit(50);
-
-          setResults(data || []);
+          setResults(await searchProducts(q, 50));
         } catch (err) {
           // ignore search errors
         } finally {
@@ -49,7 +39,7 @@ export default function SearchClient() {
   const quickAdd = (p: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: resolveShopProductImage(p) }, 1);
+    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: getProductImage(p) }, 1);
   };
 
   return (
@@ -67,7 +57,7 @@ export default function SearchClient() {
             {results.map(p => (
               <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={resolveShopProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                  <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                 </div>
                 <div className="p-4">
                   <div className="text-xs text-slate-500 mb-1">{p.product_type}</div>

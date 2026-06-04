@@ -4,12 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { supabase } from '@/lib/supabase';
 import { ShoppingCart, ArrowLeft, Check, Truck, Shield } from 'lucide-react';
 import { fmt, addToCart } from '@/lib/cart';
-import { getProductByHandle } from '@/lib/shop-catalog';
+import { getProductByHandle, getProductImage } from '@/lib/products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
-import { resolveShopProductImage } from '@/lib/shop-media';
 
 /*
  * This component represents the product detail page. 
@@ -31,8 +29,7 @@ const ProductDetail: React.FC = () => {
    */
   useEffect(() => {
     if (!handle) return;
-    supabase.from('ecom_products').select('*').eq('handle', handle).single()                                    //-Fetch product by handle from DB
-      .then(({ data }) => { setProduct(data || getProductByHandle(handle) || null); setLoading(false); });
+    getProductByHandle(handle).then((data) => { setProduct(data); setLoading(false); });
   }, [handle]);
 
   if (loading)                                                                                                  //-Show loading state while fetching product
@@ -68,7 +65,7 @@ const ProductDetail: React.FC = () => {
                 name: product.name, 
                 sku: product.sku, 
                 price: product.price, 
-                image: resolveShopProductImage(product) 
+                image: getProductImage(product) 
               }, 
                 qty                                                                                             //-Add the specified quantity of the product to the cart
             );
@@ -87,7 +84,7 @@ const ProductDetail: React.FC = () => {
                 name: product.name, 
                 sku: product.sku, 
                 price: product.price, 
-                image: resolveShopProductImage(product) 
+                image: getProductImage(product) 
               }, 
                 qty                                                                                             //-Add the specified quantity of the product to the cart
             );
@@ -123,7 +120,7 @@ const ProductDetail: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-10">
           <div>
             <div className="aspect-square bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <img src={resolveShopProductImage(product)} alt={product.name} className="w-full h-full object-cover" />
+              <img src={getProductImage(product)} alt={product.name} className="w-full h-full object-cover" />
             </div>
           </div>
           <div>

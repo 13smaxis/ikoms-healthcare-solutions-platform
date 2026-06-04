@@ -1,31 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { supabase } from '@/lib/supabase';
 import { UserCircle2 } from 'lucide-react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { fmt, addToCart } from '@/lib/cart';
-import BenefitsMarquee from '@/components/Marquee';
+import { addToCart } from '@/lib/cart';
+import BenefitsMarquee from '@/components/ShopMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
-import { getFeaturedShopProducts, mergeShopProducts } from '@/lib/shop-catalog';
-import { resolveShopProductImage } from '@/lib/shop-media';
+import { getProductImage } from '@/lib/products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {
-  const [featured, setFeatured] = useState<any[]>([]);
-
-  useEffect(() => {
-    supabase.from('ecom_products').select('*').eq('status', 'active').contains('tags', ['featured']).limit(8)
-      .then(({ data }) => setFeatured(mergeShopProducts(data || [], getFeaturedShopProducts())));
-  }, []);
-
   const quickAdd = (p: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: resolveShopProductImage(p) }, 1);
+    addToCart({ product_id: p.id, name: p.name, sku: p.sku, price: p.price, image: getProductImage(p) }, 1);
   };
 
   const router = useRouter();
@@ -104,32 +95,6 @@ const ShopHome: React.FC = () => {
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */}
-
-      <section className="py-14 bg-white border-t border-slate-200">                                        {/* Featured products section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">Featured products</h2>
-            <Link href="/shop/products" className="text-sm font-semibold text-rose-700">View all →</Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {featured.map(p => (
-              <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
-                <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={resolveShopProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
-                </div>
-                <div className="p-4">
-                  <div className="text-xs text-slate-500 mb-1">{p.product_type}</div>
-                  <div className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2">{p.name}</div>
-                  <div className="flex items-center justify-between">
-                    <div className="font-bold text-slate-900">{fmt(p.price)}</div>
-                    <button onClick={(e) => quickAdd(p, e)} className="text-xs font-semibold px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-md">Add</button>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
     </SiteLayout>
   );
 };

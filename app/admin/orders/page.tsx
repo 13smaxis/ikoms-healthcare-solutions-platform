@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
 import { Plus, Pencil, Trash2, X, ArrowLeft } from 'lucide-react';
-import { resolveShopProductImage } from '@/lib/shop-media';
+import { getProductImage } from '@/lib/products';
 
 type OrderRow = { id: string; status: string; total: number; created_at: string; customer?: { name?: string | null; email?: string | null } | null; items?: Array<unknown> | null; };
 type ProductRow = { id: string; name: string; sku: string; price: number; product_type: string; inventory_qty: number; description: string; images: string[]; status: string; };
@@ -89,7 +89,7 @@ const AdminOrdersPage: React.FC = () => {
             <tbody>
               {products.map(p => (
                 <tr key={p.id} className="border-b border-amber-100">
-                  <td className="p-3 font-semibold flex items-center gap-2">{resolveShopProductImage(p) && <img src={resolveShopProductImage(p)} className="w-8 h-8 rounded object-cover" />}{p.name}</td>
+                  <td className="p-3 font-semibold flex items-center gap-2">{getProductImage(p) && <img src={getProductImage(p)} className="w-8 h-8 rounded object-cover" />}{p.name}</td>
                   <td className="p-3">{p.product_type}</td>
                   <td className="p-3 font-mono text-xs">{p.sku}</td>
                   <td className="p-3">{fmt(p.price)}</td>
