@@ -7,7 +7,7 @@ import { UserCircle2 } from 'lucide-react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { addToCart } from '@/lib/cart';
-import BenefitsMarquee from '@/components/ShopMarquee';
+import BenefitsMarquee from '@/components/TrustBadgesMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import { getProductImage } from '@/lib/products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
@@ -86,15 +86,18 @@ const ShopHome: React.FC = () => {
               <button
                 type="submit"
                 className="px-3 py-2 text-gray-500 text-sm">
-                <Search className="w-4 h-4" /></button>
+                <Search className="w-4 h-4" />
+              </button>
             </form>
 
             <ShopOverlayMenu />                                                                                 {/* Hamburger menu for mobile */}
+          
           </div>
         </div>
       </section>
 
       <BenefitsMarquee />                                                                                       {/* Marquee of trust badges */}
+    
     </SiteLayout>
   );
 };

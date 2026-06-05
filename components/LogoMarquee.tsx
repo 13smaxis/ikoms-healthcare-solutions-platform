@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function MenuImageMarquee({ images, title }: { images: string[]; title?: string }) {
+export default function LogoMarquee({ images, title }: { images: string[]; title?: string }) {
   const doubled = [...images, ...images, ...images];
 
   return (

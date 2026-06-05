@@ -20,12 +20,13 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { Heart } from 'lucide-react';
 import { getCategoryByHandle } from '@/lib/categories';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
-import ShopCategoryIntro from '@/components/ShopCategoryIntro';
-import ShopImageMarquee from '@/components/MenuImageMarquee';
+import LogoMarquee from '@/components/LogoMarquee';
+import CategoryImageCarousel from '@/components/CategoryImageCarousel';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import { getCategoryMarqueeImages } from '@/lib/category-marquee';
+import { getCategoryCarouselImages } from '@/lib/catergory-carousel';
 import { getProducts, getProductImage } from '@/lib/products';
-// ShopCategoryIntro removed to avoid duplicate intros
+
 
 /*
  * Fetches the collection based on the handle from the URL, displays its title and description, and lists the products in that collection.
@@ -70,6 +71,7 @@ const CollectionPage: React.FC = () => {
   const collectionTitle = col?.title || getCategoryByHandle(handle || '')?.title || 'Collection';
   const collectionDescription = col?.description || 'Browse hot buys, highlights, and products in this collection.';
   const marqueeImages = getCategoryMarqueeImages(handle || '');
+  const carouselImages = getCategoryCarouselImages(handle || '');
 
   return (
     <SiteLayout>
@@ -83,7 +85,7 @@ const CollectionPage: React.FC = () => {
                 { label: collectionTitle },
               ]}
             />
-            <ShopOverlayMenu />
+            <ShopOverlayMenu /> {/* Mobile-only overlay menu for shop navigation */}
           </div>
           <div className="max-w-3xl">
             <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Category</div>
@@ -98,7 +100,16 @@ const CollectionPage: React.FC = () => {
 
           {marqueeImages.length > 0 ? (
             <div className="pb-6 sm:pb-8"> 
-              <ShopImageMarquee images={marqueeImages} />                                                       {/* Displays a marquee of category-specific images */}
+              <LogoMarquee images={marqueeImages} />                                                       {/* Displays a marquee of category-specific images */}
+            </div>
+          ) : null}
+
+          {carouselImages.length > 0 ? (
+            <div className="pb-6 sm:pb-8">
+              <CategoryImageCarousel
+                images={carouselImages}
+                title={`${collectionTitle} carousel`}
+              />
             </div>
           ) : null}
 
