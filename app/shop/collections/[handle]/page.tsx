@@ -108,7 +108,6 @@ const CollectionPage: React.FC = () => {
             <div className="pb-6 sm:pb-8">
               <CategoryImageCarousel
                 images={carouselImages}
-                title={`${collectionTitle} carousel`}
               />
             </div>
           ) : null}

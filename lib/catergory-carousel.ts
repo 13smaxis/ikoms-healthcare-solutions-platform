@@ -9,22 +9,32 @@ const CATEGORY_CAROUSEL_HANDLES = [
   'training-educational-supplies',
 ];
 
-const CATEGORY_CAROUSEL_FILES = [
+const CATEGORY_CAROUSEL_DEFAULT_FILES = [
   'alcohol-swabs.png',
   'catheters.png',
-  'disposable-aprons.png',
   'face-masks.png',
   'gauze-bandages.png',
-  'iv-cannulas.png',
   'medical-tape.png',
-  'surgical-gloves.png',
   'syringes.png',
   'wound-dressings.png',
 ];
 
+const CATEGORY_CAROUSEL_FILES_BY_HANDLE: Record<string, string[]> = {
+  'clinical-supplies': [
+    'alcohol-swabs.png',
+    'face-masks.png',
+    'gauze-bandages.png',
+    'medical-tape.png',
+    'surgical-gloves.png',
+    'syringes.png',
+    'wound-dressings.png',
+  ],
+};
+
 const CATEGORY_CAROUSEL_IMAGES: Record<string, string[]> =
   CATEGORY_CAROUSEL_HANDLES.reduce((acc, handle) => {
-    acc[handle] = CATEGORY_CAROUSEL_FILES.map(
+    const files = CATEGORY_CAROUSEL_FILES_BY_HANDLE[handle] || CATEGORY_CAROUSEL_DEFAULT_FILES;
+    acc[handle] = files.map(
       (fileName) => `/images/${handle}/carousel/${fileName}`
     );
     return acc;
