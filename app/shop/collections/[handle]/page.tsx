@@ -100,7 +100,7 @@ const CollectionPage: React.FC = () => {
 
           {marqueeImages.length > 0 ? (
             <div className="pb-6 sm:pb-8"> 
-              <LogoMarquee images={marqueeImages} />                                                       {/* Displays a marquee of category-specific images */}
+              <LogoMarquee images={marqueeImages} />                                                            {/* Displays a marquee of category-specific images */}
             </div>
           ) : null}
 

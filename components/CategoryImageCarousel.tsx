@@ -8,12 +8,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 
 type CategoryImageCarouselProps = {
   images: string[];
-  title?: string;
 };
 
 const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
   images,
-  title = 'Category highlights',
 }) => {
   const prefersReducedMotion = useReducedMotion();
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -88,20 +86,10 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
 
   return (
     <section
-      aria-label={title}
-      className="relative isolate overflow-hidden rounded-4xl bg-slate-100/95 px-4 py-8 shadow-sm ring-1 ring-slate-200 sm:px-6 sm:py-10 lg:px-8"
+      aria-label="Category image carousel"
+      className="relative isolate overflow-hidden px-4 py-8 sm:px-6 sm:py-10 lg:px-8"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),transparent_52%),linear-gradient(180deg,rgba(248,250,252,0.9),rgba(241,245,249,1))]" />
-      <div className="absolute inset-y-0 left-0 w-24 bg-linear-to-r from-slate-100 to-transparent sm:w-32" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-linear-to-l from-slate-100 to-transparent sm:w-32" />
-
       <div className="relative mx-auto max-w-6xl">
-        <div className="mb-6 text-center sm:mb-8">
-          <p className="text-3xl italic font-semibold tracking-tight text-rose-600 sm:text-4xl">
-            {title}
-          </p>
-        </div>
-
         <div className="relative mx-auto max-w-7xl" style={{ perspective: '1800px' }}>
           <div ref={emblaRef} className="overflow-hidden px-2 sm:px-6 lg:px-10">
             <div className="flex items-center gap-3 py-6 sm:gap-4 lg:gap-6">
@@ -134,16 +122,15 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
                         type: 'spring',
                       }}
                     >
-                      <div className="absolute inset-0 rounded-4xl bg-white shadow-[0_30px_80px_rgba(15,23,42,0.14)] ring-1 ring-white/80">
-                        <div className="absolute inset-0 rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0))]" />
-                        <div className="relative h-full w-full p-8 sm:p-10 lg:p-12">
+                      <div className="absolute inset-0 rounded-4xl shadow-[0_30px_80px_rgba(15,23,42,0.14)] overflow-hidden">
+                        <div className="relative h-full w-full">
                           <Image
                             src={src}
-                            alt={`${title} image ${idx + 1}`}
+                            alt={`Carousel image ${idx + 1}`}
                             fill
                             priority={idx === 0}
                             sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 33vw"
-                            className="object-contain p-8 sm:p-10 lg:p-12"
+                            className="object-cover"
                           />
                         </div>
                       </div>
