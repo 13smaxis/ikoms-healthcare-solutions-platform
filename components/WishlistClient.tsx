@@ -4,19 +4,21 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { fmt, addToCart } from '@/lib/cart';
-import { getProductImage, getProductsByIds } from '@/lib/products';
+import type { ShopProduct } from '@/lib/catergory-products';
+import { getProductImage, getProductsByIds } from '@/lib/catergory-products';
 
 export default function WishlistClient() {
   const { wishlist, removeFromWishlist } = useWishlist();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
 
   useEffect(() => {
     if (!wishlist || wishlist.length === 0) { setProducts([]); return; }
-    getProductsByIds(wishlist).then((data) => setProducts(data || []));
+    const data: ShopProduct[] = getProductsByIds(wishlist);
+    setProducts(data);
   }, [wishlist]);
 
   if (!wishlist || wishlist.length === 0) return (
-    <div className="py-20 text-center">Your wishlist is empty. Browse <Link href="/shop">products</Link>.</div>
+    <div className="py-20 text-center">Your wishlist is empty. Browse <Link href="/shop">shop</Link>.</div>
   );
 
   return (
@@ -26,7 +28,7 @@ export default function WishlistClient() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {products.map(p => (
             <div key={p.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <Link href={`/shop/products/${p.handle}`} className="block">
+              <Link href="/shop" className="block">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
                   <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover" />
                 </div>

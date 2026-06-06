@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { getCategoryByHandle } from '@/lib/categories';
+import { getCategoryByHandle } from '@/lib/category-names';
 
 export default function ShopCategoryIntro({ handle }: { handle: string }) {
   const category = getCategoryByHandle(handle);
@@ -19,8 +18,8 @@ export default function ShopCategoryIntro({ handle }: { handle: string }) {
               Browse products in this category. Product data and images now come directly from the product source.
             </p>
           </div>
-          <Link href="/shop/products" className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700 hover:text-rose-800">
-            View all products <ArrowRight className="h-4 w-4" />
+          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-semibold text-rose-700 hover:text-rose-800">
+            Explore shop
           </Link>
         </div>
       </div>

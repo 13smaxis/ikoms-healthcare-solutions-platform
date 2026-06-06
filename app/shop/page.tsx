@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/TrustBadgesMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
-import { getProductImage } from '@/lib/products';
+import { getProductImage } from '@/lib/catergory-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {

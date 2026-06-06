@@ -65,7 +65,7 @@ const OrderConfirmation: React.FC = () => {
         )}
 
         <div className="text-center">
-          <Link href="/shop/products" className="px-6 py-3 bg-rose-700 text-white rounded-lg font-semibold inline-block">Continue shopping</Link>
+          <Link href="/shop" className="px-6 py-3 bg-rose-700 text-white rounded-lg font-semibold inline-block">Continue shopping</Link>
         </div>
       </div>
     </SiteLayout>

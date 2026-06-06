@@ -33,7 +33,7 @@ const Cart: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Your cart is empty</h1>
           <p className="text-sm sm:text-base text-slate-600 mb-8">Browse our shop to add products, or book a course or consultation.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/shop/products" className="px-5 sm:px-6 py-3 bg-rose-700 text-white rounded-lg font-semibold text-sm sm:text-base">Shop products</Link>
+            <Link href="/shop" className="px-5 sm:px-6 py-3 bg-rose-700 text-white rounded-lg font-semibold text-sm sm:text-base">Shop</Link>
             <Link href="/training/courses" className="px-5 sm:px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold text-sm sm:text-base">Browse courses</Link>
           </div>
         </div>

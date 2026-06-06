@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
 import { Plus, Pencil, Trash2, X, ArrowLeft } from 'lucide-react';
-import { getProductImage } from '@/lib/products';
+import { getProductImage } from '@/lib/catergory-products';
 
 type OrderRow = { id: string; status: string; total: number; created_at: string; customer?: { name?: string | null; email?: string | null } | null; items?: Array<unknown> | null; };
 type ProductRow = { id: string; name: string; sku: string; price: number; product_type: string; inventory_qty: number; description: string; images: string[]; status: string; };

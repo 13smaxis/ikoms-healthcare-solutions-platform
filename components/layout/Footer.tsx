@@ -98,7 +98,7 @@ const Footer: React.FC = () => {
             <h4 className="text-white font-semibold text-sm mb-3">Shop</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/shop" className="hover:text-white">Overview</Link></li>
-              <li><Link href="/shop/products" className="hover:text-white">All Products</Link></li>
+              <li><Link href="/shop" className="hover:text-white">Shop</Link></li>
               <li><Link href="/shop/cart" className="hover:text-white">Cart</Link></li>
             </ul>
           </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { fmt, addToCart } from '@/lib/cart';
 import { Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { getProductImage, searchProducts } from '@/lib/products';
+import { getProductImage, searchProducts } from '@/lib/catergory-products';
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -55,7 +55,7 @@ export default function SearchClient() {
         {loading ? <div className="text-center py-12 text-slate-500">Searching...</div> : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {results.map(p => (
-              <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
+              <Link key={p.id} href="/shop" className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
                   <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                 </div>

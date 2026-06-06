@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
-import { SHOP_CATEGORIES } from '@/lib/categories';
+import { SHOP_CATEGORIES } from '@/lib/category-names';
 
 type NavigationItem = {
   to: string;

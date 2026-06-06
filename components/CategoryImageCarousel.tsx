@@ -130,7 +130,7 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
                             fill
                             priority={idx === 0}
                             sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 33vw"
-                            className="object-cover"
+                            className="object-contain"
                           />
                         </div>
                       </div>
