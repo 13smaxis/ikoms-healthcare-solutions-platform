@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
-import AutoScroll from 'embla-carousel-auto-scroll';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 type CategoryImageCarouselProps = {
@@ -20,64 +20,71 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
     {
       align: 'center',
       axis: 'x',
-      containScroll: false,
-      dragFree: true,
+      containScroll: 'trimSnaps',
+      dragFree: false,
+      duration: 28,
       loop: true,
     },
-    prefersReducedMotion
-      ? []
-      : [
-          AutoScroll({
-            direction: 'forward',
-            playOnInit: true,
-            speed: 1.15,
-            startDelay: 0,
-            stopOnFocusIn: false,
-            stopOnInteraction: false,
-            stopOnMouseEnter: false,
-          }),
-        ]
+    []
   );
   const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
+  const [canScrollNext, setCanScrollNext] = React.useState(false);
 
   React.useEffect(() => {
     if (!emblaApi) return;
 
-    const updateSelectedIndex = () => {
+    const updateState = () => {
       setSelectedIndex(emblaApi.selectedScrollSnap());
+      setCanScrollPrev(emblaApi.canScrollPrev());
+      setCanScrollNext(emblaApi.canScrollNext());
     };
 
-    updateSelectedIndex();
-    emblaApi.on('select', updateSelectedIndex);
-    emblaApi.on('reInit', updateSelectedIndex);
+    updateState();
+    emblaApi.on('select', updateState);
+    emblaApi.on('reInit', updateState);
 
     return () => {
-      emblaApi.off('select', updateSelectedIndex);
-      emblaApi.off('reInit', updateSelectedIndex);
+      emblaApi.off('select', updateState);
+      emblaApi.off('reInit', updateState);
     };
   }, [emblaApi]);
+
+  React.useEffect(() => {
+    if (!emblaApi || prefersReducedMotion || images.length <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      emblaApi.scrollNext();
+    }, 3400);
+
+    return () => window.clearInterval(intervalId);
+  }, [emblaApi, prefersReducedMotion, images.length]);
 
   if (images.length === 0) return null;
 
   const getSlideState = (index: number) => {
     const total = images.length;
-    const distance = Math.min(
-      Math.abs(index - selectedIndex),
-      total - Math.abs(index - selectedIndex)
-    );
-    const isActive = distance === 0;
-    const isAdjacent = distance === 1;
+    const forwardDistance = (index - selectedIndex + total) % total;
+    const backwardDistance = (selectedIndex - index + total) % total;
+    const isActive = forwardDistance === 0;
+    const isLeft = backwardDistance === 1;
+    const isRight = forwardDistance === 1;
 
     return {
       isActive,
-      isAdjacent,
-      scale: isActive ? 1 : isAdjacent ? 0.9 : 0.8,
-      opacity: isActive ? 1 : isAdjacent ? 0.74 : 0.45,
-      rotateY: isActive ? 0 : index < selectedIndex ? 18 : -18,
-      y: isActive ? 0 : isAdjacent ? 12 : 22,
-      zIndex: isActive ? 20 : isAdjacent ? 10 : 1,
+      isLeft,
+      isRight,
+      scale: isActive ? 1.06 : isLeft || isRight ? 0.88 : 0.72,
+      opacity: isActive ? 1 : isLeft || isRight ? 0.8 : 0,
+      rotateY: isActive ? 0 : isLeft ? 48 : isRight ? -48 : 0,
+      x: isActive ? 0 : isLeft ? -56 : isRight ? 56 : 0,
+      y: isActive ? 0 : isLeft || isRight ? 18 : 32,
+      zIndex: isActive ? 30 : isLeft || isRight ? 20 : 1,
     };
   };
+
+  const scrollPrev = () => emblaApi?.scrollPrev();
+  const scrollNext = () => emblaApi?.scrollNext();
 
   return (
     <section
@@ -95,45 +102,47 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
           </p>
         </div>
 
-        <div className="relative" style={{ perspective: '1800px' }}>
-          <div ref={emblaRef} className="overflow-hidden">
-            <div className="flex items-center gap-4 py-4 sm:gap-6 lg:gap-8">
+        <div className="relative mx-auto max-w-7xl" style={{ perspective: '1800px' }}>
+          <div ref={emblaRef} className="overflow-hidden px-2 sm:px-6 lg:px-10">
+            <div className="flex items-center gap-3 py-6 sm:gap-4 lg:gap-6">
               {images.map((src, idx) => {
                 const state = getSlideState(idx);
 
                 return (
                   <div
                     key={`${src}-${idx}`}
-                    className="min-w-0 shrink-0 basis-[78%] sm:basis-[60%] md:basis-[48%] lg:basis-[38%] xl:basis-[32%]"
+                    className="min-w-0 shrink-0 basis-[82%] sm:basis-[60%] md:basis-[42%] lg:basis-[33.333%] xl:basis-[30%]"
                   >
                     <motion.div
                       animate={{
                         opacity: state.opacity,
                         rotateY: state.rotateY,
                         scale: state.scale,
+                        x: state.x,
                         y: state.y,
                       }}
                       className="relative h-72 origin-center overflow-visible sm:h-88 lg:h-104"
                       style={{
                         zIndex: state.zIndex,
                         transformStyle: 'preserve-3d',
+                        transformPerspective: 1800,
                       }}
                       transition={{
                         damping: 22,
-                        mass: 0.7,
-                        stiffness: 140,
+                        mass: 0.8,
+                        stiffness: 160,
                         type: 'spring',
                       }}
                     >
-                      <div className="absolute inset-0 rounded-[1.75rem] bg-white shadow-[0_30px_80px_rgba(15,23,42,0.14)] ring-1 ring-white/80">
-                        <div className="absolute inset-0 rounded-[1.75rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0))]" />
+                      <div className="absolute inset-0 rounded-4xl bg-white shadow-[0_30px_80px_rgba(15,23,42,0.14)] ring-1 ring-white/80">
+                        <div className="absolute inset-0 rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0))]" />
                         <div className="relative h-full w-full p-8 sm:p-10 lg:p-12">
                           <Image
                             src={src}
                             alt={`${title} image ${idx + 1}`}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 640px) 78vw, (max-width: 1024px) 48vw, 32vw"
+                            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 33vw"
                             className="object-contain p-8 sm:p-10 lg:p-12"
                           />
                         </div>
@@ -143,6 +152,43 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
                 );
               })}
             </div>
+          </div>
+
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={scrollPrev}
+            disabled={!canScrollPrev}
+            className="absolute left-0 top-1/2 hidden -translate-y-1/2 rounded-full border border-slate-300/80 bg-white/90 p-3 text-slate-700 shadow-lg backdrop-blur transition hover:bg-white disabled:opacity-40 sm:flex"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={scrollNext}
+            disabled={!canScrollNext}
+            className="absolute right-0 top-1/2 hidden -translate-y-1/2 rounded-full border border-slate-300/80 bg-white/90 p-3 text-slate-700 shadow-lg backdrop-blur transition hover:bg-white disabled:opacity-40 sm:flex"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </button>
+
+          <div className="mt-5 flex items-center justify-center gap-2">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                aria-label={`Go to slide ${idx + 1}`}
+                onClick={() => emblaApi?.scrollTo(idx)}
+                className={[
+                  'h-2.5 rounded-full transition-all',
+                  idx === selectedIndex
+                    ? 'w-7 bg-slate-900'
+                    : 'w-2.5 bg-slate-300 hover:bg-slate-400',
+                ].join(' ')}
+              />
+            ))}
           </div>
         </div>
       </div>
