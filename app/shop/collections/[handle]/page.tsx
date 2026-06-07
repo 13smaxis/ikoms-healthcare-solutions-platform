@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { getCategoryByHandle } from '@/lib/category-names';
@@ -10,7 +11,54 @@ import CategoryImageCarousel from '@/components/CategoryImageCarousel';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import { getCategoryMarqueeImages } from '@/lib/category-marquee';
 import { getCategoryCarouselImages } from '@/lib/catergory-carousel';
-import { getProductsForCollectionHandle, getProductImage } from '@/lib/catergory-products';
+import { getProductsForCollectionHandle, getProductImage, type ShopProduct } from '@/lib/catergory-products';
+
+const CLINICAL_SUPPLY_METADATA: Record<string, Partial<ShopProduct>> = {
+  'alcohol-swabs': {
+    model: 'AS-100-STER',
+    key_features: [
+      'Individually wrapped sterile swab',
+      '70% isopropyl alcohol antiseptic',
+      'Latex-free and breathable',
+      'Ready to use for wound cleaning',
+    ],
+    medical_information:
+      'Use for skin cleansing before injections, blood draws, and wound dressing changes. Dispose after single use. Keep away from flame.',
+  },
+  'surgical-gloves': {
+    model: 'SG-250-PF',
+    key_features: [
+      'Powder-free sterile design',
+      'High tactile sensitivity',
+      'Latex-free for allergy-safe use',
+      'Textured grip for secure handling',
+    ],
+    medical_information:
+      'Single-use gloves for surgical procedures and clinical examinations. Designed for barrier protection against contaminants. Discard after use.',
+  },
+  'medical-tape': {
+    model: 'MT-1.25-ROLL',
+    key_features: [
+      'Hypoallergenic adhesive',
+      'Easy tearable for quick application',
+      'Breathable and flexible',
+      'Securely holds dressings in place',
+    ],
+    medical_information:
+      'Ideal for securing wound dressings, catheters, and tubing. Remove gently to avoid skin irritation. Suitable for sensitive skin.',
+  },
+  catheters: {
+    model: 'CT-CH10-STER',
+    key_features: [
+      'Sterile single-use catheter',
+      'Smooth silicone surface',
+      'Flexible yet stable design',
+      'Easy insertion with clear markings',
+    ],
+    medical_information:
+      'Use for short-term urinary catheterisation under clinical supervision. Single-use product. Follow standard hygiene protocols and discard safely after use.',
+  },
+}
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
 import { Heart } from 'lucide-react';
@@ -25,7 +73,11 @@ const CollectionPage: React.FC = () => {
   const marqueeImages = getCategoryMarqueeImages(handle || '');
   const carouselImages = getCategoryCarouselImages(handle || '');
   const products = useMemo(
-    () => getProductsForCollectionHandle(handle || ''),
+    () =>
+      getProductsForCollectionHandle(handle || '').map((product) => ({
+        ...product,
+        ...CLINICAL_SUPPLY_METADATA[product.handle],
+      })),
     [handle],
   );
 
@@ -77,14 +129,17 @@ const CollectionPage: React.FC = () => {
                 <p className="text-sm text-slate-500">{products.length} products available now</p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                 {products.map((product) => {
                   const inWishlist = wishlist.includes(product.id);
-                  const stockLabel = product.inventory_qty && product.inventory_qty > 0 ? `${product.inventory_qty} in stock` : 'Out of stock';
 
                   return (
-                    <article key={product.id} className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                      <div className="relative overflow-hidden bg-slate-100 aspect-4/3">
+                    <Link
+                      key={product.id}
+                      href={`/shop/products/${product.handle}`}
+                      className="group block cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ease-out hover:shadow-md"
+                    >
+                      <div className="relative overflow-hidden bg-slate-100 aspect-5/4">
                         <img
                           src={getProductImage(product)}
                           alt={product.name}
@@ -104,46 +159,33 @@ const CollectionPage: React.FC = () => {
                         </button>
                       </div>
 
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-3">
+                      <div className="p-4">
+                        <div className="space-y-4">
                           <div>
-                            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{product.product_type}</p>
-                            <h3 className="mt-2 text-lg font-semibold text-slate-900">{product.name}</h3>
+                            <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">{product.product_type}</p>
+                            <h3 className="mt-2 text-base font-semibold text-slate-900">{product.name}</h3>
                           </div>
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${product.inventory_qty && product.inventory_qty > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                            {stockLabel}
-                          </span>
-                        </div>
 
-                        <div className="mt-4 space-y-3">
-                          <p className="text-sm leading-6 text-slate-500 line-clamp-2 group-hover:line-clamp-4 transition-all duration-200">
-                            {product.description}
-                          </p>
-                          <div className="opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                            <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Key features</p>
-                            <p className="text-sm text-slate-500">{product.tags.join(' · ')}</p>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="text-base font-semibold text-slate-900">{fmt(product.price)}</div>
+                            <button
+                              type="button"
+                              disabled={!product.inventory_qty || product.inventory_qty <= 0}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (product.inventory_qty && product.inventory_qty > 0) {
+                                  addToCart({ product_id: product.id, name: product.name, sku: product.sku, price: product.price, image: getProductImage(product) }, 1);
+                                }
+                              }}
+                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition ${product.inventory_qty && product.inventory_qty > 0 ? 'bg-rose-700 hover:bg-rose-800' : 'cursor-not-allowed bg-slate-300'}`}
+                            >
+                              Add to cart
+                            </button>
                           </div>
-                        </div>
-
-                        <div className="mt-6 flex items-center justify-between gap-3">
-                          <div className="text-lg font-semibold text-slate-900">{fmt(product.price)}</div>
-                          <button
-                            type="button"
-                            disabled={!product.inventory_qty || product.inventory_qty <= 0}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (product.inventory_qty && product.inventory_qty > 0) {
-                                addToCart({ product_id: product.id, name: product.name, sku: product.sku, price: product.price, image: getProductImage(product) }, 1);
-                              }
-                            }}
-                            className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition ${product.inventory_qty && product.inventory_qty > 0 ? 'bg-rose-700 hover:bg-rose-800' : 'cursor-not-allowed bg-slate-300'}`}
-                          >
-                            Add to cart
-                          </button>
                         </div>
                       </div>
-                    </article>
+                    </Link>
                   );
                 })}
               </div>

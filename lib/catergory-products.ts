@@ -11,13 +11,18 @@ export type ShopProduct = {
   image?: string;
   tags: string[];
   description: string;
+  model?: string;
+  key_features?: string[];
+  medical_information?: string;
   inventory_qty: number | null;
   created_at?: string;
   status?: string;
 };
 
-export const normalizeShopTag = (value: string) =>
-  value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+export const normalizeShopTag = (value?: string | string[]) => {
+  const safeValue = Array.isArray(value) ? value[0] ?? '' : value ?? '';
+  return safeValue.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+};
 
 export function getProductImage(product: Pick<ShopProduct, 'images' | 'image_url' | 'image'>) {
   if (Array.isArray(product.images) && product.images[0]) {
@@ -76,6 +81,20 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     tags: ['adhesive', 'first aid', 'secure'],
     description: 'Hypoallergenic medical tape for secure dressing placement and gentle removal.',
     inventory_qty: 31,
+    status: 'active',
+  },
+    {
+    id: 'clinical-004',
+    handle: 'catheters',
+    name: 'Catheters',
+    sku: 'CT-230',
+    product_type: 'Instruments',
+    collectionHandle: 'clinical-supplies',
+    price: 1499,
+    images: ['/images/clinical-supplies/catheters.png'],
+    tags: ['sterile', 'urology', 'disposable'],
+    description: 'Sterile, single-use catheters designed for reliable patient care and easy insertion.',
+    inventory_qty: 26,
     status: 'active',
   },
   {
@@ -182,12 +201,16 @@ export function getProducts() {
   return SHOP_PRODUCTS;
 }
 
-export function getProductByHandle(handle: string) {
-  return SHOP_PRODUCTS.find((product) => product.handle === handle) ?? null;
+export function getProductByHandle(handle: string | string[] | undefined) {
+  if (!handle || (Array.isArray(handle) && handle.length === 0)) return null;
+  const normalizedHandle = normalizeShopTag(handle);
+  return SHOP_PRODUCTS.find((product) => normalizeShopTag(product.handle) === normalizedHandle) ?? null;
 }
 
-export function getProductsForCollectionHandle(handle: string) {
-  return SHOP_PRODUCTS.filter((product) => product.collectionHandle === handle);
+export function getProductsForCollectionHandle(handle: string | string[] | undefined) {
+  if (!handle || (Array.isArray(handle) && handle.length === 0)) return [];
+  const normalizedHandle = normalizeShopTag(handle);
+  return SHOP_PRODUCTS.filter((product) => normalizeShopTag(product.collectionHandle) === normalizedHandle);
 }
 
 export function searchProducts(q: string, limit = 50) {
