@@ -9,6 +9,7 @@ import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import LogoMarquee from '@/components/LogoMarquee';
 import CategoryImageCarousel from '@/components/CategoryImageCarousel';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
+import SearchClient from '@/components/SearchClient';
 import { getCategoryMarqueeImages } from '@/lib/category-marquee';
 import { getCategoryCarouselImages } from '@/lib/catergory-carousel';
 import { getProductsForCollectionHandle, getProductImage, type ShopProduct } from '@/lib/catergory-products';
@@ -118,6 +119,8 @@ const CollectionPage: React.FC = () => {
               <CategoryImageCarousel images={carouselImages} />
             </div>
           ) : null}
+
+          <SearchClient />
 
           {hasProducts ? (
             <div className="pt-8 lg:pt-10">

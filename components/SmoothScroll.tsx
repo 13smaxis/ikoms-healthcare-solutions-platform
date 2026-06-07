@@ -91,8 +91,10 @@ export default function SmoothScroll() {
     if (lenisRef.current) {
       try {
         lenisRef.current.resize();
-        lenisRef.current.scrollTo(window.scrollY || 0, { immediate: true });
+        lenisRef.current.scrollTo(0, { immediate: true });
       } catch (e) { /* ignore */ }
+    } else {
+      window.scrollTo(0, 0);
     }
   }, [pathname, searchParamsString]);
 

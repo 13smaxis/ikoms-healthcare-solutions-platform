@@ -52,10 +52,12 @@ export default function SearchClient() {
           </div>
         </div>
 
-        {loading ? <div className="text-center py-12 text-slate-500">Searching...</div> : (
+        {loading ? (
+          <div className="text-center py-12 text-slate-500">Searching...</div>
+        ) : results.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {results.map(p => (
-              <Link key={p.id} href="/shop" className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
+              <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
                   <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
                 </div>
@@ -70,7 +72,9 @@ export default function SearchClient() {
               </Link>
             ))}
           </div>
-        )}
+        ) : q ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">No products found for &ldquo;{q}&rdquo;.</div>
+        ) : null}
       </div>
     </section>
   );
