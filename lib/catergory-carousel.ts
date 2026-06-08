@@ -28,6 +28,21 @@ const CATEGORY_CAROUSEL_FILES_BY_HANDLE: Record<string, string[]> = {
     'syringes.png',
     'wound-dressings.png',
   ],
+  'diagnostic-equipment': [
+    'blood-pressure-meter.jpg',
+    'contec-sp100-lung-function-machine.jpg',
+    'finger-pulse-oximeter.jpg',
+    'kx5000-laptop-ultrasound.jpg',
+    'rossmax-sb200-pulse-oximeter.jpg',
+    'twelve-channel-ecg.jpg',
+  ],
+  'emergency-first-aid': [
+    'burncare.jpg',
+    'cancare-gauzepad.jpg',
+    'elasto-plaster.jpg',
+    'first-aid-mini-kit.jpg',
+    'hydrogen-peroxide.jpg',
+  ],
 };
 
 const CATEGORY_CAROUSEL_IMAGES: Record<string, string[]> =

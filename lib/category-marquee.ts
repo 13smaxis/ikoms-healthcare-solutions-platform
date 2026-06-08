@@ -12,16 +12,12 @@ const CATEGORY_MARQUEE_IMAGES: Record<string, string[]> = {
     '/images/clinical-supplies/marquee/wound-dressings.jpg',
   ],
   'diagnostic-equipment': [
-    '/images/diagnostic-equipment/marquee/alcohol-swabs.jpg',
-    '/images/diagnostic-equipment/marquee/catheters.jpg',
-    '/images/diagnostic-equipment/marquee/disposable-aprons.jpg',
-    '/images/diagnostic-equipment/marquee/face-masks.jpg',
-    '/images/diagnostic-equipment/marquee/gauze-bandages.jpg',
-    '/images/diagnostic-equipment/marquee/iv-cannulas.jpg',
-    '/images/diagnostic-equipment/marquee/medical-tape.jpg',
-    '/images/diagnostic-equipment/marquee/surgical-gloves.jpg',
-    '/images/diagnostic-equipment/marquee/syringes.jpg',
-    '/images/diagnostic-equipment/marquee/wound-dressings.jpg',
+    '/images/diagnostic-equipment/marquee/rossmax-sb200-pulse-oximeter.jpg',
+    '/images/diagnostic-equipment/marquee/twelve-channel-ecg.jpg',
+  ],
+  'emergency-first-aid': [
+    '/images/emergency-first-aid/marquee/shears-scissors-hemostats.jpg',
+    '/images/emergency-first-aid/marquee/sterile-sergical-gloves.jpg',
   ],
 };
 

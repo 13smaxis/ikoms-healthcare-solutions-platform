@@ -83,7 +83,7 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
       isRight,
       scale: isActive ? 1.06 : isLeft || isRight ? 0.88 : 0.72,
       opacity: isActive ? 1 : isLeft || isRight ? 0.8 : 0,
-      rotateY: isActive ? 0 : isLeft ? 48 : isRight ? -48 : 0,
+      rotateY: isActive ? 0 : isLeft ? 60 : isRight ? -60 : 0,
       x: isActive ? 0 : isLeft ? -56 : isRight ? 56 : 0,
       y: isActive ? 0 : isLeft || isRight ? 18 : 32,
       zIndex: isActive ? 30 : isLeft || isRight ? 20 : 1,
