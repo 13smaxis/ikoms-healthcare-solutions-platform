@@ -4,7 +4,6 @@ const CATEGORY_CAROUSEL_HANDLES = [
   'emergency-first-aid',
   'healthcare-technology',
   'home-care-patient-support',
-  'hospital-clinic-furniture',
   'ppe-safety-equipment',
   'training-educational-supplies',
 ];

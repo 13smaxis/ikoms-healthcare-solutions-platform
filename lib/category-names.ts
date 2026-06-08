@@ -7,7 +7,6 @@ export const SHOP_CATEGORIES: ShopCategory[] = [
   { title: 'Clinical Supplies', handle: 'clinical-supplies' },
   { title: 'PPE & Safety Equipment', handle: 'ppe-safety-equipment' },
   { title: 'Diagnostic Equipment', handle: 'diagnostic-equipment' },
-  { title: 'Hospital & Clinic Furniture', handle: 'hospital-clinic-furniture' },
   { title: 'Training & Educational Supplies', handle: 'training-educational-supplies' },
   { title: 'Home Care & Patient Support', handle: 'home-care-patient-support' },
   { title: 'Emergency & First Aid', handle: 'emergency-first-aid' },

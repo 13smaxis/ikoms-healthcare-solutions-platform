@@ -60,6 +60,15 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
 
   if (images.length === 0) return null;
 
+  const getLabelFromSrc = (src: string) => {
+    const fileName = src.split('/').pop() ?? '';
+    const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    return baseName
+      .split(' ')
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
+  };
+
   const getSlideState = (index: number) => {
     const total = images.length;
     const forwardDistance = (index - selectedIndex + total) % total;
@@ -87,7 +96,7 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
   return (
     <section
       aria-label="Category image carousel"
-      className="relative isolate overflow-hidden px-4 py-8 sm:px-6 sm:py-10 lg:px-8"
+      className="relative isolate overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
     >
       <div className="relative mx-auto max-w-6xl">
         <div className="relative mx-auto max-w-7xl" style={{ perspective: '1800px' }}>
@@ -95,12 +104,16 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
             <div className="flex items-center gap-3 py-6 sm:gap-4 lg:gap-6">
               {images.map((src, idx) => {
                 const state = getSlideState(idx);
+                const productLabel = getLabelFromSrc(src);
 
                 return (
                   <div
                     key={`${src}-${idx}`}
-                    className="min-w-0 shrink-0 basis-[82%] sm:basis-[60%] md:basis-[42%] lg:basis-[33.333%] xl:basis-[30%]"
-                  >
+                    className="
+                                min-w-0 shrink-0 
+                                basis-[82%] sm:basis-[64%] md:basis-[42%] lg:basis-[22%]
+                                "
+                  >                                                                                             {/* The motion.div is used to apply the 3D carousel effect based on the calculated state for each slide */}
                     <motion.div
                       animate={{
                         opacity: state.opacity,
@@ -109,7 +122,7 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
                         x: state.x,
                         y: state.y,
                       }}
-                      className="relative h-72 origin-center overflow-visible sm:h-88 lg:h-104"
+                      className="relative h-78 origin-center overflow-visible sm:h-68"
                       style={{
                         zIndex: state.zIndex,
                         transformStyle: 'preserve-3d',
@@ -126,12 +139,15 @@ const CategoryImageCarousel: React.FC<CategoryImageCarouselProps> = ({
                         <div className="relative h-full w-full">
                           <Image
                             src={src}
-                            alt={`Carousel image ${idx + 1}`}
+                            alt={`Carousel image of ${productLabel}`}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 33vw"
+                            sizes="(max-width: 640px) 82vw, (max-width: 1024px) 42vw, 25vw"
                             className="object-contain"
                           />
+                          <div className="absolute inset-x-0 bottom-0 bg-slate-950/80 px-3 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+                            {productLabel}
+                          </div>
                         </div>
                       </div>
                     </motion.div>

@@ -59,6 +59,72 @@ const CLINICAL_SUPPLY_METADATA: Record<string, Partial<ShopProduct>> = {
     medical_information:
       'Use for short-term urinary catheterisation under clinical supervision. Single-use product. Follow standard hygiene protocols and discard safely after use.',
   },
+  'face-masks': {
+    model: 'FM-200-PRO',
+    key_features: [
+      'Three-layer barrier protection',
+      'Breathable fit for all-day comfort',
+      'Latex-free and hypoallergenic',
+      'Secure ear loops for stable fit',
+    ],
+    medical_information:
+      'Suitable for general clinical use and patient care activities. Replace after each use and dispose safely.',
+  },
+  'disposable-aprons': {
+    model: 'DA-180-WP',
+    key_features: [
+      'Waterproof protection',
+      'Lightweight and durable material',
+      'Easy-wrap fastening',
+      'Single-use hygiene barrier',
+    ],
+    medical_information:
+      'Use during patient care and clinical procedures to protect clothing and maintain hygiene. Dispose after use.',
+  },
+  'gauze-bandages': {
+    model: 'GB-150-STER',
+    key_features: [
+      'Sterile gauze material',
+      'High absorbency',
+      'Soft and breathable',
+      'Ideal for wound dressing',
+    ],
+    medical_information:
+      'Use for wound coverage, support, and absorption. Change regularly to maintain cleanliness and healing.',
+  },
+  'iv-cannulas': {
+    model: 'IV-24G-STER',
+    key_features: [
+      'Smooth flexible tubing',
+      'Colour-coded gauge',
+      'Sterile single-use design',
+      'Secure insertion hub',
+    ],
+    medical_information:
+      'Intended for intravenous access and fluid administration. Use under clinical supervision and dispose after single use.',
+  },
+  syringes: {
+    model: 'SY-10ML-CLN',
+    key_features: [
+      'Clear volume graduations',
+      'Sterile single-use construction',
+      'Smooth plunger action',
+      'Leak-resistant seal',
+    ],
+    medical_information:
+      'Suitable for medication delivery and clinical injections. Use with compatible needles and dispose after use.',
+  },
+  'wound-dressings': {
+    model: 'WD-250-ADV',
+    key_features: [
+      'Soft absorbent pad',
+      'Flexible adhesive backing',
+      'Breathable protective cover',
+      'Suitable for moderate wounds',
+    ],
+    medical_information:
+      'Use to protect injured areas, absorb exudate, and support wound healing. Change as needed according to clinical guidelines.',
+  },
 }
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
@@ -120,7 +186,7 @@ const CollectionPage: React.FC = () => {
             </div>
           ) : null}
 
-          <SearchClient />
+          <SearchClient />                                                                                      {/* Search within the collection - can be enhanced to filter results by collection handle */}
 
           {hasProducts ? (
             <div className="pt-8 lg:pt-10">

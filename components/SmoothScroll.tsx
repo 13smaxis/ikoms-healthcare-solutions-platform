@@ -18,6 +18,21 @@ export default function SmoothScroll() {
     body.style.width = '';
   };
 
+  const scrollToTop = () => {
+    clearBodyLock();
+    if (lenisRef.current) {
+      try {
+        lenisRef.current.resize();
+        lenisRef.current.scrollTo(0, { immediate: true });
+      } catch (e) {
+        // ignore errors during scroll reset
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
   useEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
@@ -29,12 +44,11 @@ export default function SmoothScroll() {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       });
       lenisRef.current = instance;
-        // initialize Lenis at the current native scroll position to avoid jumps
-        try {
-          instance.scrollTo(window.scrollY || 0, { immediate: true });
-        } catch (e) {
-          // ignore errors during initialization
-        }
+      try {
+        instance.scrollTo(0, { immediate: true });
+      } catch (e) {
+        // ignore errors during initialization
+      }
     }
 
     createLenis();
@@ -53,10 +67,8 @@ export default function SmoothScroll() {
 
     rafId = requestAnimationFrame(raf);
 
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        lenisRef.current?.scrollTo(0, { duration: 1.8, immediate: false });
-      }
+    const onPageShow = () => {
+      scrollToTop();
     };
 
     window.addEventListener("pageshow", onPageShow);
@@ -86,16 +98,12 @@ export default function SmoothScroll() {
   }, []);
 
   useEffect(() => {
-    // Ensure any body lock state is cleared (compat layer) and let Lenis recompute bounds.
-    clearBodyLock();
-    if (lenisRef.current) {
-      try {
-        lenisRef.current.resize();
-        lenisRef.current.scrollTo(0, { immediate: true });
-      } catch (e) { /* ignore */ }
-    } else {
-      window.scrollTo(0, 0);
-    }
+    scrollToTop();
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [pathname, searchParamsString]);
 
   return null;
