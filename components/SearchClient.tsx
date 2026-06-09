@@ -43,15 +43,13 @@ export default function SearchClient() {
   };
 
   return (
-    <section className="py-10">
+    <section className="py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input name="q" value={q} onChange={e => setQ(e.target.value)} placeholder="Search products..." className="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
           </div>
-        </div>
-
+          
         {loading ? (
           <div className="text-center py-12 text-slate-500">Searching...</div>
         ) : results.length > 0 ? (

@@ -52,6 +52,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/alcohol-swabs.png'],
     tags: ['sterile', 'wound care', 'prep'],
     description: 'Individually wrapped alcohol swabs for fast, sterile skin prep and wound cleaning.',
+    model: 'AS-100-STER',
+    key_features: [
+      'Individually wrapped sterile swab',
+      '70% isopropyl alcohol antiseptic',
+      'Latex-free and breathable',
+      'Ready to use for wound cleaning',
+    ],
+    medical_information:
+      'Use for skin cleansing before injections, blood draws, and wound dressing changes. Dispose after single use. Keep away from flame.',
     inventory_qty: 48,
     status: 'active',
   },
@@ -66,6 +75,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/surgical-gloves.png'],
     tags: ['latex-free', 'protective gear', 'disposable'],
     description: 'Premium powder-free surgical gloves with a textured grip for reliable handling in clinical settings.',
+    model: 'SG-250-PF',
+    key_features: [
+      'Powder-free sterile design',
+      'High tactile sensitivity',
+      'Latex-free for allergy-safe use',
+      'Textured grip for secure handling',
+    ],
+    medical_information:
+      'Single-use gloves for surgical procedures and clinical examinations. Designed for barrier protection against contaminants. Discard after use.',
     inventory_qty: 24,
     status: 'active',
   },
@@ -80,6 +98,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/medical-tape.png'],
     tags: ['adhesive', 'first aid', 'secure'],
     description: 'Hypoallergenic medical tape for secure dressing placement and gentle removal.',
+    model: 'MT-1.25-ROLL',
+    key_features: [
+      'Hypoallergenic adhesive',
+      'Easy tearable for quick application',
+      'Breathable and flexible',
+      'Securely holds dressings in place',
+    ],
+    medical_information:
+      'Ideal for securing wound dressings, catheters, and tubing. Remove gently to avoid skin irritation. Suitable for sensitive skin.',
     inventory_qty: 31,
     status: 'active',
   },
@@ -94,6 +121,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/catheters.png'],
     tags: ['sterile', 'urology', 'disposable'],
     description: 'Sterile, single-use catheters designed for reliable patient care and easy insertion.',
+    model: 'CT-CH10-STER',
+    key_features: [
+      'Sterile single-use catheter',
+      'Smooth silicone surface',
+      'Flexible yet stable design',
+      'Easy insertion with clear markings',
+    ],
+    medical_information:
+      'Use for short-term urinary catheterisation under clinical supervision. Single-use product. Follow standard hygiene protocols and discard safely after use.',
     inventory_qty: 26,
     status: 'active',
   },
@@ -108,6 +144,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/face-masks.png'],
     tags: ['respiratory protection', 'surgical', 'disposable'],
     description: 'Three-layer surgical masks for reliable respiratory protection and comfortable all-day wear.',
+    model: 'FM-200-PRO',
+    key_features: [
+      'Three-layer barrier protection',
+      'Breathable fit for all-day comfort',
+      'Latex-free and hypoallergenic',
+      'Secure ear loops for stable fit',
+    ],
+    medical_information:
+      'Suitable for general clinical use and patient care activities. Replace after each use and dispose safely.',
     inventory_qty: 62,
     status: 'active',
   },
@@ -122,6 +167,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/disposable-aprons.png'],
     tags: ['waterproof', 'single use', 'hygiene'],
     description: 'Lightweight disposable aprons to protect staff and surfaces during clinical procedures.',
+    model: 'DA-180-WP',
+    key_features: [
+      'Waterproof protection',
+      'Lightweight and durable material',
+      'Easy-wrap fastening',
+      'Single-use hygiene barrier',
+    ],
+    medical_information:
+      'Use during patient care and clinical procedures to protect clothing and maintain hygiene. Dispose after use.',
     inventory_qty: 40,
     status: 'active',
   },
@@ -136,6 +190,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/gauze-bandages.png'],
     tags: ['absorbent', 'sterile', 'bandage'],
     description: 'Sterile gauze bandages for wound dressing and secure support in clinical settings.',
+    model: 'GB-150-STER',
+    key_features: [
+      'Sterile gauze material',
+      'High absorbency',
+      'Soft and breathable',
+      'Ideal for wound dressing',
+    ],
+    medical_information:
+      'Use for wound coverage, support, and absorption. Change regularly to maintain cleanliness and healing.',
     inventory_qty: 54,
     status: 'active',
   },
@@ -150,6 +213,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/iv-cannulas.png'],
     tags: ['intravenous', 'single use', 'sterile'],
     description: 'High-quality IV cannulas for safe and precise venous access during fluid therapy.',
+    model: 'IV-24G-STER',
+    key_features: [
+      'Smooth flexible tubing',
+      'Colour-coded gauge',
+      'Sterile single-use design',
+      'Secure insertion hub',
+    ],
+    medical_information:
+      'Intended for intravenous access and fluid administration. Use under clinical supervision and dispose after single use.',
     inventory_qty: 38,
     status: 'active',
   },
@@ -164,6 +236,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/syringes.png'],
     tags: ['injection', 'single use', 'sterile'],
     description: 'Sterile syringes for injections and medication delivery with clear volume markings.',
+    model: 'SY-10ML-CLN',
+    key_features: [
+      'Clear volume graduations',
+      'Sterile single-use construction',
+      'Smooth plunger action',
+      'Leak-resistant seal',
+    ],
+    medical_information:
+      'Suitable for medication delivery and clinical injections. Use with compatible needles and dispose after use.',
     inventory_qty: 74,
     status: 'active',
   },
@@ -178,6 +259,15 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/clinical-supplies/wound-dressings.png'],
     tags: ['absorbent', 'protective', 'healing'],
     description: 'Advanced wound dressings for protection, absorption, and accelerated healing.',
+    model: 'WD-250-ADV',
+    key_features: [
+      'Soft absorbent pad',
+      'Flexible adhesive backing',
+      'Breathable protective cover',
+      'Suitable for moderate wounds',
+    ],
+    medical_information:
+      'Use to protect injured areas, absorb exudate, and support wound healing. Change as needed according to clinical guidelines.',
     inventory_qty: 45,
     status: 'active',
   },
@@ -661,8 +751,14 @@ export function getProductByHandle(handle: string | string[] | undefined) {
   return SHOP_PRODUCTS.find((product) => normalizeShopTag(product.handle) === normalizedHandle) ?? null;
 }
 
+/*
+ * Gets products for a given collection handle.
+ * Normalizes the handle to ensure consistent matching against product collection handles.
+ * Filters the SHOP_PRODUCTS array to find products that belong to the specified collection.
+ * Returns an array of products that match the collection handle.
+ */
 export function getProductsForCollectionHandle(handle: string | string[] | undefined) {
-  if (!handle || (Array.isArray(handle) && handle.length === 0)) return [];
+  if (!handle || (Array.isArray(handle) && handle.length === 0)) return [];                                     //-If handle is not provided or empty, returns an empty array
   const normalizedHandle = normalizeShopTag(handle);
   return SHOP_PRODUCTS.filter((product) => normalizeShopTag(product.collectionHandle) === normalizedHandle);
 }

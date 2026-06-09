@@ -12,12 +12,24 @@ const CATEGORY_MARQUEE_IMAGES: Record<string, string[]> = {
     '/images/clinical-supplies/marquee/wound-dressings.jpg',
   ],
   'diagnostic-equipment': [
-    '/images/diagnostic-equipment/marquee/rossmax-sb200-pulse-oximeter.jpg',
-    '/images/diagnostic-equipment/marquee/twelve-channel-ecg.jpg',
+    '/images/diagnostic-equipment/marquee/drager.jpg',
+    '/images/diagnostic-equipment/marquee/ge-healthcare.jpg',
+    '/images/diagnostic-equipment/marquee/mindray.jpg',
+    '/images/diagnostic-equipment/marquee/omron.jpg',
+    '/images/diagnostic-equipment/marquee/phillips-healthcare.jpg',
+    '/images/diagnostic-equipment/marquee/roche.jpg',
+    '/images/diagnostic-equipment/marquee/siemens-healthineers.jpg',
+    '/images/diagnostic-equipment/marquee/welchallyn.jpg',
   ],
   'emergency-first-aid': [
-    '/images/emergency-first-aid/marquee/shears-scissors-hemostats.jpg',
-    '/images/emergency-first-aid/marquee/sterile-sergical-gloves.jpg',
+    '/images/emergency-first-aid/marquee/band-aid.jpg',
+    '/images/emergency-first-aid/marquee/burnshield-products-logo.jpg',
+    '/images/emergency-first-aid/marquee/disposable-aprons.jpg',
+    '/images/emergency-first-aid/marquee/face-masks.jpg',
+    '/images/emergency-first-aid/marquee/gauze-bandages.jpg',
+    '/images/emergency-first-aid/marquee/logo-symbol-vector-outline-illlustration.jpg',
+    '/images/emergency-first-aid/marquee/mindray.jpg',
+    '/images/emergency-first-aid/marquee/omron.jpg',
   ],
 };
 

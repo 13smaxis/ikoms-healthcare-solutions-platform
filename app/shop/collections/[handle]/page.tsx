@@ -7,172 +7,56 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { getCategoryByHandle } from '@/lib/category-names';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import LogoMarquee from '@/components/LogoMarquee';
-import CategoryImageCarousel from '@/components/CategoryImageCarousel';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import SearchClient from '@/components/SearchClient';
 import { getCategoryMarqueeImages } from '@/lib/category-marquee';
-import { getCategoryCarouselImages } from '@/lib/catergory-carousel';
-import { getProductsForCollectionHandle, getProductImage, type ShopProduct } from '@/lib/catergory-products';
-
-const CLINICAL_SUPPLY_METADATA: Record<string, Partial<ShopProduct>> = {
-  'alcohol-swabs': {
-    model: 'AS-100-STER',
-    key_features: [
-      'Individually wrapped sterile swab',
-      '70% isopropyl alcohol antiseptic',
-      'Latex-free and breathable',
-      'Ready to use for wound cleaning',
-    ],
-    medical_information:
-      'Use for skin cleansing before injections, blood draws, and wound dressing changes. Dispose after single use. Keep away from flame.',
-  },
-  'surgical-gloves': {
-    model: 'SG-250-PF',
-    key_features: [
-      'Powder-free sterile design',
-      'High tactile sensitivity',
-      'Latex-free for allergy-safe use',
-      'Textured grip for secure handling',
-    ],
-    medical_information:
-      'Single-use gloves for surgical procedures and clinical examinations. Designed for barrier protection against contaminants. Discard after use.',
-  },
-  'medical-tape': {
-    model: 'MT-1.25-ROLL',
-    key_features: [
-      'Hypoallergenic adhesive',
-      'Easy tearable for quick application',
-      'Breathable and flexible',
-      'Securely holds dressings in place',
-    ],
-    medical_information:
-      'Ideal for securing wound dressings, catheters, and tubing. Remove gently to avoid skin irritation. Suitable for sensitive skin.',
-  },
-  catheters: {
-    model: 'CT-CH10-STER',
-    key_features: [
-      'Sterile single-use catheter',
-      'Smooth silicone surface',
-      'Flexible yet stable design',
-      'Easy insertion with clear markings',
-    ],
-    medical_information:
-      'Use for short-term urinary catheterisation under clinical supervision. Single-use product. Follow standard hygiene protocols and discard safely after use.',
-  },
-  'face-masks': {
-    model: 'FM-200-PRO',
-    key_features: [
-      'Three-layer barrier protection',
-      'Breathable fit for all-day comfort',
-      'Latex-free and hypoallergenic',
-      'Secure ear loops for stable fit',
-    ],
-    medical_information:
-      'Suitable for general clinical use and patient care activities. Replace after each use and dispose safely.',
-  },
-  'disposable-aprons': {
-    model: 'DA-180-WP',
-    key_features: [
-      'Waterproof protection',
-      'Lightweight and durable material',
-      'Easy-wrap fastening',
-      'Single-use hygiene barrier',
-    ],
-    medical_information:
-      'Use during patient care and clinical procedures to protect clothing and maintain hygiene. Dispose after use.',
-  },
-  'gauze-bandages': {
-    model: 'GB-150-STER',
-    key_features: [
-      'Sterile gauze material',
-      'High absorbency',
-      'Soft and breathable',
-      'Ideal for wound dressing',
-    ],
-    medical_information:
-      'Use for wound coverage, support, and absorption. Change regularly to maintain cleanliness and healing.',
-  },
-  'iv-cannulas': {
-    model: 'IV-24G-STER',
-    key_features: [
-      'Smooth flexible tubing',
-      'Colour-coded gauge',
-      'Sterile single-use design',
-      'Secure insertion hub',
-    ],
-    medical_information:
-      'Intended for intravenous access and fluid administration. Use under clinical supervision and dispose after single use.',
-  },
-  syringes: {
-    model: 'SY-10ML-CLN',
-    key_features: [
-      'Clear volume graduations',
-      'Sterile single-use construction',
-      'Smooth plunger action',
-      'Leak-resistant seal',
-    ],
-    medical_information:
-      'Suitable for medication delivery and clinical injections. Use with compatible needles and dispose after use.',
-  },
-  'wound-dressings': {
-    model: 'WD-250-ADV',
-    key_features: [
-      'Soft absorbent pad',
-      'Flexible adhesive backing',
-      'Breathable protective cover',
-      'Suitable for moderate wounds',
-    ],
-    medical_information:
-      'Use to protect injured areas, absorb exudate, and support wound healing. Change as needed according to clinical guidelines.',
-  },
-}
+import { getProductsForCollectionHandle, getProductImage } from '@/lib/catergory-products';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
 import { Heart } from 'lucide-react';
 
 const CollectionPage: React.FC = () => {
   const params = useParams<{ handle?: string | string[] }>();
-  const handle = Array.isArray(params?.handle) ? params.handle[0] : params?.handle;
-  const { wishlist, toggleWishlist } = useWishlist();
-  const category = getCategoryByHandle(handle || '');
-  const collectionTitle = category?.title || 'Collection';
+  const handle = Array.isArray(params?.handle) ? params.handle[0] : params?.handle;                             //-Extracts the handle from URL parameters
+  const { wishlist, toggleWishlist } = useWishlist();                                                           //-Accesses the wishlist logic from WishlistContext
+  const category = getCategoryByHandle(handle || '');                                                           //-Find category details based on handle from URL, if not found, category will be undefined
+  const collectionTitle = category?.title || 'Collection';                                                      //-Try to find catergory name, if not found, fallback and use 'collection'
   const collectionDescription = 'Browse hot buys, highlights, and products in this collection.';
-  const marqueeImages = getCategoryMarqueeImages(handle || '');
-  const carouselImages = getCategoryCarouselImages(handle || '');
+  const marqueeImages = getCategoryMarqueeImages(handle || '');                                                 //-Get marquee images for the category, if not found, will return an empty array
   const products = useMemo(
-    () =>
-      getProductsForCollectionHandle(handle || '').map((product) => ({
-        ...product,
-        ...CLINICAL_SUPPLY_METADATA[product.handle],
-      })),
+    () => getProductsForCollectionHandle(handle || ''),
     [handle],
   );
 
-  const hasProducts = products.length > 0;
+  const hasProducts = products.length > 0;                                                                      //-Determines if there are products to display in the collection
 
   return (
     <SiteLayout>
-      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-10 sm:py-14">
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-10 sm:py-14">           {/* Hero section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap mb-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap mb-4">               {/* Header section with breadcrumbs and overlay menu */}
             <ShopBreadcrumbs
               variant="hero"
               items={[
-                { label: 'Shop', href: '/shop' },
+                { label: 'Category', href: '/shop' },
                 { label: collectionTitle },
               ]}
-            />
-            <ShopOverlayMenu />
+            />                                                                                                  {/* Breadcrumbs for navigation, showing the path to the current collection */}
+            <ShopOverlayMenu />                                                                                 {/*Calls the ShopOverlayMenu component, for catergory menu items*/}          
           </div>
-          <div className="max-w-3xl">
-            <div className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">Category</div>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">{collectionTitle}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-100 sm:text-base">{collectionDescription}</p>
+          
+          <div className="max-w-3xl">                                                                           {/* Collection title and description section */}
+            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+              {collectionTitle}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-100 sm:text-base">
+              {collectionDescription}
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-50 py-8 sm:py-10">
+      <section className="bg-slate-50 py-8 sm:py-10">                                                         {/* Product grid section - includes marquee, carousel, search, and product listings */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {marqueeImages.length > 0 ? (
             <div className="pb-6 sm:pb-8">
@@ -180,11 +64,11 @@ const CollectionPage: React.FC = () => {
             </div>
           ) : null}
 
-          {carouselImages.length > 0 ? (
+          {/*{carouselImages.length > 0 ? (
             <div className="pb-6 sm:pb-8">
               <CategoryImageCarousel images={carouselImages} />
             </div>
-          ) : null}
+          ) : null}*/}
 
           <SearchClient />                                                                                      {/* Search within the collection - can be enhanced to filter results by collection handle */}
 
@@ -195,8 +79,8 @@ const CollectionPage: React.FC = () => {
                   <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Shop the collection</p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-900">Trending products in {collectionTitle}</h2>
                 </div>
-                <p className="text-sm text-slate-500">{products.length} products available now</p>
-              </div>
+                <p className="text-sm text-slate-500">{products.length} products available now</p>            {/* Counts and Displays the number of products in the collection */}
+              </div>                                                                                            {/* Header section for the product grid, includes a title and product count */}
 
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                 {products.map((product) => {
@@ -244,10 +128,30 @@ const CollectionPage: React.FC = () => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 if (product.inventory_qty && product.inventory_qty > 0) {
-                                  addToCart({ product_id: product.id, name: product.name, sku: product.sku, price: product.price, image: getProductImage(product) }, 1);
+                                  addToCart(
+                                            { 
+                                              product_id: product.id,
+                                              name: product.name, 
+                                              sku: product.sku, 
+                                              price: product.price, 
+                                              image: getProductImage(product) 
+                                            }, 
+                                          1);
                                 }
                               }}
-                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition ${product.inventory_qty && product.inventory_qty > 0 ? 'bg-rose-700 hover:bg-rose-800' : 'cursor-not-allowed bg-slate-300'}`}
+                              className={`
+                                          inline-flex 
+                                          items-center justify-center 
+                                          rounded-full 
+                                          px-4 py-2 
+                                          text-sm 
+                                          font-semibold text-white 
+                                          transition 
+                                          ${product.inventory_qty && product.inventory_qty > 0 ? 
+                                            'bg-rose-700 hover:bg-rose-800' : 
+                                            'cursor-not-allowed bg-slate-300'
+                                           }
+                                       `}
                             >
                               Add to cart
                             </button>
