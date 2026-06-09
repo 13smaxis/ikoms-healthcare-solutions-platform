@@ -71,7 +71,7 @@ export default function ShopProductSpecification({ product, category, categories
             >
               <span className="
                                 flex h-full flex-col 
-                                pl-4.5 
+                                pl-4
                                 justify-center text-center 
                                 leading-none
                               "

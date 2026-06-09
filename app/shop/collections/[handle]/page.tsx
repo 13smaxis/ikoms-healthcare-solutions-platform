@@ -107,7 +107,12 @@ const CollectionPage: React.FC = () => {
                         <img
                           src={getProductImage(product)}
                           alt={product.name}
-                          className="w-full h-full object-contain object-center transition duration-500"
+                          className="
+                                      w-full h-full 
+                                      object-contain object-center 
+                                      transition 
+                                      duration-500
+                                    "
                         />
 
                         <button

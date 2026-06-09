@@ -135,7 +135,11 @@ const ShopHome: React.FC = () => {
                     src={getProductImage(product)}
                     alt={product.name}
                     className="
-                                w-full h-full object-contain object-center transition duration-500"
+                                w-full h-full 
+                                object-contain object-center 
+                                transition
+                                duration-500
+                              "
                   />
                 </div>
                 <div className="p-4">
