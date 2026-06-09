@@ -54,7 +54,7 @@ const CollectionPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-12 sm:py-20">           {/* Hero-content section - Collection title and description */}
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-16 sm:py-20">           {/* Hero-content section - Collection title and description */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">

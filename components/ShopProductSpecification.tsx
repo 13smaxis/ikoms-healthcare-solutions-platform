@@ -5,6 +5,7 @@
 
 'use client';
 
+import { useState, useRef, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -26,20 +27,83 @@ export default function ShopProductSpecification({ product, category, categories
   const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
   const isOutOfStock = !product.inventory_qty || product.inventory_qty <= 0;                                    //-Checks stock availability of the product to disable add to cart
 
+  const [showMobileCategories, setShowMobileCategories] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+
+  const handleCategoryHandlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    dragStartX.current = event.clientX;
+  };
+
+  const handleCategoryHandlePointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    if (dragStartX.current === null) return;
+    if (event.clientX - dragStartX.current > 20) {
+      setShowMobileCategories(true);
+    }
+    dragStartX.current = null;
+  };
+
+  const closeMobileCategories = () => setShowMobileCategories(false);
+
   return (
     <section className="bg-slate-50 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="
-                            sticky top-24 
-                            self-start 
-                            rounded-3xl 
-                            border border-slate-200 
-                            bg-white 
-                            p-6 
-                            shadow-sm
-                          "
-          >                                                                                                     {/* This sidebar displays the product categories and allows users to navigate to different sections of the shop.*/}
+          <div className="xl:hidden">
+            <button
+              type="button"
+              aria-expanded={showMobileCategories}
+              onClick={() => setShowMobileCategories((prev) => !prev)}
+              onPointerDown={handleCategoryHandlePointerDown}
+              onPointerUp={handleCategoryHandlePointerUp}
+              className="fixed top-1/2 left-0 z-20 -ml-8 flex h-28 w-10 items-center justify-center rounded-r-full bg-slate-950 px-1 text-xs font-semibold uppercase tracking-[0.35em] text-white shadow-lg"
+            >
+              <span className="flex flex-col items-center leading-none">
+                <span>C</span>
+                <span>A</span>
+                <span>T</span>
+                <span>E</span>
+                <span>G</span>
+                <span>O</span>
+                <span>R</span>
+                <span>Y</span>
+              </span>
+            </button>
+
+            <div
+              className={`fixed inset-y-0 left-0 z-10 w-72 overflow-y-auto border-r border-slate-200 bg-white p-6 shadow-2xl transition-transform duration-300 ${showMobileCategories ? 'translate-x-0' : '-translate-x-full'}`}
+            >
+              <div className="mb-6 flex items-center justify-between">
+                <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
+                <button type="button" onClick={closeMobileCategories} className="text-sm font-semibold text-slate-500">
+                  Close
+                </button>
+              </div>
+              <div className="space-y-3">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.handle}
+                    href={`/shop/collections/${cat.handle}`}
+                    onClick={closeMobileCategories}
+                    className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-300"
+                  >
+                    {cat.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {showMobileCategories ? (
+              <button
+                type="button"
+                aria-label="Close categories"
+                onClick={closeMobileCategories}
+                className="fixed inset-0 z-0 bg-slate-900/40"
+              />
+            ) : null}
+          </div>
+
+          <aside className="hidden xl:block sticky top-24 self-start rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            {/* This sidebar displays the product categories and allows users to navigate to different sections of the shop.*/}
             <div className="mb-8">
               <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
             </div>
