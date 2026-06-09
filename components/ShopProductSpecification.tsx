@@ -55,9 +55,9 @@ export default function ShopProductSpecification({ product, category, categories
               onClick={() => setShowMobileCategories((prev) => !prev)}
               onPointerDown={handleCategoryHandlePointerDown}
               onPointerUp={handleCategoryHandlePointerUp}
-              className="fixed top-1/2 left-0 z-20 -ml-8 flex h-28 w-10 items-center justify-center rounded-r-full bg-slate-950 px-1 text-xs font-semibold uppercase tracking-[0.35em] text-white shadow-lg"
+              className="fixed top-1/2 left-0 z-20 -ml-5 flex h-32 w-14 items-center justify-center rounded-tr-3xl rounded-br-3xl bg-slate-950 px-2 text-[10px] font-semibold uppercase tracking-[0.35em] text-white shadow-lg"
             >
-              <span className="flex flex-col items-center leading-none">
+              <span className="flex h-full flex-col items-end justify-center text-center leading-none">
                 <span>C</span>
                 <span>A</span>
                 <span>T</span>
@@ -70,15 +70,15 @@ export default function ShopProductSpecification({ product, category, categories
             </button>
 
             <div
-              className={`fixed inset-y-0 left-0 z-10 w-72 overflow-y-auto border-r border-slate-200 bg-white p-6 shadow-2xl transition-transform duration-300 ${showMobileCategories ? 'translate-x-0' : '-translate-x-full'}`}
+              className={`fixed inset-y-0 left-0 z-10 w-72 overflow-y-auto border-r border-slate-200 bg-white px-6 py-8 shadow-2xl transition-transform duration-300 ${showMobileCategories ? 'translate-x-0' : '-translate-x-full'}`}
             >
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex items-center justify-between pt-24">
                 <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
                 <button type="button" onClick={closeMobileCategories} className="text-sm font-semibold text-slate-500">
                   Close
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 pt-8">
                 {categories.map((cat) => (
                   <Link
                     key={cat.handle}
