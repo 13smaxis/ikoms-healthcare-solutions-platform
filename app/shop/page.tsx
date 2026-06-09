@@ -9,11 +9,13 @@ import { useRouter } from 'next/navigation';
 import { addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/TrustBadgesMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
-import { getProductImage } from '@/lib/catergory-products';
+import { getProductImage, getProducts } from '@/lib/catergory-products';
+import type { ShopProduct } from '@/lib/catergory-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {
-  const quickAdd = (p: any, e: React.MouseEvent) => {
+  const products: ShopProduct[] = getProducts();
+  const quickAdd = (p: ShopProduct, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(
@@ -103,6 +105,56 @@ const ShopHome: React.FC = () => {
 
             <ShopOverlayMenu />                                                                                 {/* Hamburger menu for mobile */}
           
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Browse products</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {products.map((product) => (
+              <div key={product.id} className="
+                                                group 
+                                                overflow-hidden 
+                                                rounded-3xl 
+                                                border border-slate-200 
+                                                bg-white 
+                                                shadow-sm 
+                                                transition 
+                                                hover:-translate-y-0.5 hover:shadow-md
+                                                "
+              >
+                <div className="aspect-4/3 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    className="
+                                w-full h-full object-contain object-center transition duration-500"
+                  />
+                </div>
+                <div className="p-4">
+                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-slate-400">{product.product_type}</p>
+                  <h3 className="mt-3 text-lg font-semibold text-slate-900">{product.name}</h3>
+                  <p className="mt-2 text-sm text-slate-600 line-clamp-2">{product.description}</p>
+                  <div className="mt-4 flex items-center justify-between gap-4">
+                    <span className="text-base font-semibold text-rose-600">R{(product.price / 100).toFixed(2)}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => quickAdd(product, e)}
+                      className="rounded-full bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-rose-700"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

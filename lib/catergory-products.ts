@@ -1047,20 +1047,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     inventory_qty: 15,
     status: 'active',
   },
-  {
-    id: 'healthtech-001',
-    handle: 'portable-monitor',
-    name: 'Portable Patient Monitor',
-    sku: 'PM-220',
-    product_type: 'Healthcare Tech',
-    collectionHandle: 'healthcare-technology',
-    price: 12999,
-    images: ['/images/healthcare-technology/face-masks.jpg'],
-    tags: ['monitoring', 'clinical', 'portable'],
-    description: 'Multi-parameter monitor for continuous vital sign tracking in mobile care settings.',
-    inventory_qty: 8,
-    status: 'active',
-  },
 ];
 
 export function getProducts() 

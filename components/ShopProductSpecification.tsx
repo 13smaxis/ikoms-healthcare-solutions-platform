@@ -55,9 +55,27 @@ export default function ShopProductSpecification({ product, category, categories
               onClick={() => setShowMobileCategories((prev) => !prev)}
               onPointerDown={handleCategoryHandlePointerDown}
               onPointerUp={handleCategoryHandlePointerUp}
-              className="fixed top-1/2 left-0 z-20 -ml-5 flex h-32 w-14 items-center justify-center rounded-tr-3xl rounded-br-3xl bg-slate-950 px-2 text-[10px] font-semibold uppercase tracking-[0.35em] text-white shadow-lg"
+              className="
+                          fixed top-1/2 left-0 z-20 
+                          -ml-5 flex 
+                          h-32 w-14 
+                          items-center justify-center 
+                          rounded-tr-3xl rounded-br-3xl 
+                          bg-slate-950 
+                          px-2 
+                          text-[10px] font-semibold 
+                          uppercase 
+                          tracking-[0.35em] 
+                          text-white shadow-lg
+                        "
             >
-              <span className="flex h-full flex-col items-end justify-center text-center leading-none">
+              <span className="
+                                flex h-full flex-col 
+                                pl-4.5 
+                                justify-center text-center 
+                                leading-none
+                              "
+              >
                 <span>C</span>
                 <span>A</span>
                 <span>T</span>
@@ -70,7 +88,18 @@ export default function ShopProductSpecification({ product, category, categories
             </button>
 
             <div
-              className={`fixed inset-y-0 left-0 z-10 w-72 overflow-y-auto border-r border-slate-200 bg-white px-6 py-8 shadow-2xl transition-transform duration-300 ${showMobileCategories ? 'translate-x-0' : '-translate-x-full'}`}
+              className={`
+                          fixed inset-y-0 left-0 z-10 
+                          w-72 
+                          overflow-y-auto 
+                          border-r border-slate-200 
+                          bg-white 
+                          px-6 py-8 
+                          shadow-2xl 
+                          transition-transform 
+                          duration-300 
+                          ${showMobileCategories ? 'translate-x-0' : '-translate-x-full'}
+                        `}
             >
               <div className="mb-6 flex items-center justify-between pt-24">
                 <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>

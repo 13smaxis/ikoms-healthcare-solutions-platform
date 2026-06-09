@@ -148,7 +148,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
           className={`
                         inline-flex items-center gap-2 flex-nowrap whitespace-nowrap shrink-0
                         rounded-full
-                        bg-white/90
+                        bg-amber-100/90
                         px-4 py-2
                         text-sm font-semibold
                         text-slate-700
@@ -158,7 +158,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                         ${className ?? ''}
                     `}
         >
-          Shop menu
+          Shop By Category
         </button>
       </div>
 
