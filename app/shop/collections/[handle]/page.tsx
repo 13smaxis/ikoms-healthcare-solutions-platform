@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { getCategoryByHandle } from '@/lib/category-names';
+import { SHOP_CATEGORIES, getCategoryByHandle } from '@/lib/category-names';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 import LogoMarquee from '@/components/LogoMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
@@ -28,6 +28,23 @@ const CollectionPage: React.FC = () => {
     [handle],
   );
 
+  const [showMobileCategories, setShowMobileCategories] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+
+  const handleCategoryHandlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    dragStartX.current = event.clientX;
+  };
+
+  const handleCategoryHandlePointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    if (dragStartX.current === null) return;
+    if (dragStartX.current - event.clientX > 20) {
+      setShowMobileCategories(true);
+    }
+    dragStartX.current = null;
+  };
+
+  const closeMobileCategories = () => setShowMobileCategories(false);
+
   const hasProducts = products.length > 0;                                                                      //-Determines if there are products to display in the collection
 
   return (
@@ -49,10 +66,92 @@ const CollectionPage: React.FC = () => {
                 { label: collectionTitle },
               ]}
             />
-            <ShopOverlayMenu />                                                                                 {/* Calls the menu component with overlay styling */}
+            <ShopOverlayMenu className="hidden xl:flex" />                                                         {/* Keep desktop category menu visible only on larger screens */}
           </div>
         </div>
       </section>
+
+      <div className="xl:hidden">
+        <button
+          type="button"
+          aria-expanded={showMobileCategories}
+          onClick={() => setShowMobileCategories((prev) => !prev)}
+          onPointerDown={handleCategoryHandlePointerDown}
+          onPointerUp={handleCategoryHandlePointerUp}
+          className="
+                      fixed top-1/2 right-0 z-20
+                      -mr-5 flex
+                      h-32 w-14
+                      items-center justify-center
+                      rounded-tl-3xl rounded-bl-3xl
+                      bg-slate-950
+                      px-2
+                      text-[10px] font-semibold
+                      uppercase tracking-[0.35em]
+                      text-white shadow-lg
+                    "
+        >
+          <span className="
+                            flex h-full flex-col
+                            pr-4
+                            justify-center text-center
+                            leading-none
+                          "
+          >
+            <span>C</span>
+            <span>A</span>
+            <span>T</span>
+            <span>E</span>
+            <span>G</span>
+            <span>O</span>
+            <span>R</span>
+            <span>Y</span>
+          </span>
+        </button>
+
+        <div
+          className={`
+                      fixed inset-y-0 right-0 z-10
+                      w-72
+                      overflow-y-auto
+                      border-l border-slate-200
+                      bg-white
+                      px-6 py-8
+                      shadow-2xl
+                      transition-transform
+                      duration-300
+                      ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
+                    `}
+        >
+          <div className="mb-6 flex items-center justify-between pt-24">
+            <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
+            <button type="button" onClick={closeMobileCategories} className="text-sm font-semibold text-slate-500">
+              Close
+            </button>
+          </div>
+          <div className="space-y-3 pt-8">
+            {SHOP_CATEGORIES.map((cat) => (
+              <Link
+                key={cat.handle}
+                href={`/shop/collections/${cat.handle}`}
+                onClick={closeMobileCategories}
+                className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-300"
+              >
+                {cat.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {showMobileCategories ? (
+          <button
+            type="button"
+            aria-label="Close categories"
+            onClick={closeMobileCategories}
+            className="fixed inset-0 z-0 bg-slate-900/40"
+          />
+        ) : null}
+      </div>
 
       <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-16 sm:py-20">           {/* Hero-content section - Collection title and description */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
