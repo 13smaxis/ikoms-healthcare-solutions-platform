@@ -32,20 +32,24 @@ const CollectionPage: React.FC = () => {
 
   return (
     <SiteLayout>
-      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-10 sm:py-14">           {/* Hero section */}
+      <section className="fixed  left-0 right-0 z-40 border-b border-white/10 bg-linear-to-br from-rose-800 to-pink-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap mb-4">               {/* Header section with breadcrumbs and overlay menu */}
+          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap py-4">
             <ShopBreadcrumbs
               variant="hero"
               items={[
-                { label: 'Category', href: '/shop' },
+                { label: 'Home', href: '/shop' },
                 { label: collectionTitle },
               ]}
-            />                                                                                                  {/* Breadcrumbs for navigation, showing the path to the current collection */}
-            <ShopOverlayMenu />                                                                                 {/*Calls the ShopOverlayMenu component, for catergory menu items*/}          
+            />
+            <ShopOverlayMenu />
           </div>
-          
-          <div className="max-w-3xl">                                                                           {/* Collection title and description section */}
+        </div>
+      </section>
+
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-12 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               {collectionTitle}
             </h1>
@@ -88,10 +92,10 @@ const CollectionPage: React.FC = () => {
 
                   return (
                     <Link
-                      key={product.id}
+                      key={product.id} 
                       href={`/shop/products/${product.handle}`}
                       className="group block cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ease-out hover:shadow-md"
-                    >
+                    >                                                                                           {/* On-click, link redirects to the product detail(catergory-products) */}
                       <div className="relative overflow-hidden bg-slate-100 aspect-5/4">
                         <img
                           src={getProductImage(product)}

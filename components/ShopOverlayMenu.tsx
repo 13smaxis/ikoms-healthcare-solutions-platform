@@ -220,10 +220,10 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                                 flex-1 
                                 min-h-0 
                                 overflow-y-auto 
-                                py-8 sm:py-10 pr-1 
+                                py-8 sm:py-20 pr-1 
                                 hide-scrollbar
                               "
-                >
+                >                                                                                               {/* Scrollable container for the menu items */}
                   <nav className="w-full">
                     <div className="grid gap-3 sm:gap-4">
                       {SHOP_CATEGORIES.map((cat) => (

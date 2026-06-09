@@ -1,3 +1,8 @@
+/*
+ * Shop Product Specification Component - components/ShopProductSpecification.tsx
+ * Builds 
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -15,27 +20,44 @@ interface ShopProductSpecificationProps {
   relatedProducts: ShopProduct[];
 }
 
-export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) {
-  const { wishlist, toggleWishlist } = useWishlist();
-  const inWishlist = wishlist.includes(product.id);
-  const isOutOfStock = !product.inventory_qty || product.inventory_qty <= 0;
+export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) 
+{
+  const { wishlist, toggleWishlist } = useWishlist();                                                           //-Allows users to add or remove products from their wishlist and updates the UI accordingly.
+  const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
+  const isOutOfStock = !product.inventory_qty || product.inventory_qty <= 0;                                    //-Checks stock availability of the product to disable add to cart
 
   return (
     <section className="bg-slate-50 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="sticky top-24 self-start rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <aside className="
+                            sticky top-24 
+                            self-start 
+                            rounded-3xl 
+                            border border-slate-200 
+                            bg-white 
+                            p-6 
+                            shadow-sm
+                          "
+          >                                                                                                     {/* This sidebar displays the product categories and allows users to navigate to different sections of the shop.*/}
             <div className="mb-8">
               <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
-              <h2 className="mt-3 text-xl font-semibold text-slate-900">Shop sections</h2>
             </div>
             <div className="space-y-3">
               {categories.map((cat) => (
                 <Link
                   key={cat.handle}
                   href={`/shop/collections/${cat.handle}`}
-                  className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-50"
-                >
+                  className="
+                              block rounded-2xl 
+                              border border-slate-200 
+                              bg-slate-50 
+                              px-4 py-3 
+                              text-sm font-medium text-slate-700 
+                              transition 
+                              hover:border-rose-300 hover:bg-rose-300
+                            "
+                >                                                                                               {/*Provides nav links to different catergoriesin the shop*/}
                   {cat.title}
                 </Link>
               ))}
