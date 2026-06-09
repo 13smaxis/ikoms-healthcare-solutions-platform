@@ -31,6 +31,27 @@ const CATEGORY_MARQUEE_IMAGES: Record<string, string[]> = {
     '/images/emergency-first-aid/marquee/mindray.jpg',
     '/images/emergency-first-aid/marquee/omron.jpg',
   ],
+  'ppe-safety-equipment': [
+    '/images/ppe-safety-equipment/marquee/3M.jpg',
+    '/images/ppe-safety-equipment/marquee/ansell.jpg',
+    '/images/ppe-safety-equipment/marquee/catheters.jpg',
+    '/images/ppe-safety-equipment/marquee/disposable-aprons.jpg',
+    '/images/ppe-safety-equipment/marquee/gauze-bandages.jpg',
+    '/images/ppe-safety-equipment/marquee/surgical-gloves.jpg',
+  ],
+  'training-educational-supplies': [
+    '/images/training-educational-supplies/marquee/american-red-cross.jpg',
+    '/images/training-educational-supplies/marquee/elsvier.jpg',
+    '/images/training-educational-supplies/marquee/international-stroke-conference.jpg',
+    '/images/training-educational-supplies/marquee/laerdal.jpg',
+  ],
+  'home-care-patient-support': [
+    '/images/home-care-patient-support/marquee/ansell.jpg',
+    '/images/home-care-patient-support/marquee/arjo.jpg',
+    '/images/home-care-patient-support/marquee/hillrom.jpg',
+    '/images/home-care-patient-support/marquee/invacare.jpg',
+    '/images/home-care-patient-support/marquee/stryker.jpg',
+  ],
 };
 
 export function getCategoryMarqueeImages(handle: string) {

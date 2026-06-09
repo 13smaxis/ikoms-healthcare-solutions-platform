@@ -32,7 +32,14 @@ const CollectionPage: React.FC = () => {
 
   return (
     <SiteLayout>
-      <section className="fixed  left-0 right-0 z-40 border-b border-white/10 bg-linear-to-br from-rose-800 to-pink-700 text-white">
+      <section className="
+                          fixed left-0 right-0 
+                          z-40 
+                          border-b border-white/10 
+                          bg-linear-to-br from-rose-800 to-pink-700 
+                          text-white
+                        "
+        >                                                                                                       {/* Hero-header section for breadcrums and menu */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap py-4">
             <ShopBreadcrumbs
@@ -42,12 +49,12 @@ const CollectionPage: React.FC = () => {
                 { label: collectionTitle },
               ]}
             />
-            <ShopOverlayMenu />
+            <ShopOverlayMenu />                                                                                 {/* Calls the menu component with overlay styling */}
           </div>
         </div>
       </section>
 
-      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-12 sm:py-20">
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-12 sm:py-20">           {/* Hero-content section - Collection title and description */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">

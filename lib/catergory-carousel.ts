@@ -43,6 +43,22 @@ const CATEGORY_CAROUSEL_FILES_BY_HANDLE: Record<string, string[]> = {
     'first-aid-mini-kit.jpg',
     'hydrogen-peroxide.jpg',
   ],
+  'ppe-safety-equipment': [
+    'anti-splash-fog-visionwide-glasses.jpg',
+    'N95-face-mask.jpg',
+    'sterile-surgical-gowns.jpg',
+    'surgical-disposable-cap.jpg',
+    'transparent-face-sheild.jpg',
+  ],
+  'training-educational-supplies': [],
+  'home-care-patient-support': [
+    'bedscore-matress.jpg',
+    'bedside-commode.jpg',
+    'intensive-care-bed.jpg',
+    'medic-rollator.jpg',
+    'transpharm.jpg',
+    'wheel-chair.jpg',
+  ],
 };
 
 const CATEGORY_CAROUSEL_IMAGES: Record<string, string[]> =
