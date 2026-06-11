@@ -32,7 +32,7 @@ const ShopProductCard = ({
 }: ShopProductCardProps) => {
   const content = (
     <>
-      <div className="relative overflow-hidden bg-slate-100 aspect-5/4">
+      <div className="relative overflow-hidden bg-white aspect-5/4">
         <img
           src={getProductImage(product)}
           alt={product.name}
@@ -53,6 +53,8 @@ const ShopProductCard = ({
           </button>
         ) : null}
       </div>
+
+      <div className="mx-auto my-4 h-[1.5px] w-[clamp(4rem,22%,7rem)] rounded-full bg-slate-200" />
 
       <div className="p-4">
         <div className="space-y-4">
