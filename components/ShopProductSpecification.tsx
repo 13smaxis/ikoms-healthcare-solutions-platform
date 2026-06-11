@@ -8,6 +8,7 @@
 import { useState, useRef, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
+import ShopProductCard from '@/components/ShopProductCard';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
 import { getProductImage } from '@/lib/catergory-products';
@@ -260,30 +261,34 @@ export default function ShopProductSpecification({ product, category, categories
                 <p className="text-sm text-slate-500">{relatedProducts.length} items</p>
               </div>
 
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                {relatedProducts.map((related) => (
-                  <Link
-                    key={related.id}
-                    href={`/shop/products/${related.handle}`}
-                    className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="relative overflow-hidden bg-slate-100 aspect-5/4">
-                      <img
-                        src={getProductImage(related)}
-                        alt={related.name}
-                        className="w-full h-full object-contain object-center"
-                      />
-                    </div>
-                    <div className="p-5">
-                      <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">{related.product_type}</p>
-                      <h3 className="mt-3 text-base font-semibold text-slate-900">{related.name}</h3>
-                      <div className="mt-4 flex items-center justify-between gap-3 text-sm font-semibold text-slate-900">
-                        <span>{fmt(related.price)}</span>
-                        <span className="text-slate-500">View specs</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+              <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
+                {relatedProducts.map((related) => {
+                  const inWishlistRelated = wishlist.includes(related.id);
+
+                  return (
+                    <ShopProductCard
+                      key={related.id}
+                      product={related}
+                      href={`/shop/products/${related.handle}`}
+                      showWishlist
+                      inWishlist={inWishlistRelated}
+                      onToggleWishlist={() => toggleWishlist(related.id)}
+                      actionLabel="Add"
+                      onAction={() =>
+                        addToCart(
+                          {
+                            product_id: related.id,
+                            name: related.name,
+                            sku: related.sku,
+                            price: related.price,
+                            image: getProductImage(related),
+                          },
+                          1,
+                        )
+                      }
+                    />
+                  );
+                })}
               </div>
             </section>
           </main>
