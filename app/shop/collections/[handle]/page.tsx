@@ -204,7 +204,7 @@ const CollectionPage: React.FC = () => {
                       showWishlist
                       inWishlist={inWishlist}
                       onToggleWishlist={() => toggleWishlist(product.id)}
-                      actionLabel="Add to cart"
+                      actionLabel="Add"
                       actionDisabled={!product.inventory_qty || product.inventory_qty <= 0}
                       onAction={() => {
                         if (product.inventory_qty && product.inventory_qty > 0) {
