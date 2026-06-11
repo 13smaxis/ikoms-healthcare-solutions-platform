@@ -13,7 +13,7 @@ import { getCategoryMarqueeImages } from '@/lib/category-marquee';
 import { getProductsForCollectionHandle, getProductImage } from '@/lib/catergory-products';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
-import { Heart } from 'lucide-react';
+import ShopProductCard from '@/components/ShopProductCard';
 
 const CollectionPage: React.FC = () => {
   const params = useParams<{ handle?: string | string[] }>();
@@ -192,88 +192,35 @@ const CollectionPage: React.FC = () => {
                 <p className="text-sm text-slate-500">{products.length} products available now</p>            {/* Counts and Displays the number of products in the collection */}
               </div>                                                                                            {/* Header section for the product grid, includes a title and product count */}
 
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 xl:grid-cols-4">
                 {products.map((product) => {
                   const inWishlist = wishlist.includes(product.id);
 
                   return (
-                    <Link
-                      key={product.id} 
+                    <ShopProductCard
+                      key={product.id}
+                      product={product}
                       href={`/shop/products/${product.handle}`}
-                      className="group block cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ease-out hover:shadow-md"
-                    >                                                                                           {/* On-click, link redirects to the product detail(catergory-products) */}
-                      <div className="relative overflow-hidden bg-slate-100 aspect-5/4">
-                        <img
-                          src={getProductImage(product)}
-                          alt={product.name}
-                          className="
-                                      w-full h-full 
-                                      object-contain object-center 
-                                      transition 
-                                      duration-500
-                                    "
-                        />
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleWishlist(product.id);
-                          }}
-                          className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/90 text-slate-800 shadow-sm transition hover:bg-rose-50"
-                        >
-                          <Heart className="h-4 w-4" fill={inWishlist ? 'currentColor' : 'none'} />
-                        </button>
-                      </div>
-
-                      <div className="p-4">
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">{product.product_type}</p>
-                            <h3 className="mt-2 text-base font-semibold text-slate-900">{product.name}</h3>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="text-base font-semibold text-slate-900">{fmt(product.price)}</div>
-                            <button
-                              type="button"
-                              disabled={!product.inventory_qty || product.inventory_qty <= 0}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (product.inventory_qty && product.inventory_qty > 0) {
-                                  addToCart(
-                                            { 
-                                              product_id: product.id,
-                                              name: product.name, 
-                                              sku: product.sku, 
-                                              price: product.price, 
-                                              image: getProductImage(product) 
-                                            }, 
-                                          1);
-                                }
-                              }}
-                              className={`
-                                          inline-flex 
-                                          items-center justify-center 
-                                          rounded-full 
-                                          px-4 py-2 
-                                          text-sm 
-                                          font-semibold text-white 
-                                          transition 
-                                          ${product.inventory_qty && product.inventory_qty > 0 ? 
-                                            'bg-rose-700 hover:bg-rose-800' : 
-                                            'cursor-not-allowed bg-slate-300'
-                                           }
-                                       `}
-                            >
-                              Add to cart
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
+                      showWishlist
+                      inWishlist={inWishlist}
+                      onToggleWishlist={() => toggleWishlist(product.id)}
+                      actionLabel="Add to cart"
+                      actionDisabled={!product.inventory_qty || product.inventory_qty <= 0}
+                      onAction={() => {
+                        if (product.inventory_qty && product.inventory_qty > 0) {
+                          addToCart(
+                            {
+                              product_id: product.id,
+                              name: product.name,
+                              sku: product.sku,
+                              price: product.price,
+                              image: getProductImage(product),
+                            },
+                            1,
+                          );
+                        }
+                      }}
+                    />
                   );
                 })}
               </div>
