@@ -10,12 +10,15 @@ import { addToCart } from '@/lib/cart';
 import BenefitsMarquee from '@/components/TrustBadgesMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import ShopProductCard from '@/components/ShopProductCard';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { getProductImage, getProducts } from '@/lib/catergory-products';
 import type { ShopProduct } from '@/lib/catergory-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const ShopHome: React.FC = () => {
   const products: ShopProduct[] = getProducts();
+  const { wishlist, toggleWishlist } = useWishlist();
+
   const quickAdd = (p: ShopProduct, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -119,15 +122,22 @@ const ShopHome: React.FC = () => {
           </div>
 
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ShopProductCard
-                key={product.id}
-                product={product}
-                href={`/shop/products/${product.handle}`}
-                actionLabel="Add"
-                onAction={(e) => quickAdd(product, e)}
-              />
-            ))}
+            {products.map((product) => {
+              const inWishlist = wishlist.includes(product.id);
+
+              return (
+                <ShopProductCard
+                  key={product.id}
+                  product={product}
+                  href={`/shop/products/${product.handle}`}
+                  showWishlist
+                  inWishlist={inWishlist}
+                  onToggleWishlist={() => toggleWishlist(product.id)}
+                  actionLabel="Add"
+                  onAction={(e) => quickAdd(product, e)}
+                />
+              );
+            })}
           </div>
         </div>
       </section>                                                                                                {/* Marquee of trust badges */}
