@@ -66,12 +66,12 @@ const CollectionPage: React.FC = () => {
                 { label: collectionTitle },
               ]}
             />
-            <ShopOverlayMenu className="hidden xl:flex" />                                                         {/* Keep desktop category menu visible only on larger screens */}
+            <ShopOverlayMenu className="hidden xl:flex" />                                                      {/* Keep desktop category menu visible only on larger screens */}
           </div>
         </div>
       </section>
 
-      <div className="xl:hidden">
+      <div className="xl:hidden">                                                                               {/* Mobile category menu button and sliding menu */}
         <button
           type="button"
           aria-expanded={showMobileCategories}
@@ -111,32 +111,57 @@ const CollectionPage: React.FC = () => {
 
         <div
           className={`
-                      fixed inset-y-0 right-0 z-10
+                      fixed top-36 bottom-4 right-0 z-30
                       w-72
                       overflow-y-auto
-                      border-l border-slate-200
-                      bg-white
+                      bg-gray-300
+                      rounded-l-3xl
                       px-6 py-8
                       shadow-2xl
                       transition-transform
                       duration-300
                       ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
                     `}
-        >
-          <div className="mb-6 flex items-center justify-between pt-24">
-            <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
-            <button type="button" onClick={closeMobileCategories} className="text-sm font-semibold text-slate-500">
-              Close
+        >                                                                                                       {/* Mobile category menu container with content/links */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={closeMobileCategories}
+              className="
+                          absolute 
+                          top-0 left-0 
+                          flex 
+                          h-11 w-11 
+                          -translate-y-1/2 translate-x-0
+                          items-center justify-center 
+                          rounded-full 
+                          bg-rose-600 
+                          text-sm font-semibold text-white 
+                          shadow-lg 
+                          transition 
+                          hover:bg-rose-700
+                        "
+            >
+              X
             </button>
           </div>
-          <div className="space-y-3 pt-8">
+          <div className="space-y-3 pt-16">
             {SHOP_CATEGORIES.map((cat) => (
               <Link
                 key={cat.handle}
                 href={`/shop/collections/${cat.handle}`}
                 onClick={closeMobileCategories}
-                className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-300"
-              >
+                className="
+                            block 
+                            rounded-2xl 
+                            border border-slate-200 
+                            bg-slate-50 
+                            px-4 py-3 
+                            text-sm font-medium text-slate-700 
+                            transition 
+                            hover:border-rose-300 hover:bg-rose-30
+                          "
+              >                                                                                                 {/* Maps through the list of categories and creates a link for each one, clicking a category will also close the mobile menu */}
                 {cat.title}
               </Link>
             ))}
@@ -148,12 +173,12 @@ const CollectionPage: React.FC = () => {
             type="button"
             aria-label="Close categories"
             onClick={closeMobileCategories}
-            className="fixed inset-0 z-0 bg-slate-900/40"
+            className="fixed inset-0 z-20 bg-slate-900/30 backdrop-blur-xs"
           />
         ) : null}
       </div>
 
-      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-16 sm:py-20">           {/* Hero-content section - Collection title and description */}
+      <section className="bg-linear-to-br from-rose-800 to-pink-700 text-white py-16 sm:py-20">          {/* Hero-content section - Collection title and description */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
