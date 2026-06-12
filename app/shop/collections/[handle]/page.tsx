@@ -78,7 +78,7 @@ const CollectionPage: React.FC = () => {
           onClick={() => setShowMobileCategories((prev) => !prev)}
           onPointerDown={handleCategoryHandlePointerDown}
           onPointerUp={handleCategoryHandlePointerUp}
-          className="
+          className={`
                       fixed top-1/2 right-0 z-20
                       -mr-5 flex
                       h-32 w-14
@@ -89,7 +89,9 @@ const CollectionPage: React.FC = () => {
                       text-[10px] font-semibold
                       uppercase tracking-[0.35em]
                       text-white shadow-lg
-                    "
+                      transition-transform duration-300
+                      ${showMobileCategories ? '-translate-x-72' : 'translate-x-0'}
+                    `}
         >
           <span className="
                             flex h-full flex-col
@@ -124,7 +126,7 @@ const CollectionPage: React.FC = () => {
                     `}
         >                                                                                                       {/* Mobile category menu container with content/links */}
           <div className="relative">
-            <button
+            {/*<button
               type="button"
               onClick={closeMobileCategories}
               className="
@@ -143,21 +145,21 @@ const CollectionPage: React.FC = () => {
                         "
             >
               X
-            </button>
+            </button>*/}
           </div>
-          <div className="space-y-3 pt-16">
+          <div className="flex min-h-[calc(100%-4.5rem)] flex-col items-center justify-center gap-3 pt-16">
             {SHOP_CATEGORIES.map((cat) => (
               <Link
                 key={cat.handle}
                 href={`/shop/collections/${cat.handle}`}
                 onClick={closeMobileCategories}
                 className="
-                            block 
+                            w-full max-w-[18rem]
                             rounded-2xl 
                             border border-slate-200 
                             bg-slate-50 
                             px-4 py-3 
-                            text-sm font-medium text-slate-700 
+                            text-center text-sm font-medium text-slate-700 
                             transition 
                             hover:border-rose-300 hover:bg-rose-30
                           "
@@ -173,7 +175,7 @@ const CollectionPage: React.FC = () => {
             type="button"
             aria-label="Close categories"
             onClick={closeMobileCategories}
-            className="fixed inset-0 z-20 bg-slate-900/30 backdrop-blur-xs"
+            className="fixed inset-0 z-10 bg-slate-900/30 backdrop-blur-xs"
           />
         ) : null}
       </div>
