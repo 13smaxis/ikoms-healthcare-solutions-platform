@@ -22,8 +22,7 @@ interface ShopProductSpecificationProps {
   relatedProducts: ShopProduct[];
 }
 
-export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) 
-{
+export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) {
   const { wishlist, toggleWishlist } = useWishlist();                                                           //-Allows users to add or remove products from their wishlist and updates the UI accordingly.
   const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
   const isOutOfStock = !product.inventory_qty || product.inventory_qty <= 0;                                    //-Checks stock availability of the product to disable add to cart
@@ -49,33 +48,34 @@ export default function ShopProductSpecification({ product, category, categories
     <section className="bg-slate-50 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="xl:hidden">
+          <div className="xl:hidden">                                                                           {/* Mobile category menu button and sliding panel */}
             <button
               type="button"
               aria-expanded={showMobileCategories}
               onClick={() => setShowMobileCategories((prev) => !prev)}
               onPointerDown={handleCategoryHandlePointerDown}
               onPointerUp={handleCategoryHandlePointerUp}
-              className="
-                          fixed top-1/2 right-0 z-20 
-                          -mr-5 flex 
-                          h-32 w-14 
-                          items-center justify-center 
-                          rounded-tl-3xl rounded-bl-3xl 
-                          bg-slate-950 
-                          px-2 
-                          text-[10px] font-semibold 
-                          uppercase 
-                          tracking-[0.35em] 
-                          text-white shadow-lg
-                        "
+              className={`
+                      fixed top-1/2 right-0 z-20
+                      -mr-5 flex
+                      h-32 w-14
+                      items-center justify-center
+                      rounded-tl-3xl rounded-bl-3xl
+                      bg-slate-950
+                      px-2
+                      text-[10px] font-semibold
+                      uppercase tracking-[0.35em]
+                      text-white shadow-lg
+                      transition-transform duration-300
+                      ${showMobileCategories ? '-translate-x-72' : 'translate-x-0'}
+                    `}
             >
               <span className="
-                                flex h-full flex-col 
-                                pr-4
-                                justify-center text-center 
-                                leading-none
-                              "
+                            flex h-full flex-col
+                            pr-4
+                            justify-center text-center
+                            leading-none
+                          "
               >
                 <span>C</span>
                 <span>A</span>
@@ -90,31 +90,40 @@ export default function ShopProductSpecification({ product, category, categories
 
             <div
               className={`
-                          fixed inset-y-0 right-0 z-10 
-                          w-72 
-                          overflow-y-auto 
-                          border-l border-slate-200 
-                          bg-white 
-                          px-6 py-8 
-                          shadow-2xl 
-                          transition-transform 
-                          duration-300 
-                          ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
-                        `}
+                      fixed top-36 bottom-4 right-0 z-30 w-72
+                      overflow-y-auto
+                      bg-gray-300
+                      rounded-l-3xl
+                      px-6 py-8
+                      shadow-2xl
+                      transition-transform
+                      duration-300
+                      ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
+                    `}
             >
-              <div className="mb-6 flex items-center justify-between pt-24">
-                <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
-                <button type="button" onClick={closeMobileCategories} className="text-sm font-semibold text-slate-500">
-                  Close
-                </button>
-              </div>
-              <div className="space-y-3 pt-8">
+              <div className="
+                              flex min-h-[calc(100%-4.5rem)] 
+                              flex-col 
+                              items-center 
+                              justify-center 
+                              gap-3 
+                              pt-16
+                            "
+              >                                                                                                 {/* Mobile category menu links */}
                 {categories.map((cat) => (
                   <Link
                     key={cat.handle}
                     href={`/shop/collections/${cat.handle}`}
                     onClick={closeMobileCategories}
-                    className="block rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-rose-300 hover:bg-rose-300"
+                    className="
+                              w-full max-w-[18rem]
+                              rounded-2xl 
+                              border border-slate-200 
+                              bg-slate-50 
+                              px-4 py-3 
+                              text-center text-sm font-medium text-slate-700 
+                              transition 
+                              hover:border-rose-300 hover:bg-rose-30"
                   >
                     {cat.title}
                   </Link>
@@ -127,14 +136,23 @@ export default function ShopProductSpecification({ product, category, categories
                 type="button"
                 aria-label="Close categories"
                 onClick={closeMobileCategories}
-                className="fixed inset-0 z-0 bg-slate-900/40"
+                className="fixed inset-0 z-10 bg-slate-900/30 backdrop-blur-xs"
               />
             ) : null}
           </div>
 
-          <aside className="hidden xl:block sticky top-24 self-start rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            {/* This sidebar displays the product categories and allows users to navigate to different sections of the shop.*/}
-            <div className="mb-8">
+          <aside className="
+                            hidden xl:block 
+                            sticky top-24 
+                            self-start 
+                            rounded-3xl 
+                            border border-slate-200 
+                            bg-white 
+                            p-6 
+                            shadow-sm
+                          "
+          >
+            <div className="mb-8">                                                                              {/* Menu slider sidebar displays the product categories */}
               <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
             </div>
             <div className="space-y-3">
@@ -158,17 +176,32 @@ export default function ShopProductSpecification({ product, category, categories
             </div>
           </aside>
 
-          <main className="space-y-10">
-            <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-start rounded-4xl bg-white p-6 shadow-sm sm:p-10">
+          <main className="space-y-10">                                                                         {/* Main content area displaying product details and related products */}
+            <section className="
+                                grid gap-8 
+                                lg:grid-cols-[0.95fr_1.05fr] 
+                                items-start 
+                                rounded-4xl 
+                                bg-white 
+                                p-6 
+                                shadow-sm sm:p-10
+                              "
+            >
               <div className="space-y-6">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Product specifications</p>
-                  <h1 className="mt-3 text-3xl font-semibold text-slate-900 sm:text-4xl">{product.name}</h1>
+                  <p className="text-xs uppercase tracking-[0.35em] text-rose-600">
+                      Product specifications
+                  </p>
+                  <h1 className="mt-3 text-3xl font-semibold text-slate-900 sm:text-4xl">
+                      {product.name}
+                  </h1>
                   <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
                     {product.description}
                   </p>
                   {category ? (
-                    <p className="mt-4 text-sm text-slate-500">Category: {category.title}</p>
+                    <p className="mt-4 text-sm text-slate-500">
+                        Category: {category.title}
+                    </p>
                   ) : null}
 
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -187,22 +220,40 @@ export default function ShopProductSpecification({ product, category, categories
                         )
                       }
                       disabled={isOutOfStock}
-                      className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white transition ${
-                        isOutOfStock
-                          ? 'cursor-not-allowed bg-slate-300'
-                          : 'bg-rose-700 hover:bg-rose-800'
-                      }`}
+                      className={`
+                                  inline-flex 
+                                  items-center justify-center 
+                                  rounded-full 
+                                  px-6 py-3 
+                                  text-sm font-semibold text-white 
+                                  transition 
+                                  ${
+                                      isOutOfStock
+                                      ? 'cursor-not-allowed bg-slate-300'
+                                      : 'bg-rose-700 hover:bg-rose-800'
+                                    }
+                                `}
                     >
-                      {isOutOfStock ? 'Out of stock' : 'Add to cart'}
+                        {isOutOfStock ? 'Out of stock' : 'Add to cart'}
                     </button>
                     <button
                       type="button"
                       onClick={() => toggleWishlist(product.id)}
-                      className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition ${
-                        inWishlist
-                          ? 'border-rose-700 bg-rose-100 text-rose-700'
-                          : 'border-slate-200 bg-white text-slate-900 hover:border-rose-300 hover:bg-rose-50'
-                      }`}
+                      className={`
+                                  inline-flex 
+                                  items-center justify-center 
+                                  gap-2 
+                                  rounded-full 
+                                  border 
+                                  px-5 py-3 
+                                  text-sm font-semibold 
+                                  transition 
+                                  ${
+                                      inWishlist
+                                      ? 'border-rose-700 bg-rose-100 text-rose-700'
+                                      : 'border-slate-200 bg-white text-slate-900 hover:border-rose-300 hover:bg-rose-50'
+                                    }
+                               `}
                     >
                       <Heart className="h-4 w-4" fill={inWishlist ? 'currentColor' : 'none'} />
                       {inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -210,15 +261,23 @@ export default function ShopProductSpecification({ product, category, categories
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">                                                     {/* Displays product price and SKU in styled boxes */}
                   <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                    <p className="text-sm font-semibold text-slate-900">Price</p>
-                    <p className="mt-3 text-3xl font-semibold text-slate-900">{fmt(product.price)}</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                        Price
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-slate-900">
+                        {fmt(product.price)}
+                    </p>
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                    <p className="text-sm font-semibold text-slate-900">SKU</p>
-                    <p className="mt-3 text-sm text-slate-600">{product.sku}</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                        SKU
+                    </p>
+                    <p className="mt-3 text-sm text-slate-600">
+                        {product.sku}
+                    </p>
                   </div>
                 </div>
 
@@ -238,7 +297,9 @@ export default function ShopProductSpecification({ product, category, categories
 
                   <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                     <p className="text-sm font-semibold text-slate-900">Medical information</p>
-                    <p className="mt-3 text-slate-600">{product.medical_information || 'Medical information is not available for this product.'}</p>
+                    <p className="mt-3 text-slate-600">
+                        {product.medical_information || 'Medical information is not available for this product.'}
+                    </p>
                   </div>
                 </div>
               </div>

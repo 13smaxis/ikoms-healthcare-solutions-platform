@@ -21,7 +21,7 @@ const CollectionPage: React.FC = () => {
   const { wishlist, toggleWishlist } = useWishlist();                                                           //-Accesses the wishlist logic from WishlistContext
   const category = getCategoryByHandle(handle || '');                                                           //-Find category details based on handle from URL, if not found, category will be undefined
   const collectionTitle = category?.title || 'Collection';                                                      //-Try to find catergory name, if not found, fallback and use 'collection'
-  const collectionDescription = 'Browse hot buys, highlights, and products in this collection.';
+  const collectionDescription = 'Browse hot buys, highlights and products in this collection.';
   const marqueeImages = getCategoryMarqueeImages(handle || '');                                                 //-Get marquee images for the category, if not found, will return an empty array
   const products = useMemo(
     () => getProductsForCollectionHandle(handle || ''),
@@ -56,7 +56,7 @@ const CollectionPage: React.FC = () => {
                           bg-linear-to-br from-rose-800 to-pink-700 
                           text-white
                         "
-      >                                                                                                       {/* Hero-header section for breadcrums and menu */}
+      >                                                                                                         {/* Hero-header section for breadcrums and menu */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap py-4">
             <ShopBreadcrumbs
@@ -125,8 +125,8 @@ const CollectionPage: React.FC = () => {
                       ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
                     `}
         >                                                                                                       {/* Mobile category menu container with content/links */}
-          <div className="relative">
-            {/*<button
+          {/*<div className="relative">                                                                         {/* Container for the close button, positioned at the top of the menu
+            <button
               type="button"
               onClick={closeMobileCategories}
               className="
@@ -145,8 +145,8 @@ const CollectionPage: React.FC = () => {
                         "
             >
               X
-            </button>*/}
-          </div>
+            </button>
+          </div> */}
           <div className="flex min-h-[calc(100%-4.5rem)] flex-col items-center justify-center gap-3 pt-16">
             {SHOP_CATEGORIES.map((cat) => (
               <Link
@@ -186,8 +186,8 @@ const CollectionPage: React.FC = () => {
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               {collectionTitle}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-100 sm:text-base">
-              {collectionDescription}
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-100 sm:text-base">                       {/* Collection name and description */}
+              {collectionDescription} 
             </p>
           </div>
         </div>
@@ -213,10 +213,16 @@ const CollectionPage: React.FC = () => {
             <div className="pt-8 lg:pt-10">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Shop the collection</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">Trending products in {collectionTitle}</h2>
+                  <p className="text-xs uppercase tracking-[0.35em] text-rose-600">
+                      Shop the collection
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+                      Trending products in {collectionTitle}
+                  </h2>
                 </div>
-                <p className="text-sm text-slate-500">{products.length} products available now</p>            {/* Counts and Displays the number of products in the collection */}
+                <p className="text-sm text-slate-500">
+                    {products.length} products available now
+                </p>                                                                                            {/* Counts and Displays the number of products in the collection */}
               </div>                                                                                            {/* Header section for the product grid, includes a title and product count */}
 
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -253,7 +259,9 @@ const CollectionPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="py-12 text-center text-slate-500">No products in this collection yet.</div>
+            <div className="py-12 text-center text-slate-500">
+                No products in this collection yet.
+            </div>
           )}
         </div>
       </section>

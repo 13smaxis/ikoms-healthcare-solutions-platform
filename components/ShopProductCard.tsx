@@ -47,7 +47,18 @@ const ShopProductCard = ({
               event.stopPropagation();
               onToggleWishlist(product.id);
             }}
-            className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/90 text-slate-800 shadow-sm transition hover:bg-rose-50"
+            className="
+                        absolute 
+                        right-3 top-3 inline-flex 
+                        h-10 w-10 
+                        items-center justify-center 
+                        rounded-full 
+                        border border-white/80 
+                        bg-white/90 
+                        text-slate-800 
+                        shadow-sm transition 
+                        hover:bg-rose-50
+                      "
           >
             <Heart className="h-4 w-4" fill={inWishlist ? 'currentColor' : 'none'} />
           </button>
@@ -78,9 +89,16 @@ const ShopProductCard = ({
                     onAction(event);
                   }
                 }}
-                className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition ${
-                  actionDisabled ? 'cursor-not-allowed bg-slate-300' : 'bg-rose-700 hover:bg-rose-800'
-                }`}
+                className={`
+                            inline-flex 
+                            items-center 
+                            justify-center 
+                            rounded-full 
+                            px-4 py-2 
+                            text-sm 
+                            font-semibold 
+                            text-white transition 
+                            ${actionDisabled ? 'cursor-not-allowed bg-slate-300' : 'bg-rose-700 hover:bg-rose-800'}`}
               >
                 {actionLabel}
               </button>
@@ -91,7 +109,18 @@ const ShopProductCard = ({
     </>
   );
 
-  const wrapperClass = `group block cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 ease-out hover:shadow-md ${className}`;
+  const wrapperClass = `
+                          group block 
+                          cursor-pointer 
+                          overflow-hidden 
+                          rounded-3xl 
+                          border border-slate-300 
+                          bg-white 
+                          shadow-lg transition-shadow 
+                          duration-300 ease-out 
+                          hover:shadow-md 
+                          ${className}
+                        `;
 
   return href ? (
     <Link href={href} className={wrapperClass}>

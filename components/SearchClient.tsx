@@ -47,7 +47,12 @@ export default function SearchClient() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input name="q" value={q} onChange={e => setQ(e.target.value)} placeholder="Search products..." className="w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm" />
+            <input name="q" 
+                   value={q} 
+                   onChange={e => setQ(e.target.value)} 
+                   placeholder="Search products..." 
+                   className="w-full pl-9 pr-3 py-2.5 border border-slate-400 rounded-lg text-sm" 
+            />
           </div>
           
         {loading ? (
@@ -55,23 +60,57 @@ export default function SearchClient() {
         ) : results.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {results.map(p => (
-              <Link key={p.id} href={`/shop/products/${p.handle}`} className="block bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition group">
+              <Link key={p.id} href={`/shop/products/${p.handle}`} 
+                               className="
+                                          block 
+                                          bg-white 
+                                          border border-slate-200 
+                                          rounded-xl 
+                                          overflow-hidden hover:shadow-md 
+                                          transition 
+                                          group
+                                        "
+              >
                 <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                  <img src={getProductImage(p)} 
+                       alt={p.name} 
+                       className="w-full h-full object-cover group-hover:scale-105 transition" 
+                  />
                 </div>
                 <div className="p-4">
                   <div className="text-xs text-slate-500 mb-1">{p.product_type}</div>
                   <div className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2">{p.name}</div>
                   <div className="flex items-center justify-between">
                     <div className="font-bold text-slate-900">{fmt(p.price)}</div>
-                    <button onClick={(e) => quickAdd(p, e)} className="text-xs font-semibold px-2.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-md">Add</button>
+                    <button onClick={(e) => quickAdd(p, e)} 
+                            className="
+                                        text-xs 
+                                        font-semibold 
+                                        px-2.5 py-1.5 
+                                        bg-rose-700 
+                                        hover:bg-rose-800 
+                                        text-white 
+                                        rounded-md
+                                      "
+                    >
+                        Add
+                    </button>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
         ) : q ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">No products found for &ldquo;{q}&rdquo;.</div>
+          <div className="
+                          rounded-xl 
+                          border border-slate-200 
+                          bg-white 
+                          p-8 
+                          text-center text-slate-500
+                        "
+          >
+              No products found for &ldquo;{q}&rdquo;.
+          </div>
         ) : null}
       </div>
     </section>
