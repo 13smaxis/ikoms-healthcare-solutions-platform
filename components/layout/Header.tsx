@@ -53,7 +53,7 @@ const Header: React.FC = () => {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 bg-[rgb(42,61,130)] border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-[rgb(42,61,130)]  shadow-2xl shadow-black/50">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 py-2 sm:gap-4">                                 {/* Logo and Navigation */ }
           <Link href="/" className="flex items-center gap-2 min-w-0 shrink-0">                                  {/* Logo */ }

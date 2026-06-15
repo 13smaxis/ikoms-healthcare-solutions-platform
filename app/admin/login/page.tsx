@@ -2,9 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SiteLayout from '@/components/layout/SiteLayout';
 import { Shield, Lock, KeyRound, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 
 type Mode = 'signin' | 'reset';
 
@@ -56,8 +54,8 @@ const AdminLogin: React.FC = () => {
   };
 
   return (
-    <SiteLayout>
-      <div className="max-w-md mx-auto px-4 py-16">
+    <div className="min-h-screen bg-slate-700 px-4 py-16 flex items-center justify-center">
+      <div className="w-full max-w-md">
         <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
           <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center mb-4"><Shield className="w-6 h-6" /></div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">
@@ -99,7 +97,7 @@ const AdminLogin: React.FC = () => {
           )}
         </div>
       </div>
-    </SiteLayout>
+    </div>
   );
 };
 

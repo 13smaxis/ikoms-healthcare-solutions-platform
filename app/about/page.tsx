@@ -7,13 +7,22 @@ const About: React.FC = () => (
         <section className="relative overflow-hidden text-white py-20">
             <div
                 className="absolute inset-0 bg-cover bg-center bg-fixed opacity-20"
-                style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600)' }}
+                style={{ 
+                        backgroundImage: 'url(https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600)' 
+                      }}
             />
             <div className="absolute inset-0 bg-linear-to-br from-blue-900/95 to-emerald-800/95" />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">About Us</div>
-                <h1 className="text-4xl lg:text-5xl font-bold mb-4">Healthcare, reimagined under one roof</h1>
-                <p className="text-lg text-blue-100 max-w-2xl">IKOMS Healthcare Solutions was founded to solve the biggest operational challenges facing healthcare providers today — with a single, integrated platform.</p>
+                <div className="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">
+                    About Us
+                </div>
+                <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+                    Healthcare, reimagined under one roof
+                </h1>
+                <p className="text-lg text-blue-100 max-w-2xl">
+                    IKOMS Healthcare Solutions was founded to solve the biggest operational challenges facing 
+                    healthcare providers today — with a single, integrated platform.
+                </p>
             </div>
         </section>
 

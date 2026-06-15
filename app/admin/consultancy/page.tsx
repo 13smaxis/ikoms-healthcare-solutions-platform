@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit2, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { fmt } from '@/lib/cart';
 
 type ConsultancyTopicForm = { id?: string; title: string; description: string; duration: string; price: number; image_url: string; is_active: boolean; };
@@ -38,7 +38,6 @@ const AdminConsultancyPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 mb-2"><ArrowLeft className="w-4 h-4" /> Back to dashboard</Link>
           <h1 className="text-3xl font-bold text-slate-900">Consultancy</h1>
           <div className="text-sm text-slate-500 mt-1">Manage consultancy services and bookings.</div>
         </div>
