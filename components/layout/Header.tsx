@@ -205,7 +205,16 @@ const Header: React.FC = () => {
 
             <Link
               href="/admin"
-              className="hidden sm:inline-block px-4 py-2 text-sm font-semibold text-white bg-blue-700 rounded-md hover:bg-blue-800 transition"
+              className="
+                          hidden 
+                          sm:inline-block 
+                          px-4 py-2 
+                          text-sm font-semibold text-white 
+                          bg-blue-700 
+                          rounded-md 
+                          hover:bg-blue-800 
+                          transition
+                        "
             >
               Admin
             </Link>

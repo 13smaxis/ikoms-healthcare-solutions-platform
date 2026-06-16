@@ -22,25 +22,82 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file) 
+    {
       setProfileImage(URL.createObjectURL(file));
     }
   };
 
   const isActive = (href: string) => pathname === href;
 
+  const Navigation = ({
+    onClick,
+  }: {
+    onClick?: () => void;
+  }) => (
+    <nav className="space-y-2">
+      {navLinks.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          onClick={onClick}
+          className={`
+                      block 
+                      bg-slate-600
+                      rounded-2xl 
+                      px-4 py-3 
+                      text-sm 
+                      font-semibold 
+                      transition 
+                      ${isActive(link.href)
+              ? " text-amber-400 border-amber-400 border"
+              : "text-slate-300 hover:bg-slate-400 hover:text-white"
+            }
+                    `}
+        >
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+
+  const SignInButton = ({ onClick }: { onClick?: () => void }) => (
+    <Link
+      href="/admin/login"
+      onClick={onClick}
+      className="
+      block
+      rounded-full
+      bg-blue-700
+      px-4 py-3
+      text-center
+      text-sm
+      font-semibold text-white
+      hover:bg-blue-800
+    "
+    >
+      Sign in
+    </Link>
+  );
+
   return (
     <div className="min-h-screen bg-slate-700">
-      {/* Mobile Sidebar - slides in from left */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 transform border-r border-slate-800 bg-slate-900 p-5 transition-transform duration-200 lg:hidden ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+        className={`
+                    fixed 
+                    inset-y-0 left-0 z-50 
+                    w-72 
+                    transform 
+                    border-r border-slate-800 
+                    bg-slate-900 
+                    p-5 
+                    transition-transform 
+                    duration-200 
+                    lg:hidden 
+                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+                  `}
+      >                                                                                                         {/* Mobile Sidebar - slides in from left */}
         <div className="flex items-center justify-between pb-4">
-          <div className="flex items-center gap-2">
-            <img src={COMPANY.logo} alt="IKOMS" className="h-10 w-auto" />
-          </div>
           <button
             className="rounded-md p-2 text-slate-300 hover:bg-slate-700"
             onClick={() => setSidebarOpen(false)}
@@ -48,74 +105,70 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="space-y-2">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`block rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                isActive(link.href)
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-300 hover:bg-slate-700 hover:text-white"
-              }`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+
+        <div className="flex-1 flex flex-col justify-center">                                                   {/* Mobile Navigation Links */}
+          <Navigation onClick={() => setSidebarOpen(false)} />
+        </div>
+
         <div className="mt-auto pt-4">
-          <Link
-            href="/admin/login"
-            className="block rounded-full bg-slate-800 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-slate-700"
-            onClick={() => setSidebarOpen(false)}
-          >
-            Sign in
-          </Link>
+          <SignInButton onClick={() => setSidebarOpen(false)} />                                                {/* Sign in button at bottom of mobile sidebar */}
         </div>
       </aside>
 
-      {/* Mobile Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-slate-950/60 lg:hidden ${
-          sidebarOpen ? "block" : "hidden"
-        }`}
+        className={`
+                    fixed 
+                    inset-0 z-40 
+                    bg-slate-950/60 
+                    lg:hidden 
+                    ${sidebarOpen ? "block" : "hidden"}
+                  `}
         onClick={() => setSidebarOpen(false)}
-      />
+      />                                                                                                        {/* Mobile Backdrop */}
 
-      {/* Desktop Sidebar - fixed on left */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-slate-800 lg:bg-slate-900 lg:p-5">
+      <aside className="
+                        hidden
+                        md:flex
+                        fixed inset-y-0 left-0 z-50 
+                        md:w-56 lg:w-72
+                        flex-col
+                        border-r border-slate-800
+                        bg-slate-900
+                        p-5
+                      "
+      >                                                                                                         {/* Desktop Sidebar - fixed on left */}
         <div className="flex items-center gap-3 pb-6">
-          <img src={COMPANY.logo} alt="IKOMS" className="h-18 w-auto" />
-        </div>
-        <nav className="flex-1 flex flex-col justify-center space-y-2">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`block rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                isActive(link.href)
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-300 hover:bg-slate-700 hover:text-white"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto pt-4">
           <Link
-            href="/admin/login"
-            className="block rounded-full bg-blue-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-blue-800"
+            href="/"
+            className="inline-flex items-center"
+            aria-label="IKOMS Home"
           >
-            Sign in
+            <img
+              src={COMPANY.logo}
+              alt="IKOMS Home"
+              className="h-10 md:h-18 w-auto"
+            />
           </Link>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center">                                                   {/* Desktop Navigation Links */}
+          <Navigation />
+        </div>
+
+        <div className="mt-auto pt-4">
+          <SignInButton />                                                                                      {/* Sign in button at bottom of desktop sidebar */}
         </div>
       </aside>
 
-      {/* Main content area with header */}
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-800/95 px-4 py-3 backdrop-blur-sm">
+      <div className="lg:pl-72">                                                                                {/* Main content area + header */}
+        <header className="
+                            sticky top-0 z-30 
+                            border-b border-slate-800 
+                            bg-slate-800/95 
+                            px-4 py-3 
+                            backdrop-blur-sm
+                          "
+        >                                                                                                       {/* Header with menu button, notifications, and profile */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
@@ -126,11 +179,28 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <button className="rounded-full border border-slate-700 bg-slate-900 p-2 text-slate-300 hover:bg-slate-700">
+              <button className="
+                                  rounded-full 
+                                  border border-slate-700 
+                                  bg-slate-900 p-2 
+                                  text-slate-300 
+                                  hover:bg-slate-700
+                                "
+              >
                 <Bell className="h-5 w-5" />
-              </button>
-              <label htmlFor="admin-profile-upload" className="cursor-pointer">
-                <div className="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2">
+              </button>                                                                                         {/* Notifications button */}
+              
+              <label htmlFor="admin-profile-upload" className="cursor-pointer">                                 {/* Profile upload - clicking opens file dialog */}
+                <div className="
+                                flex 
+                                items-center 
+                                gap-3 
+                                rounded-2xl 
+                                border border-slate-700 
+                                bg-slate-900 
+                                px-3 py-2
+                              "
+                >
                   <Avatar className="h-10 w-10">
                     {profileImage ? (
                       <AvatarImage src={profileImage} alt="Profile" />
@@ -144,17 +214,25 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   </div>
                 </div>
               </label>
+              
               <input
                 id="admin-profile-upload"
                 type="file"
                 accept="image/*"
                 onChange={handleProfileUpload}
                 className="sr-only"
-              />
+              />                                                                                                {/* Hidden file input for profile image upload */}
+
             </div>
           </div>
         </header>
-        <main className="min-h-[calc(100vh-72px)] px-4 py-4 lg:px-6 lg:py-6">
+        
+        <main className="
+                          min-h-[calc(100vh-var(--header-height))] 
+                          px-4 py-4 
+                          lg:px-6 lg:py-6
+                        "
+        >                                                                                                       {/* Main content area */}
           {children}
         </main>
       </div>

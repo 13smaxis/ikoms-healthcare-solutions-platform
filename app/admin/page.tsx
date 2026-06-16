@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Users, GraduationCap, Briefcase, ShoppingBag, Shield, Menu, X } from 'lucide-react';
+import { Users, GraduationCap, Briefcase, ShoppingBag, Shield } from 'lucide-react';
 import { fmt } from '@/lib/cart';
-import { COMPANY } from '@/lib/constants';
 
 type TeamMember = {
   id: string | number;
@@ -16,13 +15,21 @@ type TeamMember = {
 };
 
 const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState({ jobs: 0, apps: 0, courses: 0, bookings: 0, topics: 0, cbookings: 0, orders: 0, revenue: 0 });
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [stats, setStats] = useState(
+                                      { jobs: 0, apps: 0, courses: 0, bookings: 0, 
+                                        topics: 0, cbookings: 0, orders: 0, revenue: 0 
+                                      }
+                                    );
+  
+const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]); 
 
   useEffect(() => {
     (async () => {
-      const [{ count: jobs }, { count: apps }, { count: courses }, { count: bookings }, { count: topics }, { count: cbookings }, { data: orders }] = await Promise.all([
+      const [
+              { count: jobs }, { count: apps }, { count: courses }, { count: bookings }, { count: topics }, 
+              { count: cbookings }, { data: orders }
+            ] = await Promise.all
+      ([
         supabase.from('biz_jobs').select('*', { count: 'exact', head: true }),
         supabase.from('biz_applications').select('*', { count: 'exact', head: true }),
         supabase.from('biz_courses').select('*', { count: 'exact', head: true }),
@@ -51,66 +58,7 @@ const AdminDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-700">
-      <aside className="fixed top-0 left-0 z-10 h-screen w-64 bg-slate-900 shadow-lg">
-        <div className="flex h-full flex-col justify-between px-4 py-4">
-          <div className="flex flex-col gap-6">
-            <Link href="/" className="inline-flex items-center">
-              <img
-                src={COMPANY.logo}
-                alt="IKOMS Logo"
-                className="block h-26 w-auto object-contain"
-              />
-            </Link>
-          </div>
-
-          <nav className="flex-1">
-            <div className="flex h-full flex-col justify-center gap-2">
-              <Link href="/admin"
-                className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-              >
-                <Shield className="w-4 h-4" />
-                Overview
-              </Link>
-              <Link href="/admin/jobs"
-                className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-              >
-                <Users className="w-4 h-4" />
-                Recruitment
-              </Link>
-              <Link href="/admin/courses"
-                className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-              >
-                <GraduationCap className="w-4 h-4" />
-                Training
-              </Link>
-              <Link href="/admin/consultancy"
-                className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-              >
-                <Briefcase className="w-4 h-4" />
-                Consultancy
-              </Link>
-              <Link href="/admin/orders"
-                className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-900 hover:text-white"
-              >
-                <ShoppingBag className="w-4 h-4" />
-                E-commerce
-              </Link>
-            </div>
-          </nav>
-
-          <div className="pt-4">
-            <Link href="/admin/login"
-              className="inline-flex w-full items-center justify-center rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
-            >
-              Sign in
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      <main className="ml-64 min-h-screen px-4 py-4 flex items-center justify-center">
-        <div className="w-full max-w-7xl">
+    <div className="w-full max-w-7xl px-4 py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { l: 'Active jobs', v: stats.jobs, s: `${stats.apps} applications`, c: 'bg-blue-700 text-white' },
@@ -127,17 +75,29 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white border border-slate-200 rounded-xl p-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-6">                               {/* Quick actions section */}
               <h3 className="font-bold text-slate-900 mb-3">Quick actions</h3>
               <div className="space-y-2 text-sm">
-                <Link href="/admin/jobs" className="block px-3 py-2 hover:bg-slate-50 rounded">Post a new job →</Link>
-                <Link href="/admin/courses" className="block px-3 py-2 hover:bg-slate-50 rounded">Add a training course →</Link>
-                <Link href="/admin/consultancy" className="block px-3 py-2 hover:bg-slate-50 rounded">Add a consultancy service →</Link>
-                <Link href="/admin/orders" className="block px-3 py-2 hover:bg-slate-50 rounded">Manage E-commerce →</Link>
+                <Link href="/admin/jobs" 
+                      className="block px-3 py-2 hover:bg-slate-50 rounded">
+                        Post a new job →
+                </Link>
+                <Link href="/admin/courses" 
+                      className="block px-3 py-2 hover:bg-slate-50 rounded">
+                        Add a training course →
+                </Link>
+                <Link href="/admin/consultancy" 
+                      className="block px-3 py-2 hover:bg-slate-50 rounded">
+                        Add a consultancy service →
+                </Link>
+                <Link href="/admin/orders" 
+                      className="block px-3 py-2 hover:bg-slate-50 rounded">
+                        Manage E-commerce →
+                </Link>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl p-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-6">                               {/* Jump to public pages section */}
               <h3 className="font-bold text-slate-900 mb-3">Jump to public pages</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <Link href="/" className="px-3 py-2 hover:bg-slate-50 rounded">Home</Link>
@@ -150,9 +110,11 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-6">
+          <div className="bg-white border border-slate-200 rounded-xl p-6">                                 {/* Admin team members section */}
             <h3 className="font-bold text-slate-900 mb-3">Admin team members</h3>
-            <p className="text-xs text-slate-500 mb-4">Users with records in admin_users are listed here for reference.</p>
+            <p className="text-xs text-slate-500 mb-4">
+                Users with records in admin_users are listed here for reference.
+            </p>
             <table className="w-full text-sm">
               <thead className="bg-amber-100/60 border-b border-amber-200">
                 <tr className="text-left">
@@ -167,16 +129,29 @@ const AdminDashboard: React.FC = () => {
                   <tr key={member.id} className="border-b border-amber-100">
                     <td className="p-3">{member.full_name || '—'}</td>
                     <td className="p-3">{member.email}</td>
-                    <td className="p-3"><span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">{member.role || 'admin'}</span></td>
-                    <td className="p-3 text-xs text-slate-500">{member.created_at ? new Date(member.created_at).toLocaleDateString('en-GB') : '—'}</td>
+                    <td className="p-3"><span className="
+                                                          text-xs 
+                                                          px-2 py-0.5 
+                                                          bg-blue-100 
+                                                          text-blue-700 
+                                                          rounded-full">{member.role || 'admin'}
+                                        </span>
+                    </td>
+                    <td className="p-3 text-xs text-slate-500">
+                        {member.created_at ? new Date(member.created_at).toLocaleDateString('en-GB') : '—'}
+                    </td>
                   </tr>
                 ))}
-                {teamMembers.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-slate-500">No admin profiles found in backend yet.</td></tr>}
+                {teamMembers.length === 0 && 
+                <tr>
+                  <td colSpan={4} 
+                      className="p-6 text-center text-slate-500">
+                        No admin profiles found in backend yet.
+                  </td>
+                </tr>}
               </tbody>
             </table>
           </div>
-          </div>
-        </main>
       </div>
   );
 };
