@@ -14,7 +14,6 @@ export type ShopProduct = {
   model?: string;
   key_features?: string[];
   medical_information?: string;
-  inventory_qty: number | null;
   created_at?: string;
   status?: string;
 };
@@ -61,7 +60,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Use for skin cleansing before injections, blood draws, and wound dressing changes. Dispose after single use. Keep away from flame.',
-    inventory_qty: 48,
     status: 'active',
   },
   {
@@ -84,7 +82,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Single-use gloves for surgical procedures and clinical examinations. Designed for barrier protection against contaminants. Discard after use.',
-    inventory_qty: 24,
     status: 'active',
   },
   {
@@ -107,7 +104,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Ideal for securing wound dressings, catheters, and tubing. Remove gently to avoid skin irritation. Suitable for sensitive skin.',
-    inventory_qty: 31,
     status: 'active',
   },
     {
@@ -130,7 +126,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Use for short-term urinary catheterisation under clinical supervision. Single-use product. Follow standard hygiene protocols and discard safely after use.',
-    inventory_qty: 26,
     status: 'active',
   },
   {
@@ -153,7 +148,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Suitable for general clinical use and patient care activities. Replace after each use and dispose safely.',
-    inventory_qty: 62,
     status: 'active',
   },
   {
@@ -176,7 +170,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Use during patient care and clinical procedures to protect clothing and maintain hygiene. Dispose after use.',
-    inventory_qty: 40,
     status: 'active',
   },
   {
@@ -199,7 +192,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Use for wound coverage, support, and absorption. Change regularly to maintain cleanliness and healing.',
-    inventory_qty: 54,
     status: 'active',
   },
   {
@@ -222,7 +214,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Intended for intravenous access and fluid administration. Use under clinical supervision and dispose after single use.',
-    inventory_qty: 38,
     status: 'active',
   },
   {
@@ -245,7 +236,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Suitable for medication delivery and clinical injections. Use with compatible needles and dispose after use.',
-    inventory_qty: 74,
     status: 'active',
   },
   {
@@ -268,7 +258,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     medical_information:
       'Use to protect injured areas, absorb exudate, and support wound healing. Change as needed according to clinical guidelines.',
-    inventory_qty: 45,
     status: 'active',
   },
   {
@@ -282,7 +271,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/blood-pressure-meter.jpg'],
     tags: ['blood pressure', 'monitoring', 'portable'],
     description: 'Accurate digital blood pressure monitor for daily screening and clinical checks.',
-    inventory_qty: 22,
     status: 'active',
     key_features: [
       'Fast inflation with clear LED display',
@@ -304,7 +292,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/finger-pulse-oximeter.jpg'],
     tags: ['oxygen saturation', 'SpO2', 'portable'],
     description: 'Compact fingertip pulse oximeter for quick SpO2 and pulse measurement.',
-    inventory_qty: 16,
     status: 'active',
     key_features: [
       'Large OLED display for easy reading',
@@ -326,7 +313,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/twelve-channel-ecg.jpg'],
     tags: ['ecg', 'cardiac monitoring', 'clinical'],
     description: 'Full-featured 12-channel ECG machine for advanced cardiac diagnostics.',
-    inventory_qty: 6,
     status: 'active',
     key_features: [
       'Clear waveform display with recording capability',
@@ -348,7 +334,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/handheld-ultrasound-scanner.jpg'],
     tags: ['ultrasound', 'portable', 'imaging'],
     description: 'Portable handheld ultrasound scanner for rapid bedside imaging and diagnostics.',
-    inventory_qty: 9,
     status: 'active',
     key_features: [
       'High-resolution imaging in a compact form',
@@ -370,7 +355,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/kx5000-laptop-ultrasound.jpg'],
     tags: ['ultrasound', 'diagnostic imaging', 'clinical'],
     description: 'Full-featured laptop ultrasound system for diagnostic imaging in clinics and hospitals.',
-    inventory_qty: 5,
     status: 'active',
     key_features: [
       'Large laptop display with advanced imaging modes',
@@ -392,7 +376,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/contec-egc-1212g.jpg'],
     tags: ['ecg', 'cardiac', 'clinical'],
     description: 'High-performance Contec ECG 1212G for accurate cardiac monitoring and reporting.',
-    inventory_qty: 10,
     status: 'active',
     key_features: [
       '12-lead ECG recording',
@@ -414,7 +397,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/contec-sp100-lung-function-machine.jpg'],
     tags: ['spirometry', 'lung function', 'respiratory'],
     description: 'Portable lung function machine for spirometry testing and respiratory assessment.',
-    inventory_qty: 8,
     status: 'active',
     key_features: [
       'Fast pulmonary function tests',
@@ -436,7 +418,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/diagnostic-equipment/rossmax-sb200-pulse-oximeter.jpg'],
     tags: ['oxygen', 'pulse', 'portable'],
     description: 'Rossmax SB200 pulse oximeter for quick and reliable oxygen saturation measurements.',
-    inventory_qty: 14,
     status: 'active',
     key_features: [
       'Large dual-color display',
@@ -458,7 +439,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/first-aid-kit.jpg'],
     tags: ['bandages', 'emergency', 'kit'],
     description: 'Ready-to-use first aid kit with bandages, disinfectants, and emergency essentials.',
-    inventory_qty: 27,
     status: 'active',
     key_features: [
       'Waterproof casing for outdoor use',
@@ -480,7 +460,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/first-aid-mini-kit.jpg'],
     tags: ['travel', 'compact', 'emergency'],
     description: 'Compact mini kit for travel, car, and personal emergency preparedness.',
-    inventory_qty: 34,
     status: 'active',
     key_features: [
       'Small, lightweight and portable',
@@ -502,7 +481,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/cpr-pocket-resuscitator.jpg'],
     tags: ['cpr', 'resuscitation', 'emergency'],
     description: 'Compact pocket resuscitator for safe ventilation during CPR and first response.',
-    inventory_qty: 18,
     status: 'active',
     key_features: [
       'One-way valve for hygiene',
@@ -524,7 +502,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/burn-gel-tube.jpg'],
     tags: ['burn care', 'cooling', 'emergency'],
     description: 'Cooling burn gel for quick first aid treatment of minor burns and scalds.',
-    inventory_qty: 41,
     status: 'active',
     key_features: [
       'Soothing formula for burn relief',
@@ -546,7 +523,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/hydrogen-peroxide.jpg'],
     tags: ['disinfectant', 'wound care', 'first aid'],
     description: 'Antiseptic hydrogen peroxide for wound cleansing and first aid preparation.',
-    inventory_qty: 29,
     status: 'active',
     key_features: [
       'Effective wound cleansing',
@@ -568,7 +544,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/betadine.jpg'],
     tags: ['antiseptic', 'wound care', 'disinfectant'],
     description: 'Betadine antiseptic solution for effective wound cleansing and infection prevention.',
-    inventory_qty: 35,
     status: 'active',
     key_features: [
       'Broad-spectrum antiseptic activity',
@@ -590,7 +565,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/blue-nitrile-gloves.jpg'],
     tags: ['gloves', 'protective', 'disposable'],
     description: 'Durable blue nitrile gloves for safe handling during first aid and emergency response.',
-    inventory_qty: 50,
     status: 'active',
     key_features: [
       'Latex-free nitrile material',
@@ -612,7 +586,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/burncare.jpg'],
     tags: ['burn care', 'dressing', 'cooling'],
     description: 'BurnCare dressing for soothing relief and protective coverage of minor burns.',
-    inventory_qty: 20,
     status: 'active',
     key_features: [
       'Cooling hydrogel formula',
@@ -634,7 +607,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/cancare-gauzepad.jpg'],
     tags: ['gauze', 'wound care', 'absorbent'],
     description: 'Sterile CanCare gauze pad for wound coverage and absorption during first aid.',
-    inventory_qty: 42,
     status: 'active',
     key_features: [
       'High absorbency',
@@ -656,7 +628,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/cpr-mouthpiece.jpg'],
     tags: ['cpr', 'resuscitation', 'safety'],
     description: 'CPR mouthpiece for safe barrier protection during rescue breathing.',
-    inventory_qty: 25,
     status: 'active',
     key_features: [
       'One-way valve protection',
@@ -678,7 +649,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/elasto-plaster.jpg'],
     tags: ['bandage', 'plaster', 'elastic'],
     description: 'Stretchable Elasto plaster for secure wound coverage with comfortable movement.',
-    inventory_qty: 30,
     status: 'active',
     key_features: [
       'Elastic stretch for joint movement',
@@ -700,7 +670,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/emergency-first-aid/healthease-sterile-dressing-tray.jpg'],
     tags: ['sterile', 'dressing', 'tray'],
     description: 'Sterile dressing tray with essential supplies for safe wound care and emergency dressing changes.',
-    inventory_qty: 18,
     status: 'active',
     key_features: [
       'Pre-packed sterile dressing supplies',
@@ -722,7 +691,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/bedscore-matress.jpg'],
     tags: ['pressure relief', 'comfort', 'home care'],
     description: 'Advanced pressure relief mattress designed for patient comfort and skin protection.',
-    inventory_qty: 12,
     status: 'active',
   },
   {
@@ -736,7 +704,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/bedside-commode.jpg'],
     tags: ['mobility', 'sanitation', 'home care'],
     description: 'Stable bedside commode for safe and convenient toileting support at home.',
-    inventory_qty: 10,
     status: 'active',
   },
   {
@@ -750,7 +717,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/intensive-care-bed.jpg'],
     tags: ['clinical', 'adjustable', 'home care'],
     description: 'Adjustable intensive care bed for advanced patient support and positioning.',
-    inventory_qty: 4,
     status: 'active',
   },
   {
@@ -764,7 +730,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/medic-rollator.jpg'],
     tags: ['mobility', 'support', 'walking aid'],
     description: 'Lightweight medic rollator for secure walking support and stability.',
-    inventory_qty: 14,
     status: 'active',
   },
   {
@@ -778,7 +743,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/over-bed-table.jpg'],
     tags: ['convenience', 'patient care', 'home care'],
     description: 'Adjustable over bed table for patient meals, reading, and care supplies.',
-    inventory_qty: 16,
     status: 'active',
   },
   {
@@ -792,7 +756,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/patient-hoist.jpg'],
     tags: ['lifting', 'transfer', 'safety'],
     description: 'Durable patient hoist for safe transfers between bed, chair, and wheelchair.',
-    inventory_qty: 6,
     status: 'active',
   },
   {
@@ -806,7 +769,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/three-function-bed.jpg'],
     tags: ['adjustable', 'care', 'home care'],
     description: 'Three-function bed with head, foot, and height adjustments for personalised patient care.',
-    inventory_qty: 7,
     status: 'active',
   },
   {
@@ -820,7 +782,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/transpharm.jpg'],
     tags: ['storage', 'mobility', 'home care'],
     description: 'Transpharm trolley for convenient medical supply storage and easy manoeuvring.',
-    inventory_qty: 11,
     status: 'active',
   },
   {
@@ -834,7 +795,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/walker.jpg'],
     tags: ['mobility', 'stability', 'home care'],
     description: 'Sturdy medical walker to support independent movement around the home.',
-    inventory_qty: 18,
     status: 'active',
   },
   {
@@ -848,7 +808,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/home-care-patient-support/wheel-chair.jpg'],
     tags: ['mobility', 'support', 'home care'],
     description: 'Comfortable and durable wheelchair designed for everyday home mobility.',
-    inventory_qty: 12,
     status: 'active',
   },
   {
@@ -862,7 +821,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/3ply-mask.jpg'],
     tags: ['respiratory protection', 'surgical', 'disposable'],
     description: 'Comfortable three-ply surgical mask for everyday clinical protection.',
-    inventory_qty: 120,
     status: 'active',
   },
   {
@@ -876,7 +834,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/anti-splash-fog-visionwide-glasses.jpg'],
     tags: ['eye protection', 'splash resistant', 'ppe'],
     description: 'Anti-fog safety glasses with wide coverage for splash protection in clinical settings.',
-    inventory_qty: 42,
     status: 'active',
   },
   {
@@ -890,7 +847,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/medical-disposable-shoe-cover.jpg'],
     tags: ['protective', 'hygiene', 'ppe'],
     description: 'Disposable shoe covers for maintaining cleanliness and protection in medical environments.',
-    inventory_qty: 80,
     status: 'active',
   },
   {
@@ -904,7 +860,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/N95-face-mask.jpg'],
     tags: ['respiratory protection', 'filtering', 'ppe'],
     description: 'Certified N95 respirator mask for enhanced respiratory protection in clinical and care settings.',
-    inventory_qty: 64,
     status: 'active',
   },
   {
@@ -918,7 +873,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/reusable-surgical-caps.jpg'],
     tags: ['head protection', 'reusable', 'ppe'],
     description: 'Reusable surgical cap with breathable fabric for long-lasting clinical comfort.',
-    inventory_qty: 50,
     status: 'active',
   },
   {
@@ -932,7 +886,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/sterile-surgical-gowns.jpg'],
     tags: ['protective wear', 'surgical', 'ppe'],
     description: 'Sterile surgical gown for contamination control and protection during procedures.',
-    inventory_qty: 24,
     status: 'active',
   },
   {
@@ -946,7 +899,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/surgical-disposable-cap.jpg'],
     tags: ['head protection', 'disposable', 'ppe'],
     description: 'Disposable surgical cap for hygienic coverage during medical procedures.',
-    inventory_qty: 70,
     status: 'active',
   },
   {
@@ -960,7 +912,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/ppe-safety-equipment/transparent-face-sheild.jpg'],
     tags: ['face protection', 'shield', 'ppe'],
     description: 'Transparent face shield for splash protection with comfortable headband support.',
-    inventory_qty: 55,
     status: 'active',
   },
   {
@@ -974,7 +925,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/training-educational-supplies/first-aid-manikins.jpg'],
     tags: ['training', 'manikin', 'education'],
     description: 'Realistic first aid manikins for hands-on CPR and emergency response training.',
-    inventory_qty: 8,
     status: 'active',
   },
   {
@@ -988,7 +938,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/training-educational-supplies/human-anatomy-model.jpg'],
     tags: ['anatomy', 'education', 'training'],
     description: 'Detailed human anatomy model for classroom teaching and medical education.',
-    inventory_qty: 12,
     status: 'active',
   },
   {
@@ -1002,7 +951,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/training-educational-supplies/practi-man.jpg'],
     tags: ['simulation', 'training', 'manikin'],
     description: 'Advanced Practi-Man training system for repeated first aid and emergency drills.',
-    inventory_qty: 7,
     status: 'active',
   },
   {
@@ -1016,7 +964,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/training-educational-supplies/step-by-step-wound-dressing.jpg'],
     tags: ['guide', 'training', 'first aid'],
     description: 'Step-by-step wound dressing guide for practical clinical training and skills development.',
-    inventory_qty: 24,
     status: 'active',
   },
   {
@@ -1030,7 +977,6 @@ const SHOP_PRODUCTS: ShopProduct[] = [
     images: ['/images/training-educational-supplies/training-kit.jpg'],
     tags: ['kit', 'training', 'education'],
     description: 'Comprehensive training kit for educators and trainees in clinical skills and first aid.',
-    inventory_qty: 15,
     status: 'active',
   },
 ];

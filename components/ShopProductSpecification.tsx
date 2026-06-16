@@ -25,7 +25,6 @@ interface ShopProductSpecificationProps {
 export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) {
   const { wishlist, toggleWishlist } = useWishlist();                                                           //-Allows users to add or remove products from their wishlist and updates the UI accordingly.
   const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
-  const isOutOfStock = !product.inventory_qty || product.inventory_qty <= 0;                                    //-Checks stock availability of the product to disable add to cart
 
   const [showMobileCategories, setShowMobileCategories] = useState(false);
   const dragStartX = useRef<number | null>(null);
@@ -219,22 +218,9 @@ export default function ShopProductSpecification({ product, category, categories
                           1,
                         )
                       }
-                      disabled={isOutOfStock}
-                      className={`
-                                  inline-flex 
-                                  items-center justify-center 
-                                  rounded-full 
-                                  px-6 py-3 
-                                  text-sm font-semibold text-white 
-                                  transition 
-                                  ${
-                                      isOutOfStock
-                                      ? 'cursor-not-allowed bg-slate-300'
-                                      : 'bg-rose-700 hover:bg-rose-800'
-                                    }
-                                `}
+                      className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white bg-rose-700 hover:bg-rose-800 transition"
                     >
-                        {isOutOfStock ? 'Out of stock' : 'Add to cart'}
+                        Add to cart
                     </button>
                     <button
                       type="button"

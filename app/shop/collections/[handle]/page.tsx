@@ -238,20 +238,17 @@ const CollectionPage: React.FC = () => {
                       inWishlist={inWishlist}
                       onToggleWishlist={() => toggleWishlist(product.id)}
                       actionLabel="Add"
-                      actionDisabled={!product.inventory_qty || product.inventory_qty <= 0}
                       onAction={() => {
-                        if (product.inventory_qty && product.inventory_qty > 0) {
-                          addToCart(
-                            {
-                              product_id: product.id,
-                              name: product.name,
-                              sku: product.sku,
-                              price: product.price,
-                              image: getProductImage(product),
-                            },
-                            1,
-                          );
-                        }
+                        addToCart(
+                          {
+                            product_id: product.id,
+                            name: product.name,
+                            sku: product.sku,
+                            price: product.price,
+                            image: getProductImage(product),
+                          },
+                          1,
+                        );
                       }}
                     />
                   );
