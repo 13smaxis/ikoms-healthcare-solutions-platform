@@ -30,7 +30,11 @@ export default function WishlistClient() {
             <div key={p.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <Link href="/shop" className="block">
                 <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover" />
+                  {getProductImage(p) ? (
+                    <img src={getProductImage(p)} alt={p.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-slate-400">No image</div>
+                  )}
                 </div>
                 <div className="p-4">
                   <div className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2">{p.name}</div>

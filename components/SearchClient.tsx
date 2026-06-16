@@ -72,10 +72,15 @@ export default function SearchClient() {
                                         "
               >
                 <div className="aspect-square bg-slate-100 overflow-hidden">
-                  <img src={getProductImage(p)} 
-                       alt={p.name} 
-                       className="w-full h-full object-cover group-hover:scale-105 transition" 
-                  />
+                  {getProductImage(p) ? (
+                    <img
+                      src={getProductImage(p)}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-slate-400">No image</div>
+                  )}
                 </div>
                 <div className="p-4">
                   <div className="text-xs text-slate-500 mb-1">{p.product_type}</div>

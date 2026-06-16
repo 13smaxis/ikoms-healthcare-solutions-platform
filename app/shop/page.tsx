@@ -97,7 +97,8 @@ const ShopHome: React.FC = () => {
               <input
                 name="q"
                 value={q}
-                onChange={e => setQ(e.target.value)} placeholder="Search products..."
+                onChange={e => setQ(e.target.value)} 
+                placeholder="Search products..."
                 className="text-gray-500 px-3 py-2 text-sm w-44 sm:w-64 min-w-0"
               />
               <button

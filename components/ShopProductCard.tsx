@@ -30,14 +30,22 @@ const ShopProductCard = ({
   onToggleWishlist,
   className = '',
 }: ShopProductCardProps) => {
+  const imageUrl = getProductImage(product);
+
   const content = (
     <>
       <div className="relative overflow-hidden bg-white aspect-5/4">
-        <img
-          src={getProductImage(product)}
-          alt={product.name}
-          className="w-full h-full object-contain object-center transition duration-500"
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="w-full h-full object-contain object-center transition duration-500"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-slate-100 text-slate-400">
+            No image
+          </div>
+        )}
 
         {showWishlist && onToggleWishlist ? (
           <button

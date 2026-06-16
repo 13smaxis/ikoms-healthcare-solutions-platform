@@ -158,7 +158,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
                         ${className ?? ''}
                     `}
         >
-          Shop By Category
+          Menu
         </button>
       </div>
 

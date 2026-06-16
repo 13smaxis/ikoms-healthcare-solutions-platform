@@ -39,6 +39,36 @@ export function getProductImage(product: Pick<ShopProduct, 'images' | 'image_url
   return '';
 }
 
+export function updateProduct(updated: ShopProduct) {
+  const index = SHOP_PRODUCTS.findIndex((product) => product.id === updated.id);
+  if (index === -1) return null;
+
+  SHOP_PRODUCTS[index] = {
+    ...SHOP_PRODUCTS[index],
+    ...updated,
+    images: Array.isArray(updated.images) ? updated.images : [],
+    tags: Array.isArray(updated.tags) ? updated.tags : [],
+    key_features: Array.isArray(updated.key_features) ? updated.key_features : updated.key_features ?? [],
+  };
+
+  return SHOP_PRODUCTS[index];
+}
+
+export function addProduct(product: ShopProduct) {
+  const newProduct: ShopProduct = {
+    ...product,
+    id:
+      product.id ||
+      `${normalizeShopTag(product.handle || product.name || 'product')}-${Date.now()}`,
+    images: Array.isArray(product.images) ? product.images : [],
+    tags: Array.isArray(product.tags) ? product.tags : [],
+    key_features: Array.isArray(product.key_features) ? product.key_features : product.key_features ?? [],
+  };
+
+  SHOP_PRODUCTS.push(newProduct);
+  return newProduct;
+}
+
 const SHOP_PRODUCTS: ShopProduct[] = [
   {
     id: 'clinical-001',
@@ -981,9 +1011,10 @@ const SHOP_PRODUCTS: ShopProduct[] = [
   },
 ];
 
-export function getProducts() 
+export function getProducts(includeInactive = false) 
 {
-  return SHOP_PRODUCTS;
+  if (includeInactive) return SHOP_PRODUCTS;
+  return SHOP_PRODUCTS.filter((p) => p.status !== 'inactive');
 }
 
 export function getProductByHandle(handle: string | string[] | undefined) 

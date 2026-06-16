@@ -291,11 +291,15 @@ export default function ShopProductSpecification({ product, category, categories
               </div>
 
               <div className="overflow-hidden rounded-4xl bg-slate-100 p-6 flex items-center justify-center">
-                <img
-                  src={getProductImage(product)}
-                  alt={product.name}
-                  className="h-full w-full max-h-105 object-contain"
-                />
+                {getProductImage(product) ? (
+                  <img
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    className="h-full w-full max-h-105 object-contain"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-slate-400">No image available</div>
+                )}
               </div>
             </section>
 
