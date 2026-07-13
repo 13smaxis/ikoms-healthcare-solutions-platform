@@ -15,6 +15,8 @@ import { getProductImage, getProducts } from '@/lib/catergory-products';
 import type { ShopProduct } from '@/lib/catergory-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
+const shopHeroImageUrl =
+'https://image.pollinations.ai/prompt/photorealistic%20modern%20medical%20aid%20kit%20next%20to%20a%20wheelchair%20inside%20a%20bright%20modern%20hospital,%20professional,%20minimal,%20blue%20and%20white%20theme,%20wide%2016:9,%20cinematic%20lighting,%20website%20hero%20background,%20negative%20space%20on%20the%20left%20for%20text';
 const ShopHome: React.FC = () => {
   const products: ShopProduct[] = getProducts();
   const { wishlist, toggleWishlist } = useWishlist();
@@ -41,17 +43,14 @@ const ShopHome: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }]} />
         </div>
-        <div
-          className="
-                      absolute 
-                      inset-0 
-                      opacity-20 
-                      bg-cover bg-center bg-fixed
-                    "
-          style={
-                  { backgroundImage: 'url(https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1600)' }
-                }
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={shopHeroImageUrl}
+            alt="Medical aid kit beside a wheelchair"
+            className="h-full w-full object-cover object-center opacity-35 scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-rose-950/75 via-rose-900/55 to-pink-700/30" />
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 max-w-3xl">
             WELCOME TO 
