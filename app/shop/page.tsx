@@ -16,7 +16,7 @@ import type { ShopProduct } from '@/lib/catergory-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const shopHeroImageUrl =
-'https://image.pollinations.ai/prompt/photorealistic%20modern%20medical%20aid%20kit%20next%20to%20a%20wheelchair%20inside%20a%20bright%20modern%20hospital,%20professional,%20minimal,%20blue%20and%20white%20theme,%20wide%2016:9,%20cinematic%20lighting,%20website%20hero%20background,%20negative%20space%20on%20the%20left%20for%20text';
+'https://image.pollinations.ai/prompt/photorealistic%20healthcare%20supply%20store%20hero%20background%20with%20wheelchair,%20first%20aid%20kit,%20stethoscope,%20blood%20pressure%20monitor,%20thermometer,%20medical%20gloves,%20face%20mask,%20walker,%20crutches,%20hospital%20equipment,%20clean%20white%20and%20blue%20theme,%20modern,%20minimal,%20professional,%20wide%2016:9,%20empty%20space%20on%20the%20left%20for%20website%20text,%20no%20pills,%20no%20medicine,%20no%20people';
 const ShopHome: React.FC = () => {
   const products: ShopProduct[] = getProducts();
   const { wishlist, toggleWishlist } = useWishlist();
@@ -39,7 +39,7 @@ const ShopHome: React.FC = () => {
 
   return (
     <SiteLayout>
-      <section className="relative bg-linear-to-br from-rose-800 to-pink-700 text-white py-10">          {/* Hero section */}
+        <section className="relative overflow-hidden min-h-[32rem] bg-linear-to-br from-rose-800 to-pink-700 text-white py-10">          {/* Hero section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ShopBreadcrumbs items={[{ label: 'Shop', href: '/shop' }]} />
         </div>
@@ -47,9 +47,12 @@ const ShopHome: React.FC = () => {
           <img
             src={shopHeroImageUrl}
             alt="Medical aid kit beside a wheelchair"
-            className="h-full w-full object-cover object-center opacity-35 scale-105"
+              className="h-full w-full object-cover object-[center_70%] opacity-35"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-rose-950/75 via-rose-900/55 to-pink-700/30" />
+        </div>
+        <div className="absolute top-4 right-4 z-20 sm:top-6 sm:right-6 lg:top-8 lg:right-8">
+          <ShopOverlayMenu />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 max-w-3xl">
@@ -107,8 +110,6 @@ const ShopHome: React.FC = () => {
               </button>
             </form>
 
-            <ShopOverlayMenu />                                                                                 {/* Hamburger menu for mobile */}
-          
           </div>
         </div>
       </section>
