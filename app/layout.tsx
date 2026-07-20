@@ -12,6 +12,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { WishlistProvider } from '@/contexts/WishlistContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import SmoothScroll from "@/components/SmoothScroll";
 
 const geistSans = Geist({
@@ -43,9 +44,11 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <SmoothScroll />
         </Suspense>
-        <WishlistProvider>
-          {children}
-        </WishlistProvider>
+        <AuthProvider>
+          <WishlistProvider>
+            {children}
+          </WishlistProvider>
+        </AuthProvider>
       </body>
     </html>
   );

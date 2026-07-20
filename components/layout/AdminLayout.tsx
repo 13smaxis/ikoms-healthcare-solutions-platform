@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Bell } from "lucide-react";
 import { COMPANY } from "@/lib/constants";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { href: "/admin", label: "Overview" },
@@ -19,6 +21,12 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [profileImage, setProfileImage] = React.useState<string | null>(null);
+  const [loginOpen, setLoginOpen] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [loginError, setLoginError] = React.useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = React.useState(false);
+  const { user, isAdmin, loading, login, logout } = useAuth();
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -29,6 +37,192 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const isActive = (href: string) => pathname === href;
+
+  React.useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!user) {
+      setLoginOpen(true);
+      return;
+    }
+
+    setLoginOpen(false);
+    setLoginError(null);
+    setPassword("");
+  }, [loading, user]);
+
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoginError(null);
+    setLoginLoading(true);
+
+    const { error } = await login(email, password);
+
+    if (error) {
+      setLoginError(error);
+    }
+
+    setLoginLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    setLoginOpen(false);
+    await logout();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-white" />
+          <p className="text-sm text-slate-300">Loading admin session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <div className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="space-y-6">
+              <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
+                Admin access
+              </div>
+              <div className="space-y-4">
+                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
+                  Sign in to manage the IKOMS admin workspace.
+                </h1>
+                <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+                  You are currently logged out. Use your Supabase account to access jobs, courses,
+                  consultancy and e-commerce tools.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLoginOpen(true)}
+                  className="rounded-full bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+                >
+                  Open sign in
+                </button>
+                <Link
+                  href="/"
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+                >
+                  Go home
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Logged out state</p>
+              <div className="mt-4 space-y-3 text-sm text-slate-200">
+                <p>• Admin content is hidden until Supabase returns a signed-in user.</p>
+                <p>• The login dialog stays in sync with the current auth session.</p>
+                <p>• Signing out returns you to this state automatically.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+          <DialogContent className="border-white/10 bg-slate-950 text-white sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">Admin sign in</DialogTitle>
+              <DialogDescription className="text-slate-300">
+                Authenticate with your Supabase account to unlock the admin dashboard.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="admin-email" className="text-sm font-medium text-slate-200">
+                  Email
+                </label>
+                <input
+                  id="admin-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none ring-0 placeholder:text-slate-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="admin-password" className="text-sm font-medium text-slate-200">
+                  Password
+                </label>
+                <input
+                  id="admin-password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none ring-0 placeholder:text-slate-500 focus:border-blue-500"
+                />
+              </div>
+
+              {loginError && (
+                <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                  {loginError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="flex w-full items-center justify-center rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loginLoading ? "Signing in..." : "Sign in"}
+              </button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <div className="mx-auto flex min-h-screen max-w-4xl items-center px-4 py-12 sm:px-6 lg:px-8">
+          <div className="w-full rounded-3xl border border-red-500/20 bg-red-500/10 p-8 shadow-2xl shadow-black/30">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-200">Access denied</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+              Your Supabase account is signed in, but it does not have admin privileges.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-red-100/90 sm:text-lg">
+              Ask a manager to assign an admin role, or sign out and use a different account.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-full bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+              >
+                Sign out
+              </button>
+              <Link
+                href="/"
+                className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+              >
+                Go home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const Navigation = ({
     onClick,
@@ -62,11 +256,12 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   const SignInButton = ({ onClick }: { onClick?: () => void }) => (
-    <Link
-      href="/admin/login"
+    <button
+      type="button"
       onClick={onClick}
       className="
       block
+      w-full
       rounded-full
       bg-blue-700
       px-4 py-3
@@ -76,8 +271,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       hover:bg-blue-800
     "
     >
-      Sign in
-    </Link>
+      Sign out
+    </button>
   );
 
   return (
@@ -214,6 +409,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   </div>
                 </div>
               </label>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
+              >
+                Sign out
+              </button>
               
               <input
                 id="admin-profile-upload"
