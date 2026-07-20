@@ -25,7 +25,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loginError, setLoginError] = React.useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = React.useState(false);
+  const [loginLoading, setLoginLoading] = React.useState(false); 
   const { user, isAdmin, loading, hydrating, login, logout } = useAuth();
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,19 +39,18 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isActive = (href: string) => pathname === href;
 
   React.useEffect(() => {
-    if (loading) {
+    if (loading)                                                                                                                  //- Check if auth is still loading, if so, do not proceed
+    {
       return;
     }
 
-    if (!user) {
-      setLoginOpen(true);
-      return;
+    if (user)                                                                                                                     //- If user is logged in, close login dialog and reset login state
+    {
+      setLoginOpen(true);                                                                                                         //- Open the login dialog if user is logged in
+      setLoginError(null);                                                                                                        //- Clear any previous login errors
+      setPassword("");                                                                                                            //- Clear the password field for security
     }
-
-    setLoginOpen(false);
-    setLoginError(null);
-    setPassword("");
-  }, [loading, user]);
+  }, [loading, user]);                                                                                                            //- Dependency array ensures this effect runs when loading or user state changes
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();

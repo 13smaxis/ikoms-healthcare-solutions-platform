@@ -1,22 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import { env } from './env.js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseServiceRoleKey || !supabaseAnonKey) {
+if (!env.supabaseUrl || !env.supabaseServiceRoleKey || !env.supabaseAnonKey) {
   throw new Error('Missing required Supabase environment variables');
 }
 
-// Service role client - has full access, use only on backend
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+export const supabaseAdmin = createClient(env.supabaseUrl, env.supabaseServiceRoleKey);
+export const supabaseClient = createClient(env.supabaseUrl, env.supabaseAnonKey);
 
-// Anon key client - respects RLS policies
-export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-
-// Helper function to create authenticated client with user's JWT token
 export function createAuthenticatedClient(token: string) {
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(env.supabaseUrl, env.supabaseAnonKey, {
     global: {
       headers: {
         Authorization: `Bearer ${token}`,

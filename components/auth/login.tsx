@@ -29,7 +29,8 @@ const AdminLoginPage: React.FC = () => {
 
     // Check if user has admin role
     setTimeout(() => {
-      if (isAdmin) {
+      if (isAdmin) 
+      {
         router.push('/admin/dashboard');
       } else {
         setError('Your account does not have admin privileges');

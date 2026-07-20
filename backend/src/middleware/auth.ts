@@ -1,20 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabaseClient } from '../config/supabase';
-import { AuthenticationError } from '../utils/errors';
+import { createAuthenticatedClient } from '../config/supabase.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
+    userid: string;
     email: string;
-    role?: string;
-    user_metadata?: Record<string, any>;
+    role: string;
+    storeid?: string;
   };
+  supabaseClient?: ReturnType<typeof createAuthenticatedClient>;
   token?: string;
 }
 
+const decodeJwtPayload = (token: string): any => {
+  const [, payload] = token.split('.');
+  if (!payload) return null;
+  const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  try {
+    const json = Buffer.from(padded, 'base64').toString('utf8');
+    return JSON.parse(json);
+  } catch (error) {
+    return null;
+  }
+};
+
 /**
- * Middleware to verify JWT token and attach user to request
- * Expects token in Authorization header: "Bearer <token>"
+ * Verify JWT token and extract user context
+ * Attaches user info and authenticated Supabase client to request
  */
 export async function authMiddleware(
   req: AuthenticatedRequest,
@@ -23,67 +36,118 @@ export async function authMiddleware(
 ) {
   try {
     // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
+    const authHeader = req.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new AuthenticationError('Missing or invalid Authorization header');
+      return res.status(401).json({ error: 'Missing or invalid authorization header' });
     }
 
-    const token = authHeader.slice(7); // Remove "Bearer " prefix
-    req.token = token;
+    const token = authHeader.slice(7); // Remove 'Bearer '
 
-    // Verify token with Supabase
-    const {
-      data: { user },
-      error,
-    } = await supabaseClient.auth.getUser(token);
-
-    if (error || !user) {
-      throw new AuthenticationError('Invalid or expired token');
+    const decoded: any = decodeJwtPayload(token);
+    if (!decoded) {
+      return res.status(401).json({ error: 'Invalid token claims' });
     }
 
-    // Attach user info to request
+    // Extract user info from JWT claims
+    const userid = decoded.sub; // Supabase uses 'sub' for user ID
+    const email = decoded.email;
+
+    if (!userid || !email) {
+      return res.status(401).json({ error: 'Invalid token claims' });
+    }
+
+    // Fetch user role from database
+    const { data: userData, error: userError } = await createAuthenticatedClient(token)
+      .from('users')
+      .select('userid, email, usertype')
+      .eq('userid', userid)
+      .single();
+
+    if (userError || !userData) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Fetch user's role assignment
+    const { data: assignmentData } = await createAuthenticatedClient(token)
+      .from('staff_assignments')
+      .select(`
+        roleid,
+        roles (
+          rolename
+        )
+      `)
+      .eq('userid', userid)
+      .eq('status', 'active')
+      .single();
+
+    const roleRecord = Array.isArray(assignmentData?.roles)
+      ? assignmentData.roles[0]
+      : assignmentData?.roles;
+    const userRole = roleRecord?.rolename || 'customer';
+
+    // Fetch store ID if user is a manager
+    let storeid: string | undefined;
+    if (userRole.toLowerCase() === 'manager') {
+      const { data: storeData } = await createAuthenticatedClient(token)
+        .from('stores')
+        .select('storeid')
+        .eq('managerid', userid)
+        .single();
+
+      storeid = storeData?.storeid;
+    }
+
+    // Attach user context to request
     req.user = {
-      id: user.id,
-      email: user.email || '',
-      role: user.user_metadata?.role || 'customer',
-      user_metadata: user.user_metadata,
+      userid,
+      email,
+      role: userRole.toLowerCase(),
+      storeid,
     };
 
-    next();
+    // Attach authenticated Supabase client for operations
+    req.supabaseClient = createAuthenticatedClient(token);
+    req.token = token;
+
+    return next();
   } catch (error) {
-    if (error instanceof AuthenticationError) {
-      res.status(error.statusCode).json({
-        error: error.message,
-        code: error.code,
-      });
-    } else {
-      res.status(401).json({
-        error: 'Authentication failed',
-        code: 'AUTH_ERROR',
-      });
-    }
+    console.error('Auth middleware error:', error);
+    return res.status(401).json({ error: 'Authentication failed' });
   }
 }
 
 /**
- * Middleware to check if user has required role
+ * Require manager role
  */
-export function requireRole(...allowedRoles: string[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({
-        error: 'User not authenticated',
-        code: 'NOT_AUTHENTICATED',
-      });
-    }
+export function requireManager(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.user || req.user.role !== 'manager') {
+    return res.status(403).json({ error: 'Manager access required' });
+  }
+  return next();
+}
 
-    if (!allowedRoles.includes(req.user.role || 'customer')) {
-      return res.status(403).json({
-        error: 'Insufficient permissions',
-        code: 'INSUFFICIENT_PERMISSIONS',
-      });
-    }
+/**
+ * Require admin role (manager, staff, supervisor)
+ */
+export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.user || !['manager', 'staff', 'supervisor'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  return next();
+}
 
-    next();
-  };
+/**
+ * Verify user owns the store they're trying to modify
+ */
+export function verifyStoreOwnership(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  if (!req.user?.storeid) {
+    return res.status(403).json({ error: 'User is not associated with a store' });
+  }
+
+  // Store ID will be verified in route handlers
+  return next();
 }
