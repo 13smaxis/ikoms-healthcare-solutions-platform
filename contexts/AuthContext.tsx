@@ -22,6 +22,7 @@ interface AuthContextType {
   role: UserRole | null;
   storeid: string | null;
   loading: boolean;
+  hydrating: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
@@ -37,11 +38,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole | null>(null);
   const [storeid, setStoreid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hydrating, setHydrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const authSyncCountRef = React.useRef(0);
+
+  const beginHydration = () => {
+    authSyncCountRef.current += 1;
+    setHydrating(true);
+  };
+
+  const endHydration = () => {
+    authSyncCountRef.current = Math.max(0, authSyncCountRef.current - 1);
+
+    if (authSyncCountRef.current === 0) {
+      setHydrating(false);
+    }
+  };
 
   // Initialize auth on mount
   useEffect(() => {
     const initAuth = async () => {
+      beginHydration();
+
       try {
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
@@ -55,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(err instanceof Error ? err.message : 'Failed to initialize auth');
       } finally {
         setLoading(false);
+        endHydration();
       }
     };
 
@@ -63,14 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await fetchUserProfile(session.user.email!);
-        } else {
+        if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
           setRole(null);
           setStoreid(null);
+          setError(null);
+          return;
+        }
+
+        if (event === 'SIGNED_IN' && session?.user && !user) {
+          setUser(session.user);
+          await fetchUserProfile(session.user.email!);
         }
       }
     );
@@ -78,21 +101,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription?.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (email: string) => {
-    try {
-      // Get user profile
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single();
+const fetchUserProfile = async (email: string) => {
+  try {
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
 
-      if (userError) throw userError;
+    if (userError) throw userError;
 
       if (userData) {
         setProfile(userData);
 
-        // Get user's role via staff_assignments
+        // Get user's role - handle case where it doesn't exist
         const { data: assignmentData } = await supabase
           .from('staff_assignments')
           .select(`
@@ -103,33 +125,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           `)
           .eq('userid', userData.userid)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
-        if (assignmentData?.roles) {
-          const userRole = assignmentData.roles.rolename?.toLowerCase() as UserRole;
+        const roleRecord = Array.isArray(assignmentData?.roles)
+          ? assignmentData.roles[0]
+          : assignmentData?.roles;
+
+        if (roleRecord) {
+          const userRole = roleRecord.rolename?.toLowerCase() as UserRole;
           setRole(userRole);
 
-          // Get store they're associated with
-          if (userRole === 'manager') {
-            const { data: storeData } = await supabase
-              .from('stores')
-              .select('storeid')
-              .eq('managerid', userData.userid)
-              .single();
-            
-            if (storeData?.storeid) {
-              setStoreid(storeData.storeid);
-            }
+        if (userRole === 'manager') {
+          const { data: storeData } = await supabase
+            .from('stores')
+            .select('storeid')
+            .eq('managerid', userData.userid)
+              .maybeSingle();
+          
+          if (storeData?.storeid) {
+            setStoreid(storeData.storeid);
           }
         }
       }
-    } catch (err) {
-      console.error('Profile fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch profile');
     }
-  };
+  } catch (err) {
+    console.error('Profile fetch error:', err);
+    setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+  }
+};
 
   const login = async (email: string, password: string) => {
+    beginHydration();
+
     try {
       setError(null);
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -150,17 +177,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
       return { error: message };
+    } finally {
+      endHydration();
     }
   };
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setRole(null);
       setStoreid(null);
       setError(null);
+      setHydrating(false);
+      await supabase.auth.signOut();
     } catch (err) {
       console.error('Logout error:', err);
     }
@@ -172,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role,
     storeid,
     loading,
+    hydrating,
     error,
     login,
     logout,

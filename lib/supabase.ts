@@ -8,7 +8,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://pnrcxvjioeqaynzexuic.databasepad.com';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImUwMTIyM2FlLWNjODktNDc3Yi04NjViLWE3MDcxMWU4NzIxMCJ9.eyJwcm9qZWN0SWQiOiJwbnJjeHZqaW9lcWF5bnpleHVpYyIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzc2OTY4OTE1LCJleHAiOjIwOTIzMjg5MTUsImlzcyI6ImZhbW91cy5kYXRhYmFzZXBhZCIsImF1ZCI6ImZhbW91cy5jbGllbnRzIn0.800mWxCecXPKQtcag4Mcik6K_7xBC2W3RrQWBEZ44kU';
+const supabaseUrl = 'https://ywnndcmqwrezbckhdwmi.supabase.co';
+const supabaseKey = 'sb_publishable_NLpSJcpEZVpdTByNcgEeJQ__sYcEbP8';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);

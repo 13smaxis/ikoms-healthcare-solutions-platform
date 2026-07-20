@@ -26,7 +26,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [password, setPassword] = React.useState("");
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false);
-  const { user, isAdmin, loading, login, logout } = useAuth();
+  const { user, isAdmin, loading, hydrating, login, logout } = useAuth();
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -69,15 +69,31 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const handleSignOut = async () => {
     setLoginOpen(false);
+    setSidebarOpen(false);
     await logout();
   };
 
-  if (loading) {
+  const handleSidebarSignOut = async () => {
+    setSidebarOpen(false);
+    await handleSignOut();
+  };
+
+  if (loading || hydrating || loginLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-white" />
-          <p className="text-sm text-slate-300">Loading admin session...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-white" />
+          </div>
+          <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Admin Portal</p>
+          <p className="mt-3 text-2xl font-semibold text-white">
+            Hang tight we fetching your Admin Portal
+          </p>
+          <div className="mt-5 flex items-center justify-center gap-2 text-slate-300">
+            <span className="h-2 w-2 animate-bounce rounded-full bg-white/80 [animation-delay:-0.2s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-white/80 [animation-delay:-0.1s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-white/80" />
+          </div>
         </div>
       </div>
     );
@@ -204,13 +220,6 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="rounded-full bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
-              >
-                Sign out
-              </button>
               <Link
                 href="/"
                 className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
@@ -255,7 +264,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     </nav>
   );
 
-  const SignInButton = ({ onClick }: { onClick?: () => void }) => (
+  const SignOutButton = ({ onClick }: { onClick?: () => void }) => (
     <button
       type="button"
       onClick={onClick}
@@ -306,7 +315,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
 
         <div className="mt-auto pt-4">
-          <SignInButton onClick={() => setSidebarOpen(false)} />                                                {/* Sign in button at bottom of mobile sidebar */}
+          <SignOutButton onClick={handleSidebarSignOut} />                                                     {/* Sign out button at bottom of mobile sidebar */}
         </div>
       </aside>
 
@@ -351,7 +360,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
 
         <div className="mt-auto pt-4">
-          <SignInButton />                                                                                      {/* Sign in button at bottom of desktop sidebar */}
+          <SignOutButton onClick={handleSignOut} />                                                            {/* Sign out button at bottom of desktop sidebar */}
         </div>
       </aside>
 
@@ -409,14 +418,6 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   </div>
                 </div>
               </label>
-
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
-              >
-                Sign out
-              </button>
               
               <input
                 id="admin-profile-upload"

@@ -96,30 +96,56 @@ const AdminOrdersPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">E-commerce</h1>
-          <div className="text-sm text-slate-500 mt-1">Manage orders and shared shop products.</div>
+          <h1 className="text-3xl font-bold text-yellow-500">E-commerce</h1>
+          <div className="text-sm text-white mt-1">Manage orders and shared shop products.</div>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl mb-6 overflow-x-auto">
+      <div className="bg-white  rounded-xl mb-6 overflow-x-auto">
         <div className="flex items-center">
           <button
-            onClick={() => setView('orders')}
-            className={`inline-flex items-center px-5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${view === 'orders' ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'}`}
-          >
-            Orders ({orderCount})
-          </button>
-          <button
             onClick={() => setView('products')}
-            className={`inline-flex items-center px-5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${view === 'products' ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'}`}
+            className={`
+                          inline-flex 
+                          items-center 
+                          px-5 py-3 
+                          text-sm 
+                          font-semibold 
+                          border-b-2 
+                          transition 
+                          whitespace-nowrap 
+                          ${view === 'products' 
+                            ? 'border-blue-700 text-blue-700' 
+                            : 'border-transparent text-slate-600 hover:text-slate-900'}
+                      `}
           >
             Products ({productCount})
+          </button>
+          <button
+            onClick={() => setView('orders')}
+            className={`
+                          inline-flex 
+                          items-center 
+                          px-5 py-3 
+                          text-sm 
+                          font-semibold 
+                          border-b-2 
+                          transition 
+                          whitespace-nowrap 
+                          ${
+                              view === 'orders' 
+                              ? 'border-blue-700 text-blue-700' 
+                              : 'border-transparent text-slate-600 hover:text-slate-900'
+                            }
+                      `}
+          >
+            Orders ({orderCount})
           </button>
         </div>
       </div>
 
       {view === 'orders' ? (
-        <div className="bg-amber-50/50 border border-amber-200 rounded-xl overflow-hidden">
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-amber-100/60 border-b border-amber-200">
               <tr className="text-left">
@@ -169,7 +195,7 @@ const AdminOrdersPage: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div className="bg-amber-50/50 border border-amber-200 rounded-xl overflow-hidden">
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">                                     {/* Products view */}
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
             <span className="text-sm text-slate-600">{productCount} products</span>
             <button
