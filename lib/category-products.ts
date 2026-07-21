@@ -56,17 +56,19 @@ export async function getProducts(includeInactive = false): Promise<ShopProduct[
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'no-store', // Don't cache - always get fresh data
+      cache: 'no-store',                                                                                                          //- Don't cache - always get fresh data
     });
 
-    if (!response.ok) {
+    if (!response.ok) 
+    {
       console.error('Failed to fetch products:', response.statusText);
       return [];
     }
 
     const { data } = await response.json();
 
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(data)) 
+    {
       return [];
     }
 
@@ -80,7 +82,7 @@ export async function getProducts(includeInactive = false): Promise<ShopProduct[
         handle: product.handle,
         name: product.name,
         sku: product.sku,
-        product_type: product.producttypeid || 'Uncategorized',
+        product_type: product.name || 'Uncategorized',
         collectionHandle: 'general',
         price: product.price,
         images: product.product_images?.map((img: any) => img.imageurl) || [],

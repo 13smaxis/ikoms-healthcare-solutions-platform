@@ -14,7 +14,7 @@ const navLinks = [
   { href: "/admin/jobs", label: "Recruitment" },
   { href: "/admin/courses", label: "Training" },
   { href: "/admin/consultancy", label: "Consultancy" },
-  { href: "/admin/orders", label: "E-commerce" },
+  { href: "/admin/e-commerce", label: "E-commerce" },
 ];
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {

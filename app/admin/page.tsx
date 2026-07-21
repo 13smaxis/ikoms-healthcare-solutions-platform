@@ -126,7 +126,7 @@ const AdminDashboard: React.FC = () => {
           icon={<ShoppingCart className="text-green-600" size={24} />}
           label="Orders"
           value={stats.orders}
-          href="/admin/orders"
+          href="/admin/e-commerce"
         />
         <StatCard
           icon={<Users className="text-purple-600" size={24} />}
@@ -168,7 +168,7 @@ const AdminDashboard: React.FC = () => {
               ➕ Create Collection
             </Link>
             <Link
-              href="/admin/orders"
+              href="/admin/e-commerce"
               className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
             >
               📦 View Orders

@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
-import { 
-  getProductImage, 
-  getProducts, 
-  type ShopProduct 
+import {
+  getProductImage,
+  getProducts,
+  type ShopProduct
 } from '@/lib/category-products';
 import { Eye } from 'lucide-react';
 
@@ -21,7 +21,7 @@ type OrderRow = {
 
 const AdminOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [view, setView] = useState<'orders' | 'products'>('orders');
+  const [view, setView] = useState<'orders' | 'products'>('products');
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,29 +81,8 @@ const AdminOrdersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-xl mb-6 overflow-x-auto">
-        <div className="flex items-center">
-          <button
-            onClick={() => setView('orders')}
-            className={`
-              inline-flex 
-              items-center 
-              px-5 py-3 
-              text-sm 
-              font-semibold 
-              border-b-2 
-              transition 
-              whitespace-nowrap 
-              ${
-                view === 'orders' 
-                  ? 'border-blue-700 text-blue-700' 
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }
-            `}
-          >
-            Orders ({orderCount})
-          </button>
+      <div className="bg-white rounded-xl mb-6 overflow-x-auto">                                                                  {/* Tab Navigation */}
+        <div className="flex items-center">                                                                                       {/* Tab Buttons */}
           <button
             onClick={() => setView('products')}
             className={`
@@ -115,21 +94,37 @@ const AdminOrdersPage: React.FC = () => {
               border-b-2 
               transition 
               whitespace-nowrap 
-              ${
-                view === 'products' 
-                  ? 'border-blue-700 text-blue-700' 
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              ${view === 'products'
+                ? 'border-blue-700 text-blue-700'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
               }
             `}
-          >
+          >                                                                                                                       {/* Tab Button for Products */}
             Products ({productCount})
+          </button>
+          <button
+            onClick={() => setView('orders')}
+            className={`
+                        inline-flex 
+                        items-center 
+                        px-5 py-3 
+                        text-sm 
+                        font-semibold 
+                        border-b-2 
+                        transition 
+                        whitespace-nowrap 
+                        ${view === 'orders'
+                          ? 'border-blue-700 text-blue-700'
+                          : 'border-transparent text-slate-600 hover:text-slate-900'}
+                    `}
+          >                                                                                                                       {/* Tab Button for Orders */}
+            Orders ({orderCount})
           </button>
         </div>
       </div>
 
-      {/* Orders View */}
       {view === 'orders' ? (
-        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">                                                               {/* Orders View */}
           <table className="w-full text-sm">
             <thead className="bg-amber-100/60 border-b border-amber-200">
               <tr className="text-left">
@@ -181,13 +176,22 @@ const AdminOrdersPage: React.FC = () => {
           </table>
         </div>
       ) : (
-        /* Products View */
-        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
+        
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">                                                               {/* Products View */}
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
             <span className="text-sm text-slate-600">{productCount} published products</span>
             <a
               href="/admin/products/new"
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+              className="
+                          rounded-lg 
+                          bg-emerald-600 
+                          px-4 py-2 
+                          text-sm 
+                          font-semibold 
+                          text-white 
+                          hover:bg-emerald-700 
+                          transition
+                        "
             >
               + Add Product
             </a>
@@ -208,9 +212,9 @@ const AdminOrdersPage: React.FC = () => {
                 <tr key={p.id} className="border-b border-amber-100 hover:bg-amber-50/50">
                   <td className="p-3 font-semibold flex items-center gap-2">
                     {getProductImage(p) && (
-                      <img 
-                        src={getProductImage(p)} 
-                        className="w-8 h-8 rounded object-cover" 
+                      <img
+                        src={getProductImage(p)}
+                        className="w-8 h-8 rounded object-cover"
                         alt={p.name}
                       />
                     )}
@@ -220,14 +224,13 @@ const AdminOrdersPage: React.FC = () => {
                   <td className="p-3 font-mono text-xs">{p.sku}</td>
                   <td className="p-3 font-bold">{fmt(p.price)}</td>
                   <td className="p-3">
-                    <span 
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        p.status === 'published' 
-                          ? 'bg-green-100 text-green-700' 
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${p.status === 'published'
+                          ? 'bg-green-100 text-green-700'
                           : p.status === 'draft'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}
                     >
                       {p.status || 'active'}
                     </span>
@@ -235,7 +238,18 @@ const AdminOrdersPage: React.FC = () => {
                   <td className="p-3">
                     <a
                       href={`/admin/products/${p.productid}/edit`}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition"
+                      className="
+                                  inline-flex 
+                                  items-center 
+                                  gap-2 
+                                  rounded-lg 
+                                  border border-slate-300 
+                                  bg-white 
+                                  px-3 py-1 
+                                  text-xs 
+                                  font-semibold text-slate-700 
+                                  hover:border-slate-400 hover:bg-slate-50 transition
+                                "
                     >
                       <Eye className="w-3.5 h-3.5" />
                       View

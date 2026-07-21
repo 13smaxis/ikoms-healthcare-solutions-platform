@@ -35,6 +35,9 @@ productRouter.get('/public/store/:storeid', async (req: Request, res: Response) 
                 status,
                 createdat,
                 updatedat,
+                product_types (
+                                type
+                ),
                 product_images (
                                 imageid,
                                 imageurl,
@@ -99,6 +102,9 @@ productRouter.get('/detail/:productid', async (req: Request, res: Response) => {
                 status,
                 createdat,
                 updatedat,
+                product_types (
+                                type
+                ),
                 product_images (
                                 imageid,
                                 imageurl,
