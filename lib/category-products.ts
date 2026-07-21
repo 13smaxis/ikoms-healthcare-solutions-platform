@@ -42,8 +42,8 @@ export function getProductImage(product: Pick<ShopProduct, 'images' | 'image_url
   return '';
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-const STORE_ID = process.env.NEXT_PUBLIC_STORE_ID || 'default-store-id';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';                                                                       //- Use Next.js routes
+const DEFAULT_STORE_ID = process.env.NEXT_PUBLIC_STORE_ID || '';
 
 /**
  * Fetch published products from the backend API
@@ -51,32 +51,36 @@ const STORE_ID = process.env.NEXT_PUBLIC_STORE_ID || 'default-store-id';
  */
 export async function getProducts(includeInactive = false): Promise<ShopProduct[]> {
   try {
-    const response = await fetch(`${API_URL}/products/public/store/${STORE_ID}`, {
+    // Get storeid from environment or window
+    const storeId = DEFAULT_STORE_ID || (typeof window !== 'undefined' ? localStorage.getItem('storeid') : '');
+    
+    if (!storeId) {
+      console.warn('No store ID available - using empty array');
+      return [];
+    }
+
+    // ✅ Updated endpoint
+    const response = await fetch(`${API_BASE}/products?storeid=${encodeURIComponent(storeId)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'no-store',                                                                                                          //- Don't cache - always get fresh data
+      cache: 'no-store',
     });
 
-    if (!response.ok) 
-    {
+    if (!response.ok) {
       console.error('Failed to fetch products:', response.statusText);
       return [];
     }
 
     const { data } = await response.json();
 
-    if (!Array.isArray(data)) 
-    {
+    if (!Array.isArray(data)) {
       return [];
     }
 
-    // Transform database products to ShopProduct format
     return data
-      .filter(
-        (p) => includeInactive || p.status !== 'inactive'
-      )
+      .filter((p) => includeInactive || p.status !== 'inactive')
       .map((product: any) => ({
         id: product.productid,
         handle: product.handle,

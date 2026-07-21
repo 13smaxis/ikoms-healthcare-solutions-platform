@@ -1,20 +1,64 @@
+/*
+ * Responsible for rendering the product form for creating or editing a product.
+ * It handles form state, validation, and submission to the backend API.
+ */
+
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { getProducts, type ShopProduct, normalizeShopTag } from '@/lib/category-products';
+import * as productApi from '@/lib/api/products';
 
 type Props = {
   product?: ShopProduct | null;
+  storeid: string;
   onSave: (product: ShopProduct) => void;
   onClose: () => void;
 };
 
-export default function ProductForm({ product, onSave, onClose }: Props) {
-  const products = useMemo(() => getProducts(true), []);
+export default function ProductForm({ product, storeid, onSave, onClose }: Props) {
+  const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const handles = useMemo(() => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))), [products]);
-  const types = useMemo(() => Array.from(new Set(products.map((p) => p.product_type).filter(Boolean))), [products]);
-  const collections = useMemo(() => Array.from(new Set(products.map((p) => p.collectionHandle).filter(Boolean))), [products]);
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchProducts = async () => {
+      try {
+        // getProducts(false) gets all products (not just published)
+        // getProducts(true) gets only published products
+        const data = await getProducts(false);
+        if (mounted) {
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error('Failed to load product selectors:', error);
+      } finally {
+        if (mounted) {
+          setLoadingProducts(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handles = useMemo(
+    () => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))),
+    [products]
+  );
+  const types = useMemo(
+    () => Array.from(new Set(products.map((p) => p.product_type).filter(Boolean))),
+    [products]
+  );
+  const collections = useMemo(
+    () => Array.from(new Set(products.map((p) => p.collectionHandle).filter(Boolean))),
+    [products]
+  );
 
   const [form, setForm] = useState<ShopProduct>(() => ({
     id: product?.id ?? '',
@@ -34,7 +78,6 @@ export default function ProductForm({ product, onSave, onClose }: Props) {
   }));
 
   useEffect(() => {
-    // reset scroll lock
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
@@ -42,26 +85,37 @@ export default function ProductForm({ product, onSave, onClose }: Props) {
   }, []);
 
   useEffect(() => {
-    if (product) setForm({
-      id: product.id,
-      handle: product.handle,
-      name: product.name,
-      sku: product.sku,
-      product_type: product.product_type,
-      collectionHandle: product.collectionHandle,
-      price: product.price,
-      images: product.images?.length ? product.images : [''],
-      tags: product.tags ?? [],
-      description: product.description ?? '',
-      model: product.model ?? '',
-      key_features: product.key_features ?? [],
-      medical_information: product.medical_information ?? '',
-      status: product.status ?? 'active',
-    });
+    if (product) {
+      setForm({
+        id: product.id,
+        handle: product.handle,
+        name: product.name,
+        sku: product.sku,
+        product_type: product.product_type,
+        collectionHandle: product.collectionHandle,
+        price: product.price,
+        images: product.images?.length ? product.images : [''],
+        tags: product.tags ?? [],
+        description: product.description ?? '',
+        model: product.model ?? '',
+        key_features: product.key_features ?? [],
+        medical_information: product.medical_information ?? '',
+        status: product.status ?? 'active',
+      });
+    }
   }, [product]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+
+  if (loadingProducts) {
+    return (
+      <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
+        <div className="animate-spin inline-block h-8 w-8 rounded-full border-b-2 border-slate-900 mb-4" />
+        <p className="text-slate-700">Loading product options...</p>
+      </div>
+    );
+  }
 
   function validate() {
     const e: Record<string, string> = {};
@@ -85,7 +139,7 @@ export default function ProductForm({ product, onSave, onClose }: Props) {
         setForm((s) => ({ ...s, images: [json.path, ...s.images.filter(Boolean)] }));
       }
     } catch (err) {
-      // ignore for now
+      console.error('Upload error:', err);
     } finally {
       setUploading(false);
     }

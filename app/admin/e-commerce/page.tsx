@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
 import ShopProductSpecification from '@/components/ShopProductSpecification';
-import ProductForm from '@/components/admin/ProductForm';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProductAPI } from '@/hooks/useProductAPI';
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import ProductForm from '@/components/ProductForm';
 import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
 import { Eye, Edit3, Trash2 } from 'lucide-react';
 
@@ -36,8 +37,9 @@ type OrderRow = {
 };
 
 const AdminOrdersPage: React.FC = () => {
+  const { storeid } = useAuth();
   const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [view, setView] = useState<'orders' | 'products'>('products');                                                            //- Sets the initial view to 'products' to display the products tab first
+  const [view, setView] = useState<'orders' | 'products'>('products');
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewingProduct, setViewingProduct] = useState<ShopProduct | null>(null);
@@ -48,33 +50,29 @@ const AdminOrdersPage: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
   const { deleteProduct, updateProduct } = useProductAPI();
 
-const loadOrders = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('ecom_orders')
-      .select('*, customer:ecom_customers(name,email), items:ecom_order_items(*)')
-      .order('created_at', { ascending: false });
+  const loadOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ecom_orders')
+        .select('*, customer:ecom_customers(name,email), items:ecom_order_items(*)')
+        .order('created_at', { ascending: false });
 
-    if (error) 
-    {
-      console.error('Failed to load orders:', error);
+      if (error) {
+        setOrders([]);
+        return;
+      }
+
+      setOrders((data || []) as OrderRow[]);
+    } catch {
       setOrders([]);
-      return;
     }
-
-    setOrders(data || []);
-  } catch (err) {
-    console.error('Failed to load orders:', err);
-    setOrders([]);
-  }
-};
+  };
 
   const loadProducts = async () => {
     try {
-      const data = await getProducts(false); // false = only published products
+      const data = await getProducts(false);
       setProducts(data);
-    } catch (error) {
-      console.error('Failed to load products:', error);
+    } catch {
       setProducts([]);
     }
   };
@@ -132,23 +130,21 @@ const loadOrders = async () => {
     setActionLoading(false);
   };
 
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
 
-useEffect(() => {
-  const init = async () => {
-    setLoading(true);
+      try {
+        await Promise.all([loadOrders(), loadProducts()]);
+      } catch (err) {
+        console.error('E-commerce page init failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    try {
-      await Promise.all([loadOrders(), loadProducts()]);
-    } catch (err) {
-      console.error('E-commerce page init failed:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  init();
-}, []);
-
+    init();
+  }, []);
 
   const updStatus = async (id: string, status: string) => {
     await supabase.from('ecom_orders').update({ status }).eq('id', id);
@@ -178,8 +174,8 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl mb-6 overflow-x-auto">                                                                  {/* Tab Navigation */}
-        <div className="flex items-center">                                                                                       {/* Tab Buttons */}
+      <div className="bg-white rounded-xl mb-6 overflow-x-auto">
+        <div className="flex items-center">
           <button
             onClick={() => setView('products')}
             className={`
@@ -196,7 +192,7 @@ useEffect(() => {
                 : 'border-transparent text-slate-600 hover:text-slate-900'
               }
             `}
-          >                                                                                                                       {/* Tab Button for Products */}
+          >
             Products ({productCount})
           </button>
           <button
@@ -214,14 +210,14 @@ useEffect(() => {
                           ? 'border-blue-700 text-blue-700'
                           : 'border-transparent text-slate-600 hover:text-slate-900'}
                     `}
-          >                                                                                                                       {/* Tab Button for Orders */}
+          >
             Orders ({orderCount})
           </button>
         </div>
       </div>
 
       {view === 'orders' ? (
-        <div className="bg-amber-50/50 rounded-xl overflow-hidden">                                                               {/* Orders View */}
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-amber-100/60 border-b border-amber-200">
               <tr className="text-left">
@@ -273,8 +269,7 @@ useEffect(() => {
           </table>
         </div>
       ) : (
-        
-        <div className="bg-amber-50/50 rounded-xl overflow-hidden">                                                               {/* Products View */}
+        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
             <span className="text-sm text-slate-600">{productCount} published products</span>
             <a
@@ -402,6 +397,7 @@ useEffect(() => {
           {editingProduct ? (
             <ProductForm
               product={editingProduct}
+              storeid={storeid || ''}
               onSave={handleRequestUpdateProduct}
               onClose={() => setEditingProduct(null)}
             />

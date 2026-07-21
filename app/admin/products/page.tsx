@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductAPI } from '@/hooks/useProductAPI';
-import ProductForm from '@/components/admin/ProductForm';
+import ProductForm from '@/components/ProductForm';
 import { getProductImage, type ShopProduct } from '@/lib/category-products';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
@@ -17,7 +17,7 @@ const ProductsPage: React.FC = () => (
 
 const ProductsContent: React.FC = () => {
   const { storeid } = useAuth();
-  const { getProductsByStore, createProduct, updateProduct, deleteProduct, loading: apiLoading, error: apiError } = useProductAPI();
+  const { getProductsByStore, deleteProduct, loading: apiLoading, error: apiError } = useProductAPI();
 
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -25,11 +25,13 @@ const ProductsContent: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setError(apiError);
   }, [apiError]);
 
+  // Load products on mount or when storeid changes
   useEffect(() => {
     const loadProducts = async () => {
       if (!storeid) {
@@ -58,63 +60,108 @@ const ProductsContent: React.FC = () => {
     setSelectedProduct(null);
   };
 
-async function handleSaveProduct(product: ShopProduct) {
-  try {
-    const isNew = !product.id || product.id.startsWith('temp-');
-    
-    if (isNew) {
-      // POST - Create new product
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          storeid: currentStoreId, // Your store ID
-          name: product.name,
-          handle: product.handle,
-          sku: product.sku,
-          price: product.price,
-          description: product.description,
-          producttypeid: product.product_type,
-          model: product.model,
-          medical_information: product.medical_information,
-          status: product.status,
-        }),
-      });
+  /**
+   * Get auth token from Supabase
+   */
+  const getAuthToken = async (): Promise<string | null> => {
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data, error } = await supabase.auth.getSession();
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      console.log('✅ Product created:', data.data);
-    } else {
-      // PUT - Update existing product
-      const response = await fetch(`/api/products/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: product.name,
-          handle: product.handle,
-          sku: product.sku,
-          price: product.price,
-          description: product.description,
-          producttypeid: product.product_type,
-          model: product.model,
-          medical_information: product.medical_information,
-          status: product.status,
-        }),
-      });
+      if (error || !data.session) {
+        return null;
+      }
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      console.log('✅ Product updated:', data.data);
+      return data.session.access_token;
+    } catch (error) {
+      console.error('Failed to get auth token:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Handle product save (create or update)
+   */
+  const handleSaveProduct = async (product: ShopProduct) => {
+    if (!storeid) {
+      setError('Store ID not found');
+      return;
     }
 
-    // Refresh products list
-    await refreshProducts();
-    closeModal();
-  } catch (error) {
-    console.error('❌ Error:', error);
-    // Show error toast to user
-  }
-}
+    setSaving(true);
+    setError(null);
+
+    try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('Not authenticated - please log in');
+      }
+
+      const isNew = !product.id || product.id.startsWith('temp-');
+
+      const payload = {
+        name: product.name,
+        handle: product.handle,
+        sku: product.sku,
+        price: product.price,
+        description: product.description || '',
+        producttypeid: product.product_type || '',
+        model: product.model || '',
+        medical_information: product.medical_information || '',
+        status: product.status || 'active',
+      };
+
+      let response;
+
+      if (isNew) {
+        // CREATE new product
+        response = await fetch('/api/admin/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            storeid,
+            ...payload,
+          }),
+        });
+      } else {
+        // UPDATE existing product
+        response = await fetch(`/api/admin/products/${product.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save product');
+      }
+
+      console.log('✅ Product saved:', data.data);
+
+      // Refresh products list
+      const updatedProducts = await getProductsByStore(storeid);
+      if (updatedProducts) {
+        setProducts(updatedProducts);
+      }
+
+      // Close modal
+      handleCloseModal();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      console.error('❌ Save error:', err);
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDeleteProduct = async (productid: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
@@ -247,7 +294,13 @@ async function handleSaveProduct(product: ShopProduct) {
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
           <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <ProductForm product={selectedProduct} onSave={handleSaveProduct} onClose={handleCloseModal} />
+            {/* ✅ FIX: Pass storeid prop */}
+            <ProductForm 
+              product={selectedProduct} 
+              storeid={storeid || ''} 
+              onSave={handleSaveProduct} 
+              onClose={handleCloseModal} 
+            />
           </div>
         </div>
       )}
