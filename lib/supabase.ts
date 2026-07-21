@@ -8,7 +8,25 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://ywnndcmqwrezbckhdwmi.supabase.co';
-const supabaseKey = 'sb_publishable_NLpSJcpEZVpdTByNcgEeJQ__sYcEbP8';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Check .env.local');
+}
+
+/**
+ * Client-side Supabase client (use this in React components)
+ * Uses anon key - safe to use in browser
+ */
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Server-side Supabase admin client (use this in API routes)
+ * Uses service role key - DO NOT expose to browser
+ */
+export const supabaseAdmin = createClient(
+  supabaseUrl,
+  supabaseServiceKey || supabaseAnonKey // Fallback to anon key if service key missing
+);
