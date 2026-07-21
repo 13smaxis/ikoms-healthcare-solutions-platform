@@ -1,15 +1,17 @@
 import { Router } from 'express';
+import { healthRouter } from './health.js';
 import { authRouter } from './auth.js';
-import productRouter from '../controllers/product-routes.js';
+import { productRouter } from './products.js';
 
-export const apiRouter = Router();
+const router = Router();                                                                                                          //- Initialize the main router
 
-apiRouter.use('/auth', authRouter);
-apiRouter.use('/products', productRouter);
+/*
+ * Mounts all the sub-routers to their respective paths. 
+ * This allows for modular route handling.
+ * Each sub-router is responsible for handling requests to its specific path.
+ */
+router.use('/health', healthRouter);
+router.use('/auth', authRouter);
+router.use('/products', productRouter); 
 
-apiRouter.get('/', (_request, response) => {
-  response.json({
-    success: true,
-    message: 'Backend API is ready',
-  });
-});
+export default router;

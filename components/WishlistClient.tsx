@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { fmt, addToCart } from '@/lib/cart';
-import type { ShopProduct } from '@/lib/catergory-products';
-import { getProductImage, getProductsByIds } from '@/lib/catergory-products';
+import type { ShopProduct } from '@/lib/category-products';
+import { getProductImage, getProductsByIds } from '@/lib/category-products';
 
 export default function WishlistClient() {
   const { wishlist, removeFromWishlist } = useWishlist();

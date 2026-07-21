@@ -156,7 +156,7 @@ const AdminDashboard: React.FC = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
           <div className="space-y-2">
             <Link
-              href="/admin/products/new"
+              href="/admin/products"
               className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
             >
               ➕ Add Product

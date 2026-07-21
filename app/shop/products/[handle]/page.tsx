@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductAPI } from '@/hooks/useProductAPI';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import type { Product } from '@/types/database';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import type { ShopProduct } from '@/lib/category-products';
 import { Plus, Edit2, Trash2, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 const ProductsPage: React.FC = () => {
@@ -20,7 +20,7 @@ const ProductsContent: React.FC = () => {
   const { storeid } = useAuth();
   const { getProductsByStore, deleteProduct, loading: apiLoading, error: apiError } = useProductAPI();
   
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(apiError || null);
@@ -47,7 +47,7 @@ const ProductsContent: React.FC = () => {
     setDeleting(null);
 
     if (success) {
-      setProducts((prev) => prev.filter((p) => p.productid !== productid));
+      setProducts((prev) => prev.filter((p) => p.id !== productid));
     } else {
       setError('Failed to delete product');
     }
@@ -147,7 +147,7 @@ const ProductsContent: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {products.map((product) => (
-                    <tr key={product.productid} className="hover:bg-slate-50">
+                    <tr key={product.id} className="hover:bg-slate-50">
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-medium text-slate-900">{product.name}</p>
@@ -165,30 +165,32 @@ const ProductsContent: React.FC = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusBadgeColor(
-                            product.status
+                            product.status || 'draft'
                           )}`}
                         >
-                          {product.status}
+                          {product.status || 'draft'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500">
-                        {new Date(product.createdat).toLocaleDateString('en-GB')}
+                        {product.created_at
+                          ? new Date(product.created_at).toLocaleDateString('en-GB')
+                          : '—'}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            href={`/admin/products/${product.productid}/edit`}
+                            href={`/admin/products/${product.id}/edit`}
                             className="inline-flex items-center gap-1 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
                           >
                             <Edit2 size={16} />
                             Edit
                           </Link>
                           <button
-                            onClick={() => handleDelete(product.productid)}
-                            disabled={deleting === product.productid}
+                            onClick={() => handleDelete(product.id)}
+                            disabled={deleting === product.id}
                             className="inline-flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
                           >
-                            {deleting === product.productid ? (
+                            {deleting === product.id ? (
                               <Loader2 size={16} className="animate-spin" />
                             ) : (
                               <Trash2 size={16} />

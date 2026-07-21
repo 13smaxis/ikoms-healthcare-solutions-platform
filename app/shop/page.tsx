@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { UserCircle2 } from 'lucide-react';
@@ -11,15 +11,36 @@ import BenefitsMarquee from '@/components/TrustBadgesMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import ShopProductCard from '@/components/ShopProductCard';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { getProductImage, getProducts } from '@/lib/catergory-products';
-import type { ShopProduct } from '@/lib/catergory-products';
+import { getProductImage, getProducts } from '@/lib/category-products';
+import type { ShopProduct } from '@/lib/category-products';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
 const shopHeroImageUrl =
 'https://image.pollinations.ai/prompt/photorealistic%20healthcare%20supply%20store%20hero%20background%20with%20wheelchair,%20first%20aid%20kit,%20stethoscope,%20blood%20pressure%20monitor,%20thermometer,%20medical%20gloves,%20face%20mask,%20walker,%20crutches,%20hospital%20equipment,%20clean%20white%20and%20blue%20theme,%20modern,%20minimal,%20professional,%20wide%2016:9,%20empty%20space%20on%20the%20left%20for%20website%20text,%20no%20pills,%20no%20medicine,%20no%20people';
 const ShopHome: React.FC = () => {
-  const products: ShopProduct[] = getProducts();
+  const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { wishlist, toggleWishlist } = useWishlist();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Failed to load products');
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const quickAdd = (p: ShopProduct, e: React.MouseEvent) => {
     e.preventDefault();
@@ -123,6 +144,21 @@ const ShopHome: React.FC = () => {
           </div>
 
           <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {loading && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-slate-500">Loading products...</p>
+              </div>
+            )}
+            {error && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-red-600">{error}</p>
+              </div>
+            )}
+            {!loading && products.length === 0 && !error && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-slate-500">No products available</p>
+              </div>
+            )}
             {products.map((product) => {
               const inWishlist = wishlist.includes(product.id);
 

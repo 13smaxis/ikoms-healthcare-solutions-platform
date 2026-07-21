@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { fmt, addToCart } from '@/lib/cart';
 import { Search } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { getProductImage, searchProducts } from '@/lib/catergory-products';
+import { getProductImage, searchProducts } from '@/lib/category-products';
 
 export default function SearchClient() {
   const searchParams = useSearchParams();

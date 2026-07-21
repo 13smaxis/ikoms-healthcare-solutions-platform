@@ -10,7 +10,7 @@ import LogoMarquee from '@/components/LogoMarquee';
 import ShopOverlayMenu from '@/components/ShopOverlayMenu';
 import SearchClient from '@/components/SearchClient';
 import { getCategoryMarqueeImages } from '@/lib/category-marquee';
-import { getProductsForCollectionHandle, getProductImage } from '@/lib/catergory-products';
+import { getProductsForCollectionHandle, getProductImage } from '@/lib/category-products';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
 import ShopProductCard from '@/components/ShopProductCard';

@@ -1,30 +1,31 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { healthRouter } from './routes/health.js';
-import { apiRouter } from './routes/index.js';
-import { env } from './config/env.js';
+import router from './routes/index.js';
 
-export function createApp() {
-  const app = express();
+const app = express();
 
-  app.use(
-    cors({
-      origin: env.frontendUrl,
-      credentials: true,
-    })
-  );
-  app.use(express.json());
+/*
+ * Middleware: Request Logging
+ * Logs the HTTP method and path of each incoming request along with a timestamp.
+ */
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path}`);
+  next();
+});
 
-  app.get('/', (_request, response) => {
-    response.json({
-      success: true,
-      service: 'admin-backend',
-      environment: env.nodeEnv,
-    });
-  });
+app.use(cors());                                                                                                                  //- Enable CORS for all routes
+app.use(express.json());                                                                                                          //- Middleware: JSON body parsing
+app.use(express.urlencoded({ extended: true }));                                                                                  //- Middleware: URL-encoded body parsing
+app.use('/api', router);                                                                                                          //- Mount the main router at the '/api' path
 
-  app.use('/health', healthRouter);
-  app.use('/api', apiRouter);
+/*
+ * Health Check Endpoint
+ * GET /api/health
+ * Returns a simple JSON response indicating the backend is running.
+ */
+app.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Backend is running', timestamp: new Date().toISOString() });
+});
 
-  return app;
-}
+export default app;

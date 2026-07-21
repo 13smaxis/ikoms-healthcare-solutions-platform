@@ -47,15 +47,21 @@ backend/
     │   ├── env.ts
     │   └── supabase.ts
     ├── controllers/
+    │   └── .gitkeep
     ├── middleware/
     │   └── auth.ts
     ├── routes/
+    │   ├── auth.ts
     │   ├── health.ts
-    │   └── index.ts
+    │   ├── index.ts
+    │   └── products.ts
     ├── services/
+    │   ├── .gitkeep
+    │   └── product.ts
     ├── types/
     │   └── index.ts
     └── utils/
+        ├── errors.ts
         └── response.ts
 ```
 

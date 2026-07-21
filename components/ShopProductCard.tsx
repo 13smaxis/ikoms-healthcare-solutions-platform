@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import type { MouseEvent } from 'react';
-import type { ShopProduct } from '@/lib/catergory-products';
-import { getProductImage } from '@/lib/catergory-products';
+import type { ShopProduct } from '@/lib/category-products';
+import { getProductImage } from '@/lib/category-products';
 import { fmt } from '@/lib/cart';
 
 type ShopProductCardProps = {

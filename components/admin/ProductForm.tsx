@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { getProducts, type ShopProduct, normalizeShopTag } from '@/lib/catergory-products';
+import { getProducts, type ShopProduct, normalizeShopTag } from '@/lib/category-products';
 
 type Props = {
   product?: ShopProduct | null;

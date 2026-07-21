@@ -11,9 +11,9 @@ import { Heart } from 'lucide-react';
 import ShopProductCard from '@/components/ShopProductCard';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { addToCart, fmt } from '@/lib/cart';
-import { getProductImage } from '@/lib/catergory-products';
+import { getProductImage } from '@/lib/category-products';
 import { ShopCategory } from '@/lib/category-names';
-import type { ShopProduct } from '@/lib/catergory-products';
+import type { ShopProduct } from '@/lib/category-products';
 
 interface ShopProductSpecificationProps {
   product: ShopProduct;
