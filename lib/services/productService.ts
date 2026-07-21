@@ -1,13 +1,13 @@
 
-import { SupabaseClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from '../config/supabase.js';
-
 /*
- * Responsible for handling product-related operations such as creating, updating, deleting, and fetching products.
- * This service interacts with the Supabase database and ensures that proper authorization checks are performed.
+ * Product Service business logic for managing products in the application.
+ * This service provides methods for creating, updating, deleting, and fetching products.
+ * It interacts with the Supabase database and ensures proper authorization checks are performed.
  */
-export interface CreateProductInput 
-{
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase'; // Update import path
+
+export interface CreateProductInput {
   name: string;
   handle: string;
   sku: string;
@@ -19,12 +19,7 @@ export interface CreateProductInput
   status?: 'draft' | 'published' | 'archived';
 }
 
-/*
- * UpdateProductInput defines the structure for updating an existing product.
- * All fields are optional, allowing partial updates.
- */
-export interface UpdateProductInput 
-{
+export interface UpdateProductInput {
   name?: string;
   handle?: string;
   sku?: string;
@@ -36,12 +31,7 @@ export interface UpdateProductInput
   status?: 'draft' | 'published' | 'archived';
 }
 
-/*
- * ProductResponse defines the structure of the response returned by product service methods.
- * It indicates whether the operation was successful and includes any relevant data or error messages.
- */
-export interface ProductResponse 
-{
+export interface ProductResponse {
   success: boolean;
   data?: any;
   error?: string;
@@ -49,9 +39,7 @@ export interface ProductResponse
 
 export const productService = {
   /**
-   * Responsible for creating a new product in the database. 
-   * It verifies that the user owns the store before proceeding with the creation.
-   * @param client - Supabase client for database operations
+   * Create a new product
    */
   async createProduct(
     client: SupabaseClient,
@@ -181,8 +169,8 @@ export const productService = {
    * Delete a product
    */
   async deleteProduct(
-    client: SupabaseClient,
-    userId: string,
+                        client: SupabaseClient,
+                        userId: string,
     productid: string
   ): Promise<ProductResponse> {
     try {
@@ -227,11 +215,11 @@ export const productService = {
   },
 
   /**
-   * Get all products for a store (admin - all statuses)
+   * Get all products for a store (admin)
    */
   async getProductsByStore(
-    client: SupabaseClient,
-    storeid: string
+                            client: SupabaseClient,
+                            storeid: string
   ): Promise<ProductResponse> {
     try {
       const { data, error } = await client
@@ -266,7 +254,7 @@ export const productService = {
   },
 
   /**
-   * Get published products for a store (public - no auth needed)
+   * Get published products for a store (public)
    */
   async getPublishedProductsByStore(storeid: string): Promise<ProductResponse> {
     try {

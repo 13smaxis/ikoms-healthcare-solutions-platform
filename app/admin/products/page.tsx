@@ -58,29 +58,63 @@ const ProductsContent: React.FC = () => {
     setSelectedProduct(null);
   };
 
-  const handleSaveProduct = async (product: ShopProduct) => {
-    if (!storeid) {
-      setError('Store ID is required to manage products.');
-      return;
+async function handleSaveProduct(product: ShopProduct) {
+  try {
+    const isNew = !product.id || product.id.startsWith('temp-');
+    
+    if (isNew) {
+      // POST - Create new product
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeid: currentStoreId, // Your store ID
+          name: product.name,
+          handle: product.handle,
+          sku: product.sku,
+          price: product.price,
+          description: product.description,
+          producttypeid: product.product_type,
+          model: product.model,
+          medical_information: product.medical_information,
+          status: product.status,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      console.log('✅ Product created:', data.data);
+    } else {
+      // PUT - Update existing product
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: product.name,
+          handle: product.handle,
+          sku: product.sku,
+          price: product.price,
+          description: product.description,
+          producttypeid: product.product_type,
+          model: product.model,
+          medical_information: product.medical_information,
+          status: product.status,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      console.log('✅ Product updated:', data.data);
     }
 
-    const isUpdate = Boolean(product.id && products.some((item) => item.id === product.id));
-    const result = isUpdate ? await updateProduct(product.id, product) : await createProduct(product);
-
-    if (!result) {
-      setError('Failed to save product. Please try again.');
-      return;
-    }
-
-    setProducts((prev) => {
-      if (isUpdate) {
-        return prev.map((item) => (item.id === result.id ? result : item));
-      }
-      return [result, ...prev];
-    });
-
-    handleCloseModal();
-  };
+    // Refresh products list
+    await refreshProducts();
+    closeModal();
+  } catch (error) {
+    console.error('❌ Error:', error);
+    // Show error toast to user
+  }
+}
 
   const handleDeleteProduct = async (productid: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;

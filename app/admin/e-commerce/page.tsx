@@ -3,12 +3,28 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { fmt } from '@/lib/cart';
+import ShopProductSpecification from '@/components/ShopProductSpecification';
+import ProductForm from '@/components/admin/ProductForm';
+import { useProductAPI } from '@/hooks/useProductAPI';
 import {
-  getProductImage,
-  getProducts,
-  type ShopProduct
-} from '@/lib/category-products';
-import { Eye } from 'lucide-react';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
+import { Eye, Edit3, Trash2 } from 'lucide-react';
 
 type OrderRow = {
   id: string;
@@ -21,18 +37,37 @@ type OrderRow = {
 
 const AdminOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [view, setView] = useState<'orders' | 'products'>('products');
+  const [view, setView] = useState<'orders' | 'products'>('products');                                                            //- Sets the initial view to 'products' to display the products tab first
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewingProduct, setViewingProduct] = useState<ShopProduct | null>(null);
+  const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
+  const [pendingDeleteProduct, setPendingDeleteProduct] = useState<ShopProduct | null>(null);
+  const [pendingUpdateProduct, setPendingUpdateProduct] = useState<ShopProduct | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { deleteProduct, updateProduct } = useProductAPI();
 
-  const loadOrders = async () => {
-    const { data } = await supabase
+const loadOrders = async () => {
+  try {
+    const { data, error } = await supabase
       .from('ecom_orders')
       .select('*, customer:ecom_customers(name,email), items:ecom_order_items(*)')
       .order('created_at', { ascending: false });
 
+    if (error) 
+    {
+      console.error('Failed to load orders:', error);
+      setOrders([]);
+      return;
+    }
+
     setOrders(data || []);
-  };
+  } catch (err) {
+    console.error('Failed to load orders:', err);
+    setOrders([]);
+  }
+};
 
   const loadProducts = async () => {
     try {
@@ -44,14 +79,76 @@ const AdminOrdersPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
+  const handleViewProduct = (product: ShopProduct) => {
+    setViewingProduct(product);
+  };
+
+  const handleEditProduct = (product: ShopProduct) => {
+    setEditingProduct(product);
+  };
+
+  const handleRequestDeleteProduct = (product: ShopProduct) => {
+    setPendingDeleteProduct(product);
+  };
+
+  const handleRequestUpdateProduct = (product: ShopProduct) => {
+    setPendingUpdateProduct(product);
+    setEditingProduct(null);
+  };
+
+  const handleConfirmDeleteProduct = async () => {
+    if (!pendingDeleteProduct) return;
+
+    setActionLoading(true);
+    setActionError(null);
+
+    const success = await deleteProduct(pendingDeleteProduct.id);
+    if (!success) {
+      setActionError('Failed to delete product. Please try again.');
+      setActionLoading(false);
+      return;
+    }
+
+    setPendingDeleteProduct(null);
+    await loadProducts();
+    setActionLoading(false);
+  };
+
+  const handleConfirmUpdateProduct = async () => {
+    if (!pendingUpdateProduct) return;
+
+    setActionLoading(true);
+    setActionError(null);
+
+    const updated = await updateProduct(pendingUpdateProduct.id, pendingUpdateProduct);
+    if (!updated) {
+      setActionError('Failed to save changes. Please try again.');
+      setActionLoading(false);
+      return;
+    }
+
+    setPendingUpdateProduct(null);
+    await loadProducts();
+    setActionLoading(false);
+  };
+
+
+useEffect(() => {
+  const init = async () => {
+    setLoading(true);
+
+    try {
       await Promise.all([loadOrders(), loadProducts()]);
+    } catch (err) {
+      console.error('E-commerce page init failed:', err);
+    } finally {
       setLoading(false);
-    };
-    init();
-  }, []);
+    }
+  };
+
+  init();
+}, []);
+
 
   const updStatus = async (id: string, status: string) => {
     await supabase.from('ecom_orders').update({ status }).eq('id', id);
@@ -236,24 +333,32 @@ const AdminOrdersPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-3">
-                    <a
-                      href={`/admin/products/${p.productid}/edit`}
-                      className="
-                                  inline-flex 
-                                  items-center 
-                                  gap-2 
-                                  rounded-lg 
-                                  border border-slate-300 
-                                  bg-white 
-                                  px-3 py-1 
-                                  text-xs 
-                                  font-semibold text-slate-700 
-                                  hover:border-slate-400 hover:bg-slate-50 transition
-                                "
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      View
-                    </a>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleViewProduct(p)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleEditProduct(p)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRequestDeleteProduct(p)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -268,6 +373,99 @@ const AdminOrdersPage: React.FC = () => {
           </table>
         </div>
       )}
+
+      <Dialog open={Boolean(viewingProduct)} onOpenChange={(open) => { if (!open) setViewingProduct(null); }}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle>Product preview</DialogTitle>
+            <DialogDescription>Review this product without leaving the E-commerce page.</DialogDescription>
+          </DialogHeader>
+          {viewingProduct ? (
+            <div className="max-h-[70vh] overflow-y-auto">
+              <ShopProductSpecification
+                product={viewingProduct}
+                category={undefined}
+                categories={[]}
+                relatedProducts={[]}
+              />
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => { if (!open) setEditingProduct(null); }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit product</DialogTitle>
+            <DialogDescription>Modify product details, then confirm before saving to the backend.</DialogDescription>
+          </DialogHeader>
+          {editingProduct ? (
+            <ProductForm
+              product={editingProduct}
+              onSave={handleRequestUpdateProduct}
+              onClose={() => setEditingProduct(null)}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={Boolean(pendingDeleteProduct)} onOpenChange={(open) => { if (!open) setPendingDeleteProduct(null); }}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm delete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deleting this product is permanent. The product will be removed from the catalog and cannot be restored.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">Warning</p>
+            <p className="mt-2">This action cannot be undone. Make sure you really want to delete this product.</p>
+          </div>
+          {actionError ? <p className="mt-3 text-sm text-rose-600">{actionError}</p> : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              onClick={handleConfirmDeleteProduct}
+              disabled={actionLoading}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
+            >
+              Confirm delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={Boolean(pendingUpdateProduct)} onOpenChange={(open) => { if (!open) setPendingUpdateProduct(null); }}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm save changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have made product edits. Confirm to send the update to the backend.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">Warning</p>
+            <p className="mt-2">This will update the product data on the server. Review your changes before confirming.</p>
+          </div>
+          {actionError ? <p className="mt-3 text-sm text-rose-600">{actionError}</p> : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              onClick={handleConfirmUpdateProduct}
+              disabled={actionLoading}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
+            >
+              Confirm update
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
