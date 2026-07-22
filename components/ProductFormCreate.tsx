@@ -40,13 +40,15 @@ const emptyForm = (): FormState => ({
 	key_features: [], medical_information: '', status: 'draft',
 });
 
-function buildPayload(form: FormState): ShopProduct {
+function buildPayload(form: FormState): ShopProduct 
+{
 	return {
 		...form,
 		price: Number(form.price) || 0,
 		images: form.images.filter(Boolean),
 		tags: form.tags.map((tag) => tag.trim()).filter(Boolean),
-		key_features: form.key_features.map((feature) => feature.trim()).filter(Boolean),
+		//key_features: form.key_features.map((feature) => feature.trim()).filter(Boolean),
+        key_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
 		description: form.description || '',
 		medical_information: form.medical_information || '',
 		status: form.status || 'draft',
@@ -166,7 +168,14 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					<label className="space-y-2 text-sm">Tags<input value={form.tags.join(', ')} onChange={(e) => update('tags', e.target.value.split(','))} className={CONTROL_CLASS} /></label>
 					<label className="space-y-2 text-sm">Model<input value={form.model} onChange={(e) => update('model', e.target.value)} className={CONTROL_CLASS} /></label>
 					<label className="space-y-2 text-sm">Description<textarea rows={4} value={form.description} onChange={(e) => update('description', e.target.value)} className={CONTROL_CLASS} />{errors.description && <span className="text-xs text-rose-400">{errors.description}</span>}</label>
-					<label className="space-y-2 text-sm">Key features<textarea rows={4} value={form.key_features.join('\n')} onChange={(e) => update('key_features', e.target.value.split('\n'))} className={CONTROL_CLASS} /></label>
+					<label className="space-y-2 text-sm">
+                            Key features
+                        <textarea rows={4} 
+                                  value={(form.key_features || []).join('\n')}
+                                  onChange={(e) => update('key_features', e.target.value.split('\n'))} 
+                                  className={CONTROL_CLASS} 
+                        />
+                    </label>
 					<label className="space-y-2 text-sm sm:col-span-2">Medical information<textarea rows={3} value={form.medical_information} onChange={(e) => update('medical_information', e.target.value)} className={CONTROL_CLASS} /></label>
 				</div>
 				<div className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-slate-950 px-6 py-4"><button type="button" onClick={onClose} className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300">Cancel</button><button type="submit" className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white">Submit</button></div>
