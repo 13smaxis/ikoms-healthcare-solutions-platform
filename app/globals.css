@@ -220,3 +220,25 @@ input[type="reset"]:not(:disabled),
   display: none;                                                                                                /* Chrome, Safari, Opera */
 }
 
+.product-form-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.72) transparent;
+}
+
+.product-form-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-form-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.product-form-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.72);
+}
+
+.product-form-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(191, 219, 254, 0.9);
+}
+

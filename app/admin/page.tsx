@@ -9,9 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import ProductForm from '@/components/ProductForm';
 
@@ -60,7 +57,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleCreateProduct = async (product: any) => {
-    if (!profile?.store_id) {
+    if (!profile?.storeid) {
       setCreateProductError('Store ID not found');
       return;
     }
@@ -93,7 +90,7 @@ const AdminDashboard: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          storeid: profile.store_id,
+          storeid: profile.storeid,
           ...payload,
         }),
       });
@@ -278,16 +275,12 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
-        <DialogContent className="max-w-4xl border-slate-200/80 bg-white/95 p-0 shadow-[0_24px_80px_-20px_rgba(15,23,42,0.35)] sm:rounded-[28px]">
-          <DialogHeader>
-            <DialogTitle>Add new product</DialogTitle>
-            <DialogDescription>Create a new product and publish it to the storefront.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-h-[90vh] max-w-4xl border-white/10 bg-slate-950 p-0 text-white shadow-2xl shadow-black/30 sm:rounded-3xl">
           {createProductError ? (
-            <div className="px-6 pb-2 text-sm text-rose-600">{createProductError}</div>
+            <div className="px-6 pb-2 text-sm text-red-200">{createProductError}</div>
           ) : null}
           <ProductForm
-            storeid={profile?.store_id || ''}
+            storeid={profile?.storeid || ''}
             onSave={handleCreateProduct}
             onClose={() => setShowCreateProductModal(false)}
           />
