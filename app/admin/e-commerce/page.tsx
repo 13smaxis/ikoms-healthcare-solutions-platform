@@ -46,6 +46,9 @@ const AdminOrdersPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
   const [pendingDeleteProduct, setPendingDeleteProduct] = useState<ShopProduct | null>(null);
   const [pendingUpdateProduct, setPendingUpdateProduct] = useState<ShopProduct | null>(null);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [savingProduct, setSavingProduct] = useState(false);
+  const [createProductError, setCreateProductError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const { deleteProduct, updateProduct } = useProductAPI();
@@ -79,6 +82,73 @@ const AdminOrdersPage: React.FC = () => {
 
   const handleViewProduct = (product: ShopProduct) => {
     setViewingProduct(product);
+  };
+
+  const getAuthToken = async (): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) {
+        return null;
+      }
+      return data.session.access_token;
+    } catch (error) {
+      console.error('Failed to get auth token:', error);
+      return null;
+    }
+  };
+
+  const handleCreateProduct = async (product: ShopProduct) => {
+    if (!storeid) {
+      setCreateProductError('Store ID not found');
+      return;
+    }
+
+    setSavingProduct(true);
+    setCreateProductError(null);
+
+    try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('Not authenticated - please log in');
+      }
+
+      const payload = {
+        name: product.name,
+        handle: product.handle,
+        sku: product.sku,
+        price: product.price,
+        description: product.description || '',
+        producttypeid: product.product_type || '',
+        model: product.model || '',
+        medical_information: product.medical_information || '',
+        status: product.status || 'active',
+      };
+
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          storeid,
+          ...payload,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create product');
+      }
+
+      setShowCreateProductModal(false);
+      await loadProducts();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create product';
+      setCreateProductError(message);
+    } finally {
+      setSavingProduct(false);
+    }
   };
 
   const handleEditProduct = (product: ShopProduct) => {
@@ -272,21 +342,16 @@ const AdminOrdersPage: React.FC = () => {
         <div className="bg-amber-50/50 rounded-xl overflow-hidden">
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
             <span className="text-sm text-slate-600">{productCount} published products</span>
-            <a
-              href="/admin/products/new"
-              className="
-                          rounded-lg 
-                          bg-emerald-600 
-                          px-4 py-2 
-                          text-sm 
-                          font-semibold 
-                          text-white 
-                          hover:bg-emerald-700 
-                          transition
-                        "
+            <button
+              type="button"
+              onClick={() => {
+                setCreateProductError(null);
+                setShowCreateProductModal(true);
+              }}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
               + Add Product
-            </a>
+            </button>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-amber-100/60 border-b border-amber-200">
@@ -402,6 +467,23 @@ const AdminOrdersPage: React.FC = () => {
               onClose={() => setEditingProduct(null)}
             />
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
+        <DialogContent className="max-w-4xl border-slate-200/80 bg-white/95 p-0 shadow-[0_24px_80px_-20px_rgba(15,23,42,0.35)] sm:rounded-[28px]">
+          <DialogHeader>
+            <DialogTitle>Add new product</DialogTitle>
+            <DialogDescription>Create a new product and publish it to the storefront.</DialogDescription>
+          </DialogHeader>
+          {createProductError ? (
+            <div className="px-6 pb-2 text-sm text-rose-600">{createProductError}</div>
+          ) : null}
+          <ProductForm
+            storeid={storeid || ''}
+            onSave={handleCreateProduct}
+            onClose={() => setShowCreateProductModal(false)}
+          />
         </DialogContent>
       </Dialog>
 

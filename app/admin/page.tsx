@@ -6,6 +6,14 @@ import { supabase } from '@/lib/supabase';
 import { Users, Package, ShoppingCart, Settings } from 'lucide-react';
 import { fmt } from '@/lib/cart';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import ProductForm from '@/components/ProductForm';
 
 type TeamMember = {
   id: string | number;
@@ -34,6 +42,76 @@ const AdminDashboard: React.FC = () => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [createProductError, setCreateProductError] = useState<string | null>(null);
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  const getAuthToken = async (): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) {
+        return null;
+      }
+      return data.session.access_token;
+    } catch (error) {
+      console.error('Failed to get auth token:', error);
+      return null;
+    }
+  };
+
+  const handleCreateProduct = async (product: any) => {
+    if (!profile?.store_id) {
+      setCreateProductError('Store ID not found');
+      return;
+    }
+
+    setSavingProduct(true);
+    setCreateProductError(null);
+
+    try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('Not authenticated - please log in');
+      }
+
+      const payload = {
+        name: product.name,
+        handle: product.handle,
+        sku: product.sku,
+        price: product.price,
+        description: product.description || '',
+        producttypeid: product.product_type || '',
+        model: product.model || '',
+        medical_information: product.medical_information || '',
+        status: product.status || 'active',
+      };
+
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          storeid: profile.store_id,
+          ...payload,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create product');
+      }
+
+      setShowCreateProductModal(false);
+      setStats((prev) => ({ ...prev, products: prev.products + 1 }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create product';
+      setCreateProductError(message);
+    } finally {
+      setSavingProduct(false);
+    }
+  };
 
   useEffect(() => {
     if (!isManager) return; // Only load if user is manager
@@ -155,12 +233,16 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
           <div className="space-y-2">
-            <Link
-              href="/admin/products"
-              className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
+            <button
+              type="button"
+              onClick={() => {
+                setCreateProductError(null);
+                setShowCreateProductModal(true);
+              }}
+              className="block w-full text-left px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
             >
               ➕ Add Product
-            </Link>
+            </button>
             <Link
               href="/admin/collections/new"
               className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
@@ -194,6 +276,23 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
+        <DialogContent className="max-w-4xl border-slate-200/80 bg-white/95 p-0 shadow-[0_24px_80px_-20px_rgba(15,23,42,0.35)] sm:rounded-[28px]">
+          <DialogHeader>
+            <DialogTitle>Add new product</DialogTitle>
+            <DialogDescription>Create a new product and publish it to the storefront.</DialogDescription>
+          </DialogHeader>
+          {createProductError ? (
+            <div className="px-6 pb-2 text-sm text-rose-600">{createProductError}</div>
+          ) : null}
+          <ProductForm
+            storeid={profile?.store_id || ''}
+            onSave={handleCreateProduct}
+            onClose={() => setShowCreateProductModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
