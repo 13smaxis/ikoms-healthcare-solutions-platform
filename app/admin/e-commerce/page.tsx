@@ -370,7 +370,7 @@ const AdminOrdersPage: React.FC = () => {
       )}
 
       <Dialog open={Boolean(viewingProduct)} onOpenChange={(open) => { if (!open) setViewingProduct(null); }}>
-        <DialogContent className="max-w-6xl">
+        <DialogContent className="max-w-6xl border-slate-200/80 bg-white/95 p-0 shadow-[0_24px_80px_-20px_rgba(15,23,42,0.35)] sm:rounded-[28px]">
           <DialogHeader>
             <DialogTitle>Product preview</DialogTitle>
             <DialogDescription>Review this product without leaving the E-commerce page.</DialogDescription>
@@ -389,7 +389,7 @@ const AdminOrdersPage: React.FC = () => {
       </Dialog>
 
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => { if (!open) setEditingProduct(null); }}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl border-slate-200/80 bg-white/95 p-0 shadow-[0_24px_80px_-20px_rgba(15,23,42,0.35)] sm:rounded-[28px]">
           <DialogHeader>
             <DialogTitle>Edit product</DialogTitle>
             <DialogDescription>Modify product details, then confirm before saving to the backend.</DialogDescription>

@@ -1,0 +1,25 @@
+$kind: http-request
+name: POST Products
+description: ""
+url: http://localhost:3000/api/admin/products
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"storeid\": \"4a62112f-c5a2-46c3-b5e0-8a6c8d35b4ff\",\r
+
+    \  \"name\": \"Postman Test Product\",\r
+
+    \  \"handle\": \"postman-test\",\r
+
+    \  \"sku\": \"POSTMAN-004\",\r
+
+    \  \"price\": 199.99,\r
+
+    \  \"description\": \"Created from Postman\",\r
+
+    \  \"status\": \"draft\"\r
+
+    }"
+order: 3878091809626144

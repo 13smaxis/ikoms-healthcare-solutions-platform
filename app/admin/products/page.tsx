@@ -292,8 +292,8 @@ const ProductsContent: React.FC = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
-          <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-4xl overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_24px_80px_-20px_rgba(15,23,42,0.38)]">
             {/* ✅ FIX: Pass storeid prop */}
             <ProductForm 
               product={selectedProduct} 

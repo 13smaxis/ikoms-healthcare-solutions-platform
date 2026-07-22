@@ -110,8 +110,8 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
 
   if (loadingProducts) {
     return (
-      <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
-        <div className="animate-spin inline-block h-8 w-8 rounded-full border-b-2 border-slate-900 mb-4" />
+      <div className="w-full rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-emerald-50 p-8 text-center shadow-[0_24px_80px_-24px_rgba(15,23,42,0.3)]">
+        <div className="animate-spin inline-block h-8 w-8 rounded-full border-b-2 border-emerald-600 mb-4" />
         <p className="text-slate-700">Loading product options...</p>
       </div>
     );
@@ -174,31 +174,32 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
 
   return (
     <form className="w-full" onSubmit={handleSubmit}>
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">{product ? 'Edit product' : 'New product'}</h2>
-          <p className="text-sm text-slate-500">Update shop product details for the storefront.</p>
+      <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-emerald-50 shadow-[0_24px_80px_-24px_rgba(15,23,42,0.35)]">
+        <div className="flex items-center justify-between border-b border-slate-200/80 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-700 px-6 py-4 text-white">
+          <div>
+            <h2 className="text-lg font-semibold text-white">{product ? 'Edit product' : 'New product'}</h2>
+            <p className="text-sm text-slate-200">Update shop product details for the storefront.</p>
+          </div>
+          <div>
+            <button type="button" onClick={onClose} className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/20">Close</button>
+          </div>
         </div>
-        <div>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-900">Close</button>
-        </div>
-      </div>
 
-      <div className="max-h-[70vh] overflow-y-auto p-6 space-y-4">
+        <div className="max-h-[70vh] overflow-y-auto bg-white/70 p-6 sm:p-8 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">Product name</span>
+            <span className="text-sm font-medium text-slate-700">Product name</span>
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
             {errors.name && <div className="text-rose-600 text-xs">{errors.name}</div>}
           </label>
 
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">Handle</span>
-            <select value={form.handle} onChange={(e) => setForm({ ...form, handle: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+            <span className="text-sm font-medium text-slate-700">Handle</span>
+            <select value={form.handle} onChange={(e) => setForm({ ...form, handle: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
               {handles.map((h) => <option key={h} value={h}>{h}</option>)}
             </select>
           </label>
@@ -206,17 +207,17 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">SKU</span>
+            <span className="text-sm font-medium text-slate-700">SKU</span>
             <input
               value={form.sku}
               onChange={(e) => setForm({ ...form, sku: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
             {errors.sku && <div className="text-rose-600 text-xs">{errors.sku}</div>}
           </label>
 
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">Price</span>
+            <span className="text-sm font-medium text-slate-700">Price</span>
             <input
               type="number"
               step="0.01"
@@ -224,7 +225,7 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
               inputMode="decimal"
               value={String(form.price)}
               onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
             {errors.price && <div className="text-rose-600 text-xs">{errors.price}</div>}
           </label>
@@ -232,30 +233,30 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">Product type</span>
-            <select value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+            <span className="text-sm font-medium text-slate-700">Product type</span>
+            <select value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
               {types.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </label>
 
           <label className="space-y-2 text-sm">
-            <span className="text-slate-700">Collection handle</span>
-            <select value={form.collectionHandle} onChange={(e) => setForm({ ...form, collectionHandle: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+            <span className="text-sm font-medium text-slate-700">Collection handle</span>
+            <select value={form.collectionHandle} onChange={(e) => setForm({ ...form, collectionHandle: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
               {collections.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </label>
         </div>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Status</span>
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+          <span className="text-sm font-medium text-slate-700">Status</span>
+          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
             <option value="active">active</option>
             <option value="inactive">inactive</option>
           </select>
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Images</span>
+          <span className="text-sm font-medium text-slate-700">Images</span>
           <div className="flex gap-2 items-center">
             <input type="file" accept="image/*" onChange={(e) => handleUpload(e.target.files?.[0])} />
             {uploading && <div className="text-sm text-slate-500">Uploading…</div>}
@@ -268,35 +269,36 @@ export default function ProductForm({ product, storeid, onSave, onClose }: Props
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Tags (comma separated)</span>
-          <input value={(form.tags || []).join(', ')} onChange={(e) => setForm({ ...form, tags: e.target.value.split(',').map((t) => t.trim()) })} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="text-sm font-medium text-slate-700">Tags (comma separated)</span>
+          <input value={(form.tags || []).join(', ')} onChange={(e) => setForm({ ...form, tags: e.target.value.split(',').map((t) => t.trim()) })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Model</span>
-          <input value={form.model || ''} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="text-sm font-medium text-slate-700">Model</span>
+          <input value={form.model || ''} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Description</span>
-          <textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="text-sm font-medium text-slate-700">Description</span>
+          <textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
           {errors.description && <div className="text-rose-600 text-xs">{errors.description}</div>}
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Key features (one per line)</span>
-          <textarea rows={4} value={keyFeaturesToText()} onChange={(e) => setKeyFeaturesFromText(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="text-sm font-medium text-slate-700">Key features (one per line)</span>
+          <textarea rows={4} value={keyFeaturesToText()} onChange={(e) => setKeyFeaturesFromText(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-700">Medical information</span>
-          <textarea rows={3} value={form.medical_information || ''} onChange={(e) => setForm({ ...form, medical_information: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+          <span className="text-sm font-medium text-slate-700">Medical information</span>
+          <textarea rows={3} value={form.medical_information || ''} onChange={(e) => setForm({ ...form, medical_information: e.target.value })} className="w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
         </label>
       </div>
 
-      <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
-        <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
-        <button type="submit" onClick={handleSubmit} className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800">Save changes</button>
+      <div className="flex items-center justify-end gap-3 border-t border-slate-200/80 bg-slate-50/80 px-6 py-4">
+        <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Cancel</button>
+        <button type="submit" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Save changes</button>
+      </div>
       </div>
     </form>
   );

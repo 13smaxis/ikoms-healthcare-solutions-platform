@@ -1,0 +1,19 @@
+$kind: http-request
+name: PUT Products
+url: http://localhost:3000/api/admin/products/3f82f5e4-1803-4da4-812d-43c8fb86fefd
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Updated Product Name\",\r
+
+    \  \"price\": 300,\r
+
+    \  \"status\": \"published\"\r
+
+    }"
+examples: .resources/PUT Products.resources/examples
+order: 1784705990990
