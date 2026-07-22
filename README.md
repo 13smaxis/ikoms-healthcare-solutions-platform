@@ -1,138 +1,69 @@
-# Ikoms Healthcare Solutions Platform (Next)
+# Ikoms Healthcare Solutions Platform
 
-A Next.js 13 (App Router) front-end for the Ikoms Healthcare Solutions Platform.
+A modern Next.js 16 + React 19 platform for the IKOMS healthcare solutions brand. The app combines public-facing marketing and e-commerce experiences with an authenticated admin workspace for managing content, jobs, training, consultancy, and products.
 
-## Quick start
+## Features
 
-Install dependencies and run the dev server:
+- Public site pages for about, recruitment, consultancy, training, shop, and contact
+- Product browsing, search, cart, wishlist, and checkout flows
+- Admin dashboard for managing jobs, courses, consultancy content, products, and e-commerce operations
+- Supabase-powered authentication and admin access controls
+- Responsive UI built with Tailwind CSS and reusable shadcn-style components
+
+## Tech stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Supabase
+- Radix UI primitives
+- ESLint and Next.js linting
+
+## Getting started
+
+1. Install dependencies:
 
 ```bash
 npm install
+```
+
+2. Create a local environment file named `.env.local` with the required variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_STORE_ID=your-store-id
+```
+
+3. Start the development server:
+
+```bash
 npm run dev
 ```
 
-Build for production:
+4. Open http://localhost:3000 in your browser.
 
-```bash
-npm run build
-npm start
-```
+## Available scripts
 
-Other useful scripts:
+- `npm run dev` — start the development server
+- `npm run build` — create a production build
+- `npm run start` — run the production build locally
+- `npm run lint` — run ESLint checks
 
-- `npm run lint` — run linters
-- `npm run test` — run tests (if present)
+## Project structure
 
-Open http://localhost:3000 in your browser.
-
-## Project layout (workspace tree)
-
-```
-AGENTS.md
-CLAUDE.md
-eslint.config.mjs
-next-env.d.ts
-next.config.ts
-package-lock.json
-package.json
-postcss.config.mjs
-README.md
-tsconfig.json
-tsconfig.tsbuildinfo
-
-.
-├── app/
-├── ├── about/
-├── │   └── page.tsx
-├── ├── admin/
-├── │   ├── consultancy/page.tsx
-├── │   ├── courses/page.tsx
-├── │   ├── jobs/page.tsx
-├── │   ├── orders/page.tsx
-├── │   └── page.tsx
-├── ├── api/
-├── │   └── shop-nav/route.ts
-├── ├── consultancy/
-├── │   ├── page.tsx
-├── │   └── topics/
-├── │       ├── [id]/page.tsx
-├── │       └── page.tsx
-├── ├── contact/
-├── │   └── page.tsx
-├── ├── globals.css
-├── ├── icon.png
-├── ├── layout.tsx
-├── ├── not-found.tsx
-├── ├── page.tsx
-├── ├── recruitment/
-├── │   ├── jobs/
-├── │   │   ├── [id]/page.tsx
-├── │   │   └── page.tsx
-├── │   └── page.tsx
-├── ├── shop/
-├── │   ├── account/page.tsx
-├── │   ├── cart/page.tsx
-├── │   ├── checkout/page.tsx
-├── │   ├── collections/[handle]/page.tsx
-├── │   ├── order-confirmation/page.tsx
-├── │   ├── orders/page.tsx
-├── │   ├── page.tsx
-├── │   ├── products/
-├── │   │   ├── page.tsx
-├── │   │   └── [handle]/page.tsx
-├── │   ├── search/page.tsx
-├── │   └── wishlist/page.tsx
-├── └── training/
-│   ├── ├── courses/
-│   ├── │   ├── [id]/page.tsx
-│   ├── │   └── page.tsx
-│   └── └── page.tsx
-├── components/
-├── ├── AppLayout.tsx
-├── ├── AccountClient.tsx
-├── ├── CategoryImageCarousel.tsx
-├── ├── CategorySubList.tsx
-├── ├── LogoMarquee.tsx
-├── ├── OrdersClient.tsx
-├── ├── SearchClient.tsx
-├── ├── ShopBreadcrumbs.tsx
-├── ├── ShopCategoryIntro.tsx
-├── ├── ShopOverlayMenu.tsx
-├── ├── ShopProductSpecification.tsx
-├── ├── SmoothScroll.tsx
-├── ├── theme-provider.tsx
-├── ├── TrustBadgesMarquee.tsx
-├── ├── layout/
-├── │   ├── AdminLayout.tsx
-├── │   ├── Footer.tsx
-├── │   ├── Header.tsx
-├── │   └── SiteLayout.tsx
-├── └── ui/
-├── contexts/
-├── └── WishlistContext.tsx
-├── hooks/
-├── ├── use-mobile.tsx
-├── └── use-toast.ts
-├── lib/
-├── ├── cart.ts
-├── ├── category-marquee.ts
-├── ├── category-names.ts
-├── ├── catergory-carousel.ts
-├── ├── catergory-products.ts
-├── ├── constants.ts
-├── ├── crm.ts
-├── ├── supabase.ts
-├── └── utils.ts
-├── public/
-└── └── images/
-    └── └── [image asset folders and files]
-
-scripts/
-```
+- `app/` — routes and page components
+- `components/` — UI and feature components
+- `contexts/` — authentication and wishlist context providers
+- `hooks/` — reusable custom hooks
+- `lib/` — shared utilities, helpers, and Supabase configuration
+- `public/images/` — static image assets
 
 ## Notes
 
-- This project uses the Next.js App Router and React Server Components where appropriate.
-- UI primitives live in the `ui/` directory and layout components in `components/layout/`.
-
-If you'd like, I can also commit this change or add a generated tree file. 
+- The project uses the Next.js App Router.
+- Server-side secrets should remain in environment variables and never be exposed to the browser.
+- The admin experience depends on a valid Supabase session and appropriate role permissions.

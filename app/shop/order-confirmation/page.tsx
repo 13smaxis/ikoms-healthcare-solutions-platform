@@ -12,6 +12,7 @@ const OrderConfirmation: React.FC = () => {
   const [oid, setOid] = useState<string | null>(null);
   const [order, setOrder] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -19,9 +20,29 @@ const OrderConfirmation: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!oid) return;
-    supabase.from('ecom_orders').select('*').eq('id', oid).single().then(({ data }) => setOrder(data));
-    supabase.from('ecom_order_items').select('*').eq('order_id', oid).then(({ data }) => setItems(data || []));
+    if (!oid) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchOrderData = async () => {
+      try {
+        const [orderRes, itemsRes] = await Promise.all([
+          supabase.from('ecom_orders').select('*').eq('id', oid).single(),
+          supabase.from('ecom_order_items').select('*').eq('order_id', oid),
+        ]);
+
+        if (orderRes?.data) setOrder(orderRes.data);
+        if (itemsRes?.data) setItems(itemsRes.data);
+      } catch (error) {
+        console.warn('⚠️ Could not load order data:', error);
+        // Continue without order data - page still renders
+      } finally {
+        setLoading(false);                                                                                                        //- Set loading to false once data is fetched (success or failure)
+      }
+    };                                                                                                                            //- Wrap in try-catch to prevent crashes if table doesn't exist
+
+    fetchOrderData();
   }, [oid]);
 
   return (
@@ -41,7 +62,7 @@ const OrderConfirmation: React.FC = () => {
           <p className="text-slate-600">We've emailed you a receipt and will notify you when your order ships.</p>
         </div>
 
-        {order && (
+        {!loading && order && (
           <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
