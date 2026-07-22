@@ -10,7 +10,7 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
-import ProductForm from '@/components/ProductForm';
+import ProductFormCreate from '@/components/ProductFormCreate';
 
 type TeamMember = {
   id: string | number;
@@ -40,75 +40,6 @@ const AdminDashboard: React.FC = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
-  const [createProductError, setCreateProductError] = useState<string | null>(null);
-  const [savingProduct, setSavingProduct] = useState(false);
-
-  const getAuthToken = async (): Promise<string | null> => {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) {
-        return null;
-      }
-      return data.session.access_token;
-    } catch (error) {
-      console.error('Failed to get auth token:', error);
-      return null;
-    }
-  };
-
-  const handleCreateProduct = async (product: any) => {
-    if (!profile?.storeid) {
-      setCreateProductError('Store ID not found');
-      return;
-    }
-
-    setSavingProduct(true);
-    setCreateProductError(null);
-
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated - please log in');
-      }
-
-      const payload = {
-        name: product.name,
-        handle: product.handle,
-        sku: product.sku,
-        price: product.price,
-        description: product.description || '',
-        producttypeid: product.product_type || '',
-        model: product.model || '',
-        medical_information: product.medical_information || '',
-        status: product.status || 'active',
-      };
-
-      const response = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          storeid: profile.storeid,
-          ...payload,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create product');
-      }
-
-      setShowCreateProductModal(false);
-      setStats((prev) => ({ ...prev, products: prev.products + 1 }));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create product';
-      setCreateProductError(message);
-    } finally {
-      setSavingProduct(false);
-    }
-  };
 
   useEffect(() => {
     if (!isManager) return; // Only load if user is manager
@@ -233,7 +164,6 @@ const AdminDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setCreateProductError(null);
                 setShowCreateProductModal(true);
               }}
               className="block w-full text-left px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
@@ -276,12 +206,9 @@ const AdminDashboard: React.FC = () => {
 
       <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
         <DialogContent className="max-h-[90vh] max-w-4xl border-white/10 bg-slate-950 p-0 text-white shadow-2xl shadow-black/30 sm:rounded-3xl">
-          {createProductError ? (
-            <div className="px-6 pb-2 text-sm text-red-200">{createProductError}</div>
-          ) : null}
-          <ProductForm
+          <ProductFormCreate
             storeid={profile?.storeid || ''}
-            onSave={handleCreateProduct}
+            onSuccess={() => setStats((prev) => ({ ...prev, products: prev.products + 1 }))}
             onClose={() => setShowCreateProductModal(false)}
           />
         </DialogContent>

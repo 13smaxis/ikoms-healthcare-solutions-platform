@@ -23,7 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import ProductForm from '@/components/ProductForm';
+import ProductFormCreate from '@/components/ProductFormCreate';
+import ProductFormEdit from '@/components/ProductFormEdit';
 import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
 import { Eye, Edit3, Trash2 } from 'lucide-react';
 
@@ -45,13 +46,10 @@ const AdminOrdersPage: React.FC = () => {
   const [viewingProduct, setViewingProduct] = useState<ShopProduct | null>(null);
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
   const [pendingDeleteProduct, setPendingDeleteProduct] = useState<ShopProduct | null>(null);
-  const [pendingUpdateProduct, setPendingUpdateProduct] = useState<ShopProduct | null>(null);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
-  const [savingProduct, setSavingProduct] = useState(false);
-  const [createProductError, setCreateProductError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const { deleteProduct, updateProduct } = useProductAPI();
+  const { deleteProduct } = useProductAPI();
 
   const loadOrders = async () => {
     try {
@@ -84,84 +82,12 @@ const AdminOrdersPage: React.FC = () => {
     setViewingProduct(product);
   };
 
-  const getAuthToken = async (): Promise<string | null> => {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) {
-        return null;
-      }
-      return data.session.access_token;
-    } catch (error) {
-      console.error('Failed to get auth token:', error);
-      return null;
-    }
-  };
-
-  const handleCreateProduct = async (product: ShopProduct) => {
-    if (!storeid) {
-      setCreateProductError('Store ID not found');
-      return;
-    }
-
-    setSavingProduct(true);
-    setCreateProductError(null);
-
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        throw new Error('Not authenticated - please log in');
-      }
-
-      const payload = {
-        name: product.name,
-        handle: product.handle,
-        sku: product.sku,
-        price: product.price,
-        description: product.description || '',
-        producttypeid: product.product_type || '',
-        model: product.model || '',
-        medical_information: product.medical_information || '',
-        status: product.status || 'active',
-      };
-
-      const response = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          storeid,
-          ...payload,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create product');
-      }
-
-      setShowCreateProductModal(false);
-      await loadProducts();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create product';
-      setCreateProductError(message);
-    } finally {
-      setSavingProduct(false);
-    }
-  };
-
   const handleEditProduct = (product: ShopProduct) => {
     setEditingProduct(product);
   };
 
   const handleRequestDeleteProduct = (product: ShopProduct) => {
     setPendingDeleteProduct(product);
-  };
-
-  const handleRequestUpdateProduct = (product: ShopProduct) => {
-    setPendingUpdateProduct(product);
-    setEditingProduct(null);
   };
 
   const handleConfirmDeleteProduct = async () => {
@@ -178,24 +104,6 @@ const AdminOrdersPage: React.FC = () => {
     }
 
     setPendingDeleteProduct(null);
-    await loadProducts();
-    setActionLoading(false);
-  };
-
-  const handleConfirmUpdateProduct = async () => {
-    if (!pendingUpdateProduct) return;
-
-    setActionLoading(true);
-    setActionError(null);
-
-    const updated = await updateProduct(pendingUpdateProduct.id, pendingUpdateProduct);
-    if (!updated) {
-      setActionError('Failed to save changes. Please try again.');
-      setActionLoading(false);
-      return;
-    }
-
-    setPendingUpdateProduct(null);
     await loadProducts();
     setActionLoading(false);
   };
@@ -345,7 +253,6 @@ const AdminOrdersPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setCreateProductError(null);
                 setShowCreateProductModal(true);
               }}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
@@ -456,10 +363,10 @@ const AdminOrdersPage: React.FC = () => {
       <Dialog open={Boolean(editingProduct)} onOpenChange={(open) => { if (!open) setEditingProduct(null); }}>
         <DialogContent className="max-h-[90vh] max-w-4xl border-white/10 bg-slate-950 p-0 text-white shadow-2xl shadow-black/30 sm:rounded-3xl">
           {editingProduct ? (
-            <ProductForm
+            <ProductFormEdit
               product={editingProduct}
               storeid={storeid || ''}
-              onSave={handleRequestUpdateProduct}
+              onSuccess={loadProducts}
               onClose={() => setEditingProduct(null)}
             />
           ) : null}
@@ -468,12 +375,9 @@ const AdminOrdersPage: React.FC = () => {
 
       <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
         <DialogContent className="max-h-[90vh] max-w-4xl border-white/10 bg-slate-950 p-0 text-white shadow-2xl shadow-black/30 sm:rounded-3xl">
-          {createProductError ? (
-            <div className="px-6 pb-2 text-sm text-red-200">{createProductError}</div>
-          ) : null}
-          <ProductForm
+          <ProductFormCreate
             storeid={storeid || ''}
-            onSave={handleCreateProduct}
+            onSuccess={loadProducts}
             onClose={() => setShowCreateProductModal(false)}
           />
         </DialogContent>
@@ -508,34 +412,6 @@ const AdminOrdersPage: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={Boolean(pendingUpdateProduct)} onOpenChange={(open) => { if (!open) setPendingUpdateProduct(null); }}>
-        <AlertDialogContent className="max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm save changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have made product edits. Confirm to send the update to the backend.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <p className="font-semibold">Warning</p>
-            <p className="mt-2">This will update the product data on the server. Review your changes before confirming.</p>
-          </div>
-          {actionError ? <p className="mt-3 text-sm text-rose-600">{actionError}</p> : null}
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              type="button"
-              onClick={handleConfirmUpdateProduct}
-              disabled={actionLoading}
-              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
-            >
-              Confirm update
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
