@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
 import { supabase } from '@/lib/supabase';
 import {
@@ -157,7 +158,16 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 			<form onSubmit={submit} className="flex h-[85vh] max-h-[85vh] w-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
 				<div className="border-b border-white/10 px-6 py-5"><h2 className="text-lg font-semibold">New product</h2><p className="text-sm text-gray-300">Add a product to the storefront.</p></div>
 				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-scroll p-6 sm:grid-cols-2 sm:p-8">
-					<label className="space-y-2 text-sm">Product name<input value={form.name} onChange={(e) => update('name', e.target.value)} className={CONTROL_CLASS} />{errors.name && <span className="text-xs text-rose-400">{errors.name}</span>}</label>
+					<label className="space-y-2 text-sm">
+                        Product name
+                            <input value={form.name} 
+                                   onChange={(e) => update('name', e.target.value)} 
+                                   className={CONTROL_CLASS} 
+                            />
+                            {errors.name && <span className="text-xs text-rose-400">
+                                {errors.name}
+                            </span>}
+                    </label>
 					<label className="space-y-2 text-sm">Handle<select value={form.handle} onChange={(e) => update('handle', e.target.value)} className={CONTROL_CLASS}><option value="">Select handle</option>{handles.map((handle) => <option key={handle} value={handle}>{handle}</option>)}</select>{errors.handle && <span className="text-xs text-rose-400">{errors.handle}</span>}</label>
 					<label className="space-y-2 text-sm">SKU<input value={form.sku} onChange={(e) => update('sku', e.target.value)} className={CONTROL_CLASS} />{errors.sku && <span className="text-xs text-rose-400">{errors.sku}</span>}</label>
 					<label className="space-y-2 text-sm">Price<input type="number" min="0" step="0.01" value={String(form.price)} onChange={(e) => update('price', Number(e.target.value))} className={CONTROL_CLASS} />{errors.price && <span className="text-xs text-rose-400">{errors.price}</span>}</label>
@@ -169,19 +179,47 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					<label className="space-y-2 text-sm">Model<input value={form.model} onChange={(e) => update('model', e.target.value)} className={CONTROL_CLASS} /></label>
 					<label className="space-y-2 text-sm">Description<textarea rows={4} value={form.description} onChange={(e) => update('description', e.target.value)} className={CONTROL_CLASS} />{errors.description && <span className="text-xs text-rose-400">{errors.description}</span>}</label>
 					<label className="space-y-2 text-sm">
-                            Key features
-                        <textarea rows={4} 
+                        Key features
+                            <textarea rows={4} 
                                   value={(form.key_features || []).join('\n')}
                                   onChange={(e) => update('key_features', e.target.value.split('\n'))} 
                                   className={CONTROL_CLASS} 
-                        />
+                            />
                     </label>
 					<label className="space-y-2 text-sm sm:col-span-2">Medical information<textarea rows={3} value={form.medical_information} onChange={(e) => update('medical_information', e.target.value)} className={CONTROL_CLASS} /></label>
 				</div>
 				<div className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-slate-950 px-6 py-4"><button type="button" onClick={onClose} className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300">Cancel</button><button type="submit" className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white">Submit</button></div>
 			</form>
 			<AlertDialog open={Boolean(pendingProduct)} onOpenChange={(open) => { if (!open && !saving) setPendingProduct(null); }}>
-				<AlertDialogContent className="max-w-lg"><AlertDialogHeader><AlertDialogTitle>Confirm product creation</AlertDialogTitle><AlertDialogDescription>You are about to create a new product and send it to the backend.</AlertDialogDescription></AlertDialogHeader><div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-semibold">Warning</p><p className="mt-2">Review the product details before confirming. This will add the product to your store catalog.</p></div>{apiError && <p className="mt-3 text-sm text-rose-600">{apiError}</p>}<AlertDialogFooter><AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel><AlertDialogAction type="button" onClick={confirmCreate} disabled={saving}>{saving ? 'Creating...' : 'Confirm create'}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+				<AlertDialogContent className="max-w-lg border border-white/10 bg-slate-950/95 p-0 text-white shadow-2xl shadow-black/40 backdrop-blur-xl">
+					<div className="rounded-t-3xl border-b border-white/10 bg-gradient-to-r from-sky-600/20 via-slate-900/90 to-cyan-500/20 px-6 py-5">
+						<div className="flex items-start gap-3">
+							<div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-full border border-sky-400/30 bg-sky-500/15 text-sky-300">
+								<AlertTriangle className="h-5 w-5" />
+							</div>
+							<div>
+								<AlertDialogTitle className="text-lg font-semibold text-white">Confirm product creation</AlertDialogTitle>
+								<AlertDialogDescription className="mt-1 text-sm leading-6 text-slate-300">You are about to create a new product and send it to the backend.</AlertDialogDescription>
+							</div>
+						</div>
+					</div>
+					<div className="px-6 py-5">
+						<div className="rounded-2xl border border-sky-400/20 bg-gradient-to-br from-sky-500/10 via-slate-900/80 to-cyan-500/10 p-4 text-sm text-slate-200">
+							<p className="font-semibold text-white">Please review before continuing</p>
+							<p className="mt-2 leading-6 text-slate-300">This will add the product to your store catalog and submit it to the server for approval.</p>
+							<ul className="mt-3 space-y-1 text-sm text-slate-300">
+								<li>• Review the entered details before you confirm.</li>
+								<li>• The request will be sent immediately after confirmation.</li>
+								<li>• You can cancel at any time.</li>
+							</ul>
+						</div>
+						{apiError && <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{apiError}</p>}
+					</div>
+					<AlertDialogFooter className="border-t border-white/10 px-6 py-4">
+						<AlertDialogCancel disabled={saving} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">Cancel</AlertDialogCancel>
+						<AlertDialogAction type="button" onClick={confirmCreate} disabled={saving} className="rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60">{saving ? 'Creating...' : 'Confirm create'}</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
 			</AlertDialog>
 		</>
 	);

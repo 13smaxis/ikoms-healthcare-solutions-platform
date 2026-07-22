@@ -100,18 +100,18 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <div className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen overflow-x-hidden bg-slate-950 text-white">
+        <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           <div className="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-6">
               <div className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
                 Admin access
               </div>
               <div className="space-y-4">
-                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
+                <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight break-words sm:text-4xl lg:text-5xl">
                   Sign in to manage the IKOMS admin workspace.
                 </h1>
-                <p className="max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+                <p className="max-w-xl text-sm leading-7 text-slate-300 break-words sm:text-base lg:text-lg">
                   You are currently logged out. Use your Supabase account to access jobs, courses,
                   consultancy and e-commerce tools.
                 </p>
@@ -134,27 +134,29 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur">
+            <div className="min-w-0 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30 backdrop-blur sm:p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Logged out state</p>
-              <div className="mt-4 space-y-3 text-sm text-slate-200">
-                <p>• Admin content is hidden until Supabase returns a signed-in user.</p>
-                <p>• The login dialog stays in sync with the current auth session.</p>
-                <p>• Signing out returns you to this state automatically.</p>
+              <div className="mt-4 space-y-3 text-sm leading-6 text-slate-200">
+                <p className="break-words">• Admin content is hidden until Supabase returns a signed-in user.</p>
+                <p className="break-words">• The login dialog stays in sync with the current auth session.</p>
+                <p className="break-words">• Signing out returns you to this state automatically.</p>
               </div>
             </div>
           </div>
         </div>
 
         <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-          <DialogContent className="border-white/10 bg-slate-950 text-white sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">Admin sign in</DialogTitle>
-              <DialogDescription className="text-slate-300">
+          <DialogContent className="max-h-[90vh] w-[calc(100vw-1.5rem)] max-w-md overflow-y-auto border-white/10 bg-slate-950 p-5 text-white sm:w-full sm:p-6">
+            <DialogHeader className="space-y-2 px-1">
+              <DialogTitle className="text-xl font-semibold leading-tight text-white sm:text-2xl">
+                Admin sign in
+              </DialogTitle>
+              <DialogDescription className="text-sm leading-6 text-slate-300 sm:text-base">
                 Authenticate with your Supabase account to unlock the admin dashboard.
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="mt-4 space-y-4 px-1">
               <div className="space-y-2">
                 <label htmlFor="admin-email" className="text-sm font-medium text-slate-200">
                   Email

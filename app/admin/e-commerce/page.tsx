@@ -26,7 +26,7 @@ import {
 import ProductFormCreate from '@/components/ProductFormCreate';
 import ProductFormEdit from '@/components/ProductFormEdit';
 import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
-import { Eye, Edit3, Trash2 } from 'lucide-react';
+import { AlertTriangle, Eye, Edit3, Trash2 } from 'lucide-react';
 
 type OrderRow = {
   id: string;
@@ -384,27 +384,39 @@ const AdminOrdersPage: React.FC = () => {
       </Dialog>
 
       <AlertDialog open={Boolean(pendingDeleteProduct)} onOpenChange={(open) => { if (!open) setPendingDeleteProduct(null); }}>
-        <AlertDialogContent className="max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm delete</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deleting this product is permanent. The product will be removed from the catalog and cannot be restored.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <p className="font-semibold">Warning</p>
-            <p className="mt-2">This action cannot be undone. Make sure you really want to delete this product.</p>
+        <AlertDialogContent className="max-w-lg border border-white/10 bg-slate-950/95 p-0 text-white shadow-2xl shadow-black/40 backdrop-blur-xl">
+          <div className="rounded-t-3xl border-b border-white/10 bg-gradient-to-r from-rose-600/20 via-slate-900/90 to-orange-500/20 px-6 py-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/30 bg-rose-500/15 text-rose-300">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-lg font-semibold text-white">Confirm delete</AlertDialogTitle>
+                <AlertDialogDescription className="mt-1 text-sm leading-6 text-slate-300">Deleting this product is permanent and will remove it from the catalog.</AlertDialogDescription>
+              </div>
+            </div>
           </div>
-          {actionError ? <p className="mt-3 text-sm text-rose-600">{actionError}</p> : null}
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+          <div className="px-6 py-5">
+            <div className="rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/10 via-slate-900/80 to-orange-500/10 p-4 text-sm text-slate-200">
+              <p className="font-semibold text-white">Please review before continuing</p>
+              <p className="mt-2 leading-6 text-slate-300">This action cannot be undone. The product will be removed from your store immediately after confirmation.</p>
+              <ul className="mt-3 space-y-1 text-sm text-slate-300">
+                <li>• Existing listings and references will be removed.</li>
+                <li>• The deletion is submitted immediately after confirmation.</li>
+                <li>• You can cancel at any time.</li>
+              </ul>
+            </div>
+            {actionError ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{actionError}</p> : null}
+          </div>
+          <AlertDialogFooter className="border-t border-white/10 px-6 py-4">
+            <AlertDialogCancel className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               type="button"
               onClick={handleConfirmDeleteProduct}
               disabled={actionLoading}
-              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
+              className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
             >
               Confirm delete
             </AlertDialogAction>

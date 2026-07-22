@@ -40,13 +40,13 @@ const AdminLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-8 sm:px-6 lg:px-8 flex items-center justify-center">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Admin Portal</h1>
-          <p className="text-slate-500 mb-8">Sign in to manage your store</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xl shadow-slate-950/20 sm:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold leading-tight text-slate-900">Admin Portal</h1>
+          <p className="mt-2 text-sm sm:text-base leading-6 text-slate-600">Sign in to manage your store with a clean, uncluttered experience.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex gap-3">
                 <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
@@ -55,7 +55,7 @@ const AdminLoginPage: React.FC = () => {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
                 Email
               </label>
               <input
@@ -66,12 +66,12 @@ const AdminLoginPage: React.FC = () => {
                 placeholder="your@email.com"
                 required
                 disabled={loading}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:bg-slate-50"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-50"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
                 Password
               </label>
               <input
@@ -82,14 +82,14 @@ const AdminLoginPage: React.FC = () => {
                 placeholder="••••••••"
                 required
                 disabled={loading}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:bg-slate-50"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-50"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
             >
               {loading && <Loader2 size={18} className="animate-spin" />}
               {loading ? 'Signing in...' : 'Sign in'}

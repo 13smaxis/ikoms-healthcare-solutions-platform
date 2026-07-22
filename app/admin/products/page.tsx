@@ -2,11 +2,21 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductAPI } from '@/hooks/useProductAPI';
 import ProductFormCreate from '@/components/ProductFormCreate';
 import ProductFormEdit from '@/components/ProductFormEdit';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { getProductImage, type ShopProduct } from '@/lib/category-products';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
@@ -25,6 +35,7 @@ const ProductsContent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<ShopProduct | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [pendingDeleteProduct, setPendingDeleteProduct] = useState<ShopProduct | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,19 +77,25 @@ const ProductsContent: React.FC = () => {
     if (updatedProducts) setProducts(updatedProducts);
   };
 
-  const handleDeleteProduct = async (productid: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+  const handleDeleteProduct = (product: ShopProduct) => {
+    setPendingDeleteProduct(product);
+  };
 
-    setDeleting(productid);
-    const success = await deleteProduct(productid);
+  const handleConfirmDeleteProduct = async () => {
+    if (!pendingDeleteProduct) return;
+
+    setDeleting(pendingDeleteProduct.id);
+    const success = await deleteProduct(pendingDeleteProduct.id);
     setDeleting(null);
 
     if (!success) {
       setError('Failed to delete product. Please try again.');
+      setPendingDeleteProduct(null);
       return;
     }
 
-    setProducts((prev) => prev.filter((product) => product.id !== productid));
+    setProducts((prev) => prev.filter((product) => product.id !== pendingDeleteProduct.id));
+    setPendingDeleteProduct(null);
   };
 
   return (
@@ -172,7 +189,7 @@ const ProductsContent: React.FC = () => {
                             <Edit2 size={16} /> Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product)}
                             disabled={deleting === product.id}
                             className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60"
                           >
@@ -197,7 +214,6 @@ const ProductsContent: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm">
           <div className="w-full max-w-4xl overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_24px_80px_-20px_rgba(15,23,42,0.38)]">
-            {/* ✅ FIX: Pass storeid prop */}
             {selectedProduct ? (
               <ProductFormEdit
                 product={selectedProduct}
@@ -215,6 +231,38 @@ const ProductsContent: React.FC = () => {
           </div>
         </div>
       )}
+
+      <AlertDialog open={Boolean(pendingDeleteProduct)} onOpenChange={(open) => { if (!open) setPendingDeleteProduct(null); }}>
+        <AlertDialogContent className="max-w-lg border border-white/10 bg-slate-950/95 p-0 text-white shadow-2xl shadow-black/40 backdrop-blur-xl">
+          <div className="rounded-t-3xl border-b border-white/10 bg-gradient-to-r from-rose-600/20 via-slate-900/90 to-orange-500/20 px-6 py-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/30 bg-rose-500/15 text-rose-300">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-lg font-semibold text-white">Confirm delete</AlertDialogTitle>
+                <AlertDialogDescription className="mt-1 text-sm leading-6 text-slate-300">Deleting this product is permanent and will remove it from the catalog.</AlertDialogDescription>
+              </div>
+            </div>
+          </div>
+          <div className="px-6 py-5">
+            <div className="rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/10 via-slate-900/80 to-orange-500/10 p-4 text-sm text-slate-200">
+              <p className="font-semibold text-white">Please review before continuing</p>
+              <p className="mt-2 leading-6 text-slate-300">This action cannot be undone. The product will be removed from your store immediately after confirmation.</p>
+              <ul className="mt-3 space-y-1 text-sm text-slate-300">
+                <li>• Existing listings and references will be removed.</li>
+                <li>• The deletion is submitted immediately after confirmation.</li>
+                <li>• You can cancel at any time.</li>
+              </ul>
+            </div>
+            {error ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</p> : null}
+          </div>
+          <AlertDialogFooter className="border-t border-white/10 px-6 py-4">
+            <AlertDialogCancel className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">Cancel</AlertDialogCancel>
+            <AlertDialogAction type="button" onClick={handleConfirmDeleteProduct} disabled={Boolean(deleting)} className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60">{deleting ? 'Deleting...' : 'Confirm delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
