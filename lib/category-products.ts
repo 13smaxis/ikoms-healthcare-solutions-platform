@@ -51,12 +51,12 @@ const DEFAULT_STORE_ID = process.env.NEXT_PUBLIC_STORE_ID || '';
  */
 export async function getProducts(includeInactive = false): Promise<ShopProduct[]> {
   try {
-    // Get storeid from environment or window
-    const storeId = DEFAULT_STORE_ID || (typeof window !== 'undefined' ? localStorage.getItem('storeid') : '');
+    const storeId = DEFAULT_STORE_ID || (typeof window !== 'undefined' ? localStorage.getItem('storeid') : '');                   //- Get storeid from environment or window
     
-    if (!storeId) {
+    if (!storeId)                                                                                                                 //- Check if storeId is available
+    {
       console.warn('No store ID available - using empty array');
-      return [];
+      return [];                                                                                                                  //- Return empty array if no storeId
     }
 
     // ✅ Updated endpoint
