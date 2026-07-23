@@ -20,7 +20,7 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
     const [saving, setSaving] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
 
-    useEffect(() => { document.body.style.overflow = 'hidden'; getProducts(false).then(setProducts).catch(() => setProducts([])).finally(() => setLoadingProducts(false)); return () => { document.body.style.overflow = ''; }; }, []);
+    useEffect(() => { getProducts(false).then(setProducts).catch(() => setProducts([])).finally(() => setLoadingProducts(false)); }, []);
     const handles = useMemo(() => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))), [products]);
     const collections = useMemo(() => Array.from(new Set(products.map((p) => p.collectionHandle).filter(Boolean))), [products]);
     const update = <K extends keyof ShopProduct>(key: K, value: ShopProduct[K]) => setForm((current) => ({ ...current, [key]: value }));
@@ -32,7 +32,7 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
     return (<>
         <form onSubmit={submit} className="flex h-[85vh] max-h-[85vh] w-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
             <div className="border-b border-white/10 px-6 py-5"><h2 className="text-lg font-semibold">Edit product</h2><p className="text-sm text-gray-300">Update shop product details for the storefront.</p></div>
-            <div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-scroll p-6 sm:grid-cols-2 sm:p-8">
+            <div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8">
                 <label className="space-y-2 text-sm">Product name<input value={form.name} onChange={(e) => update('name', e.target.value)} className={CONTROL_CLASS} />{errors.name && <span className="text-xs text-rose-400">{errors.name}</span>}</label>
                 <label className="space-y-2 text-sm">Handle<select value={form.handle} onChange={(e) => update('handle', e.target.value)} className={CONTROL_CLASS}>{handles.map((handle) => <option key={handle} value={handle}>{handle}</option>)}{!handles.includes(form.handle) && <option value={form.handle}>{form.handle}</option>}</select>{errors.handle && <span className="text-xs text-rose-400">{errors.handle}</span>}</label>
                 <label className="space-y-2 text-sm">SKU<input value={form.sku} onChange={(e) => update('sku', e.target.value)} className={CONTROL_CLASS} />{errors.sku && <span className="text-xs text-rose-400">{errors.sku}</span>}</label>

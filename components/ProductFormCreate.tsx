@@ -67,9 +67,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 	const [apiError, setApiError] = useState<string | null>(null);
 
 	useEffect(() => {
-		document.body.style.overflow = 'hidden';
 		getProducts(false).then(setProducts).catch(() => setProducts([])).finally(() => setLoadingProducts(false));
-		return () => { document.body.style.overflow = ''; };
 	}, []);
 
 	const handles = useMemo(() => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))), [products]);
@@ -157,7 +155,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		<>
 			<form onSubmit={submit} className="flex h-[85vh] max-h-[85vh] w-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
 				<div className="border-b border-white/10 px-6 py-5"><h2 className="text-lg font-semibold">New product</h2><p className="text-sm text-gray-300">Add a product to the storefront.</p></div>
-				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-scroll p-6 sm:grid-cols-2 sm:p-8">
+				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8">
 					<label className="space-y-2 text-sm">
                         Product name
                             <input value={form.name} 

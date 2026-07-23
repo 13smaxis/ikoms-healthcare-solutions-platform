@@ -10,7 +10,11 @@ export default function SmoothScroll() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams?.toString();
 
+  const isModalOpen = () => Boolean(document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]'));
+
   const clearBodyLock = () => {
+    if (isModalOpen()) return
+
     const body = document.body;
     body.style.overflow = '';
     body.style.position = '';
@@ -56,10 +60,7 @@ export default function SmoothScroll() {
     let rafId = 0;
 
     function raf(time: number) {
-      // Call Lenis.raf only when an instance exists and the overlay is not present.
-      // When the overlay exists we destroy the Lenis instance so native wheel events
-      // can reach overlay's internal scrollable container without being prevented.
-      if (!document.getElementById('site-menu-overlay')) {
+      if (!isModalOpen() && !document.getElementById('site-menu-overlay')) {
         lenisRef.current?.raf(time);
       }
       rafId = requestAnimationFrame(raf);
@@ -73,15 +74,13 @@ export default function SmoothScroll() {
 
     window.addEventListener("pageshow", onPageShow);
 
-    // Observe DOM changes to detect when the overlay is added/removed.
     const observer = new MutationObserver(() => {
       const overlayPresent = Boolean(document.getElementById('site-menu-overlay'));
-      if (overlayPresent && lenisRef.current) {
-        // destroy lenis so it stops intercepting wheel events
+      const modalOpen = isModalOpen();
+      if ((overlayPresent || modalOpen) && lenisRef.current) {
         try { lenisRef.current.destroy(); } catch (e) { /* ignore */ }
         lenisRef.current = null;
-      } else if (!overlayPresent && !lenisRef.current) {
-        // recreate lenis when overlay removed
+      } else if (!overlayPresent && !modalOpen && !lenisRef.current) {
         createLenis();
       }
     });

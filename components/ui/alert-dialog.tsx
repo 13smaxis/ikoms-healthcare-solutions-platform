@@ -4,6 +4,59 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
+const alertDialogScrollLock = {
+  count: 0,
+  originalOverflow: "",
+  originalPosition: "",
+  originalTop: "",
+  originalWidth: "",
+}
+
+const lockBodyScroll = () => {
+  if (typeof window === "undefined") return
+
+  const body = document.body
+  const root = document.documentElement
+
+  if (alertDialogScrollLock.count === 0) {
+    alertDialogScrollLock.originalOverflow = body.style.overflow
+    alertDialogScrollLock.originalPosition = body.style.position
+    alertDialogScrollLock.originalTop = body.style.top
+    alertDialogScrollLock.originalWidth = body.style.width
+
+    const scrollY = window.scrollY
+    body.style.overflow = "hidden"
+    body.style.position = "fixed"
+    body.style.top = `-${scrollY}px`
+    body.style.width = "100%"
+    root.style.overflow = "hidden"
+  }
+
+  alertDialogScrollLock.count += 1
+}
+
+const unlockBodyScroll = () => {
+  if (typeof window === "undefined") return
+
+  alertDialogScrollLock.count = Math.max(0, alertDialogScrollLock.count - 1)
+
+  if (alertDialogScrollLock.count === 0) {
+    const body = document.body
+    const root = document.documentElement
+    const restoredTop = Math.abs(parseInt(body.style.top || "0", 10))
+
+    body.style.overflow = alertDialogScrollLock.originalOverflow
+    body.style.position = alertDialogScrollLock.originalPosition
+    body.style.top = alertDialogScrollLock.originalTop
+    body.style.width = alertDialogScrollLock.originalWidth
+    root.style.overflow = ""
+
+    if (restoredTop > 0) {
+      window.scrollTo({ top: restoredTop, behavior: "auto" })
+    }
+  }
+}
+
 const AlertDialog = AlertDialogPrimitive.Root
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
@@ -28,19 +81,26 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <AlertDialogPortal>
-    <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-card p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      )}
-      {...props}
-    />
-  </AlertDialogPortal>
-))
+>(({ className, ...props }, ref) => {
+  React.useEffect(() => {
+    lockBodyScroll()
+    return () => unlockBodyScroll()
+  }, [])
+
+  return (
+    <AlertDialogPortal>
+      <AlertDialogOverlay />
+      <AlertDialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-card p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain",
+          className
+        )}
+        {...props}
+      />
+    </AlertDialogPortal>
+  )
+})
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
 const AlertDialogHeader = ({
