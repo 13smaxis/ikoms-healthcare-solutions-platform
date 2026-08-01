@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export function useSessionRefresh() {
   const refreshPendingRef = useRef(false);
-  const wasHiddenRef = useRef(document.hidden);
+  const wasHiddenRef = useRef(typeof document !== 'undefined' ? document.hidden : false);
 
   const shouldSuppressRefresh = () => {
     if (typeof window === 'undefined') return false;
@@ -12,6 +12,10 @@ export function useSessionRefresh() {
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     const refreshSession = async () => {
       if (refreshPendingRef.current || document.hidden || shouldSuppressRefresh()) return;
       refreshPendingRef.current = true;
