@@ -38,11 +38,13 @@ const JobDetail: React.FC = () => {
         cv_url = supabase.storage.from('cvs').getPublicUrl(up.path).data.publicUrl;
       }
 
-      const { error: insErr } = await supabase.from('biz_applications').insert({
+      const application = {
         job_id: id,
         ...form,
         cv_url,
-      });
+      } as any;
+
+      const { error: insErr } = await supabase.from('biz_applications').insert(application);
       if (insErr) throw insErr;
 
       try { await subscribeEmail({ email: form.email, name: form.full_name, source: 'job-application', tags: ['candidate', job.title] }); } catch {}

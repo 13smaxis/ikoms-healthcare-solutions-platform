@@ -155,7 +155,10 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		return Object.keys(next).length === 0;
 	};
 
-	const suppressFocusRefreshForFileUpload = (duration = 15000) => {
+	const suppressFocusRefreshForFileUpload = (
+		_event?: React.PointerEvent<HTMLInputElement> | React.MouseEvent<HTMLInputElement> | React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>,
+		duration = 15000
+	) => {
 		if (typeof window !== 'undefined') {
 			(window as any).__suppressFocusRefreshUntil = Date.now() + duration;
 		}
