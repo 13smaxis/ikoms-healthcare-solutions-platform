@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -99,14 +100,17 @@ const Checkout: React.FC = () => {
       { onConflict: 'email' } as any,
     ).select('id').single();
 
+    const createdCustomer = customer as { id?: number | string | null } | null | undefined;
     const { data: order } = await supabase.from('ecom_orders' as any).insert({
-      customer_id: customer?.id, status: 'paid', subtotal, tax, shipping, total,
+      customer_id: createdCustomer?.id, status: 'paid', subtotal, tax, shipping, total,
       shipping_address: addr, stripe_payment_intent_id: paymentIntent.id,
     } as any).select('id').single();
 
-    if (order) {
+    const createdOrder = order as { id?: number | string | null } | null | undefined;
+
+    if (createdOrder) {
       const items = cart.map(i => ({
-        order_id: order.id,
+        order_id: createdOrder.id,
         product_id: i.product_id.startsWith('course-') ? null : i.product_id,
         variant_id: i.variant_id || null,
         product_name: i.name,
