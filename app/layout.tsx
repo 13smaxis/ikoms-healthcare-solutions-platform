@@ -14,6 +14,7 @@ import "./globals.css";
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import SmoothScroll from "@/components/SmoothScroll";
+import FocusRefresh from '@/components/FocusRefresh';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col">
+        <FocusRefresh />
         <Suspense fallback={null}>
           <SmoothScroll />
         </Suspense>

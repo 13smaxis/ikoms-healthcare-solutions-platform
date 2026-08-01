@@ -40,12 +40,12 @@ const AdminCoursesPage: React.FC = () => {
 
   const save = async () => {
     const payload = { ...editing, price: Number(editing.price), seats: Number(editing.seats) };
-    if (editing.id) await supabase.from('biz_courses').update(payload).eq('id', editing.id);
-    else await supabase.from('biz_courses').insert(payload);
+    if (editing.id) await (supabase as any).from('biz_courses').update(payload as any).eq('id', editing.id);
+    else await (supabase as any).from('biz_courses').insert(payload as any);
     setModal(false); setEditing(empty); load();
   };
-  const del = async (id: string) => { if (!confirm('Delete this course?')) return; await supabase.from('biz_courses').delete().eq('id', id); load(); };
-  const updBooking = async (id: string, status: string) => { await supabase.from('biz_course_bookings').update({ status }).eq('id', id); load(); };
+  const del = async (id: string) => { if (!confirm('Delete this course?')) return; await (supabase as any).from('biz_courses').delete().eq('id', id); load(); };
+  const updBooking = async (id: string, status: string) => { await (supabase as any).from('biz_course_bookings').update({ status } as any).eq('id', id); load(); };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

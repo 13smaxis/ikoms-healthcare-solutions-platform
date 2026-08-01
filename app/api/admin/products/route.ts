@@ -26,7 +26,7 @@ export async function POST(request: NextRequest)
 //onst userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
                                                                                                 //- For testing - use fake user ID
     const body = await request.json();
-    const { storeid, name, handle, sku, price, ...rest } = body;
+    const { storeid, name, handle, sku, price, images, ...rest } = body;
 
     console.log(`📦 Creating product in store: ${storeid}`);
 
@@ -97,9 +97,42 @@ export async function POST(request: NextRequest)
       );
     }
 
-    console.log(`✅ Created product: ${result.data?.productid}`);
+    const product = result.data;
+    let insertedImages = [];
+
+    if (images && Array.isArray(images) && images.length > 0) {
+      console.log(`📷 Saving ${images.length} image(s) for product ${product.productid}`);
+      const imageRecords = images.map((image: any, index: number) => ({
+        productid: product.productid,
+        imageurl: String(image.imageurl || image.publicUrl || ''),
+        alttext: typeof image.alttext === 'string' ? image.alttext : null,
+        displayorder: typeof image.displayorder === 'number' ? image.displayorder : index,
+      })).filter((image) => image.imageurl);
+
+      if (imageRecords.length > 0) {
+        const { data: imageData, error: imageError } = await supabaseAdmin
+          .from('product_images')
+          .insert(imageRecords)
+          .select();
+
+        if (imageError) {
+          console.error('❌ Failed saving product images:', imageError);
+          return NextResponse.json(
+            { error: imageError.message || 'Failed to save product images' },
+            { status: 500 }
+          );
+        }
+
+        insertedImages = imageData || [];
+        console.log(`✅ Saved ${insertedImages.length} image row(s) for product ${product.productid}`);
+      } else {
+        console.log('⚠️ No valid image records found in payload');
+      }
+    }
+
+    console.log(`✅ Created product: ${product.productid}`);
     return NextResponse.json(
-      { success: true, data: result.data },
+      { success: true, data: { ...product, product_images: insertedImages } },
       { status: 201 }
     );
   } catch (error) {

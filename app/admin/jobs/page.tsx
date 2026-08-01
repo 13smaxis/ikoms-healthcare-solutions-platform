@@ -45,18 +45,18 @@ const AdminJobsPage: React.FC = () => {
 
   const save = async () => {
     if (editing.id) {
-      await supabase.from('biz_jobs').update(editing).eq('id', editing.id);
+      await (supabase as any).from('biz_jobs').update(editing as any).eq('id', editing.id);
     } else {
-      await supabase.from('biz_jobs').insert(editing);
+      await (supabase as any).from('biz_jobs').insert(editing as any);
     }
     setModal(false); setEditing(empty); load();
   };
   const del = async (id: string) => {
     if (!confirm('Delete this job?')) return;
-    await supabase.from('biz_jobs').delete().eq('id', id); load();
+    await (supabase as any).from('biz_jobs').delete().eq('id', id); load();
   };
   const updateAppStatus = async (id: string, status: string) => {
-    await supabase.from('biz_applications').update({ status }).eq('id', id); load();
+    await (supabase as any).from('biz_applications').update({ status } as any).eq('id', id); load();
   };
 
   return (

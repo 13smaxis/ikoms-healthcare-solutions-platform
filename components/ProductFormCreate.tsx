@@ -15,6 +15,13 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+export type UploadedProductImage = {
+  publicUrl: string;
+  path: string;
+  alttext?: string;
+  displayorder: number;
+};
+
 export const PRODUCT_TYPES = [
 	{ id: '5d929bda-2cf9-4d3c-8957-5a2093d1f34b', type: 'Clinical Supplies' },
 	{ id: '98753de8-7394-4dc9-8865-db651ac207b3', type: 'PPE & Safety Equipment' },
@@ -61,6 +68,8 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 	const [products, setProducts] = useState<ShopProduct[]>([]);
 	const [loadingProducts, setLoadingProducts] = useState(true);
 	const [uploading, setUploading] = useState(false);
+	const [uploadError, setUploadError] = useState<string | null>(null);
+	const [uploadedImages, setUploadedImages] = useState<UploadedProductImage[]>([]);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [pendingProduct, setPendingProduct] = useState<ShopProduct | null>(null);
 	const [saving, setSaving] = useState(false);
@@ -103,13 +112,48 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 	const handleUpload = async (file?: File) => {
 		if (!file) return;
+		setUploadError(null);
 		setUploading(true);
+
+		if (file.size > 5 * 1024 * 1024) {
+			setUploadError('Image too large. Maximum size is 5MB.');
+			setUploading(false);
+			return;
+		}
+
+		if (!file.type.startsWith('image/')) {
+			setUploadError('Invalid file type. Please upload an image.');
+			setUploading(false);
+			return;
+		}
+
 		try {
 			const body = new FormData();
 			body.append('file', file);
-			const response = await fetch('/api/admin/upload-image', { method: 'POST', body });
+			const token = await getAuthToken();
+			const response = await fetch('/api/admin/upload-image', {
+				method: 'POST',
+				headers: token ? { Authorization: `Bearer ${token}` } : {},
+				body,
+			});
+
 			const data = await response.json();
-			if (data?.path) update('images', [data.path, ...form.images.filter(Boolean)]);
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Image upload failed.');
+			}
+
+			setUploadedImages((current) => [
+				...current,
+				{
+					publicUrl: data.publicUrl,
+					path: data.path,
+					alttext: file.name,
+					displayorder: current.length,
+				},
+			]);
+		} catch (error) {
+			setUploadError(error instanceof Error ? error.message : 'Upload failed');
 		} finally {
 			setUploading(false);
 		}
@@ -144,6 +188,11 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					model: pendingProduct.model,
 					medical_information: pendingProduct.medical_information,
 					status: pendingProduct.status,
+					images: uploadedImages.map((image) => ({
+						imageurl: image.publicUrl,
+						alttext: image.alttext || '',
+						displayorder: image.displayorder,
+					})),
 				}),
 			});
 			const result = await response.json();
@@ -151,7 +200,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 			setPendingProduct(null);
 			onSuccess?.(result.data || pendingProduct);
 			onClose();
-			localStorage.removeItem(FORM_STORAGE_KEY);  																		  //- Clear the saved form data from localStorage after successful submission
+
 
 		} catch (error) {
 			setApiError(error instanceof Error ? error.message : 'Failed to create product');
@@ -330,9 +379,22 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 							<span>
 								Uploading...
 							</span>}
-						<span className="block text-xs text-slate-400">
-							{form.images.join(', ')}
-						</span>
+						{uploading && (
+							<span className="text-xs text-slate-300">Uploading image...</span>
+						)}
+						{uploadError && (
+							<span className="block text-xs text-rose-400">{uploadError}</span>
+						)}
+						{uploadedImages.length > 0 && (
+							<div className="space-y-2 pt-2 text-xs text-slate-300">
+								{uploadedImages.map((image) => (
+									<div key={image.path} className="flex items-center justify-between gap-4 rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2">
+										<span className="truncate">{image.publicUrl}</span>
+										<span className="text-slate-500">Image {image.displayorder + 1}</span>
+									</div>
+								))}
+							</div>
+						)}
 					</label>
 
 					<label className="space-y-2 text-sm"> 																		  {/* Tags input field */}

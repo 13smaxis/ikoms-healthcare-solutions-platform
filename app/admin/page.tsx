@@ -66,7 +66,7 @@ const AdminDashboard: React.FC = () => {
         ]);
 
         const revenue = (orderData || []).reduce(
-          (sum, order) => sum + (parseFloat(order.totalamount) || 0),
+          (sum, order: any) => sum + (parseFloat(order?.totalamount as string) || 0),
           0
         );
 

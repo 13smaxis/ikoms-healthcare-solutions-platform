@@ -1,28 +1,43 @@
-import fs from 'fs';
-import path from 'path';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/auth/middleware';
+import { uploadProductImage, getProductImageValidationError } from '@/lib/supabase-storage';
 
-export const runtime = 'nodejs';
-
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    if (!file) return NextResponse.json({ error: 'no file' }, { status: 400 });
+    const userId = await verifyAuth(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const formData = await request.formData();
+    const file = formData.get('file');
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'images', 'uploads');
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
 
-    const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-')}`;
-    const writePath = path.join(uploadsDir, safeName);
-    fs.writeFileSync(writePath, buffer);
+    const validationError = getProductImageValidationError(file);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
 
-    const publicPath = `/images/uploads/${safeName}`;
-    return NextResponse.json({ path: publicPath });
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    const uploadResult = await uploadProductImage(file);
+
+    return NextResponse.json(
+      {
+        success: true,
+        publicUrl: uploadResult.publicUrl,
+        path: uploadResult.path,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Upload image error:', error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to upload image',
+      },
+      { status: 500 }
+    );
   }
 }
