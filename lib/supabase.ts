@@ -20,13 +20,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * Client-side Supabase client (use this in React components)
  * Uses anon key - safe to use in browser
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const globalForSupabase = globalThis as typeof globalThis & {
+  supabase?: ReturnType<typeof createClient>;
+  supabaseAdmin?: ReturnType<typeof createClient>;
+};
+
+export const supabase =
+  globalForSupabase.supabase ?? createClient(supabaseUrl, supabaseAnonKey);
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForSupabase.supabase = supabase;
+}
 
 /**
  * Server-side Supabase admin client (use this in API routes)
  * Uses service role key - DO NOT expose to browser
  */
-export const supabaseAdmin = createClient(
-  supabaseUrl,
-  supabaseServiceKey || supabaseAnonKey // Fallback to anon key if service key missing
-);
+export const supabaseAdmin =
+  typeof window === 'undefined'
+    ? globalForSupabase.supabaseAdmin ?? createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
+    : null;
+
+if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+  globalForSupabase.supabaseAdmin = supabaseAdmin as ReturnType<typeof createClient>;
+}

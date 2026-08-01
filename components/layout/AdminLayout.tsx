@@ -8,6 +8,7 @@ import { COMPANY } from "@/lib/constants";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSessionRefresh } from "@/hooks/useSessionRefresh";
 
 const navLinks = [
   { href: "/admin", label: "Overview" },
@@ -27,7 +28,10 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
   const { user, isAdmin, loading, hydrating, login, logout } = useAuth();
-  console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });
+
+  useSessionRefresh();                                                                                                            //- Call the custom hook to refresh the session when the window gains focus
+  
+  console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });            //- Log the current state of the AdminLayout component for debugging
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -35,9 +39,9 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       setProfileImage(URL.createObjectURL(file));
     }
-  };
+  };                                                                                                                              //- Handle profile image upload and update state with the new image URL
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (href: string) => pathname === href;                                                                           //- Check if the current pathname matches the link href to determine active state
 
   React.useEffect(() => {
     if (loading)                                                                                                                  //- Check if auth is still loading, if so, do not proceed
@@ -47,9 +51,9 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     if (user)                                                                                                                     //- If user is logged in, close login dialog and reset login state
     {
-      setLoginOpen(true);                                                                                                         //- Open the login dialog if user is logged in
+      setLoginOpen(false);                                                                                                        //- Close the login dialog when signed in
       setLoginError(null);                                                                                                        //- Clear any previous login errors
-      setPassword("");                                                                                                            //- Clear the password field for security
+      setPassword("");                                                                                                           //- Clear the password field for security
     }
   }, [loading, user]);                                                                                                            //- Dependency array ensures this effect runs when loading or user state changes
 
@@ -78,7 +82,15 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     await handleSignOut();
   };
 
-  if (loading || hydrating || loginLoading) {
+  /*
+   * Render logic based on auth state
+   * - If loading or hydrating, show a loading spinner
+   * - If no user, show login prompt
+   * - If user is not admin, show access denied message
+   * - Otherwise, render the admin layout with navigation and content
+   */
+  if (loading || hydrating || loginLoading) 
+  {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white px-4">
         <div className="text-center max-w-md">

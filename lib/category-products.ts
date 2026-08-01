@@ -86,7 +86,7 @@ export async function getProducts(includeInactive = false): Promise<ShopProduct[
         handle: product.handle,
         name: product.name,
         sku: product.sku,
-        product_type: product.type || 'Uncategorized',
+        product_type: product.producttypeid || '',
         collectionHandle: 'general',
         price: product.price,
         images: product.product_images?.map((img: any) => img.imageurl) || [],

@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import ProductFormCreate from '@/components/ProductFormCreate';
+import ProductFormCreate, { PRODUCT_TYPES } from '@/components/ProductFormCreate';
 import ProductFormEdit from '@/components/ProductFormEdit';
 import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
 import { AlertTriangle, Eye, Edit3, Trash2 } from 'lucide-react';
@@ -290,7 +290,9 @@ const AdminOrdersPage: React.FC = () => {
                     )}
                     {p.name}
                   </td>
-                  <td className="p-3">{p.product_type}</td>
+                  <td className="p-3">
+                    {PRODUCT_TYPES.find((type) => type.id === p.product_type)?.type || (p.product_type || 'Unassigned')}
+                  </td>
                   <td className="p-3 font-mono text-xs">{p.sku}</td>
                   <td className="p-3 font-bold">{fmt(p.price)}</td>
                   <td className="p-3">

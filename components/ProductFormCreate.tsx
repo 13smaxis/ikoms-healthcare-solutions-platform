@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
-import { supabase } from '@/lib/supabase';
+import { getAuthToken } from '@/lib/auth/client';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -33,23 +33,22 @@ type Props = {
 	onClose: () => void;
 };
 
-type FormState = Omit<ShopProduct, 'id'> & { id: '' };
+type FormState = Omit<ShopProduct, 'id' | 'price'> & { id: ''; price: string };
 
 const emptyForm = (): FormState => ({
 	id: '', handle: '', name: '', sku: '', product_type: PRODUCT_TYPES[0].id,
-	collectionHandle: '', price: 0, images: [], tags: [], description: '', model: '',
+	collectionHandle: '', price: '', images: [], tags: [], description: '', model: '',
 	key_features: [], medical_information: '', status: 'draft',
 });
 
-function buildPayload(form: FormState): ShopProduct 
-{
+function buildPayload(form: FormState): ShopProduct {
+	const parsedPrice = parseFloat(form.price.toString().replace(',', '.'));
 	return {
 		...form,
-		price: Number(form.price) || 0,
+		price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
 		images: form.images.filter(Boolean),
 		tags: form.tags.map((tag) => tag.trim()).filter(Boolean),
-		//key_features: form.key_features.map((feature) => feature.trim()).filter(Boolean),
-        key_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
+		key_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
 		description: form.description || '',
 		medical_information: form.medical_information || '',
 		status: form.status || 'draft',
@@ -58,6 +57,7 @@ function buildPayload(form: FormState): ShopProduct
 
 export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props) {
 	const [form, setForm] = useState<FormState>(emptyForm);
+
 	const [products, setProducts] = useState<ShopProduct[]>([]);
 	const [loadingProducts, setLoadingProducts] = useState(true);
 	const [uploading, setUploading] = useState(false);
@@ -66,16 +66,24 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 	const [saving, setSaving] = useState(false);
 	const [apiError, setApiError] = useState<string | null>(null);
 
+	/*
+	 * Fetches product options from the backend and updates the products state, handling loading and error states.
+	 */
 	useEffect(() => {
 		getProducts(false).then(setProducts).catch(() => setProducts([])).finally(() => setLoadingProducts(false));
 	}, []);
 
-	const handles = useMemo(() => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))), [products]);
-	const collections = useMemo(() => Array.from(new Set(products.map((p) => p.collectionHandle).filter(Boolean))), [products]);
+	const handles = useMemo(() => Array.from(new Set(products.map((p) => p.handle).filter(Boolean))), [products]); 				  //- Memoized list of unique product handles derived from the fetched products, used for populating the handle dropdown in the form
+	const collections = useMemo(() => Array.from(new Set(products.map((p) => p.collectionHandle).filter(Boolean))), [products]);  //- Memoized list of unique collection handles derived from the fetched products, used for populating the collection handle dropdown in the form
 
 	useEffect(() => {
-		if (handles.length || collections.length) {
-			setForm((current) => ({ ...current, handle: current.handle || handles[0] || '', collectionHandle: current.collectionHandle || collections[0] || '' }));
+		if (handles.length || collections.length)  																				  //- Check if handles or collections are available before setting default values
+		{
+			setForm((current) => ({
+				...current,
+				handle: current.handle || handles[0] || '',
+				collectionHandle: current.collectionHandle || collections[0] || ''
+			})); 																												  //- Set default handle and collectionHandle if they are not already set in the form state
 		}
 	}, [collections, handles]);
 
@@ -83,10 +91,11 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 	const validate = () => {
 		const next: Record<string, string> = {};
+		const parsedPrice = parseFloat(form.price.toString().replace(',', '.'));
 		if (!form.name.trim()) next.name = 'Product name is required';
 		if (!form.sku.trim()) next.sku = 'SKU is required';
 		if (!form.handle.trim()) next.handle = 'Handle is required';
-		if (Number.isNaN(Number(form.price))) next.price = 'Price is required';
+		if (form.price.trim() === '' || Number.isNaN(parsedPrice) || parsedPrice < 0) next.price = 'Enter a valid price like 2.45';
 		if (!form.description.trim()) next.description = 'Description is required';
 		setErrors(next);
 		return Object.keys(next).length === 0;
@@ -119,11 +128,11 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		setSaving(true);
 		setApiError(null);
 		try {
-			const { data, error } = await supabase.auth.getSession();
-			if (error || !data.session?.access_token) throw new Error('Not authenticated - please log in');
+			const token = await getAuthToken();
+			if (!token) throw new Error('Not authenticated - please log in');
 			const response = await fetch('/api/admin/products', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
+				headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
 				body: JSON.stringify({
 					storeid,
 					name: pendingProduct.name,
@@ -142,6 +151,8 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 			setPendingProduct(null);
 			onSuccess?.(result.data || pendingProduct);
 			onClose();
+			localStorage.removeItem(FORM_STORAGE_KEY);  																		  //- Clear the saved form data from localStorage after successful submission
+
 		} catch (error) {
 			setApiError(error instanceof Error ? error.message : 'Failed to create product');
 		} finally {
@@ -153,41 +164,248 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 	return (
 		<>
-			<form onSubmit={submit} className="flex h-[85vh] max-h-[85vh] w-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-950 text-white shadow-2xl">
-				<div className="border-b border-white/10 px-6 py-5"><h2 className="text-lg font-semibold">New product</h2><p className="text-sm text-gray-300">Add a product to the storefront.</p></div>
-				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8">
-					<label className="space-y-2 text-sm">
-                        Product name
-                            <input value={form.name} 
-                                   onChange={(e) => update('name', e.target.value)} 
-                                   className={CONTROL_CLASS} 
-                            />
-                            {errors.name && <span className="text-xs text-rose-400">
-                                {errors.name}
-                            </span>}
-                    </label>
-					<label className="space-y-2 text-sm">Handle<select value={form.handle} onChange={(e) => update('handle', e.target.value)} className={CONTROL_CLASS}><option value="">Select handle</option>{handles.map((handle) => <option key={handle} value={handle}>{handle}</option>)}</select>{errors.handle && <span className="text-xs text-rose-400">{errors.handle}</span>}</label>
-					<label className="space-y-2 text-sm">SKU<input value={form.sku} onChange={(e) => update('sku', e.target.value)} className={CONTROL_CLASS} />{errors.sku && <span className="text-xs text-rose-400">{errors.sku}</span>}</label>
-					<label className="space-y-2 text-sm">Price<input type="number" min="0" step="0.01" value={String(form.price)} onChange={(e) => update('price', Number(e.target.value))} className={CONTROL_CLASS} />{errors.price && <span className="text-xs text-rose-400">{errors.price}</span>}</label>
-					<label className="space-y-2 text-sm">Product type<select value={form.product_type} onChange={(e) => update('product_type', e.target.value)} className={CONTROL_CLASS}>{PRODUCT_TYPES.map((type) => <option key={type.id} value={type.id}>{type.type}</option>)}</select></label>
-					<label className="space-y-2 text-sm">Collection handle<select value={form.collectionHandle} onChange={(e) => update('collectionHandle', e.target.value)} className={CONTROL_CLASS}><option value="">Select collection</option>{collections.map((collection) => <option key={collection} value={collection}>{collection}</option>)}</select></label>
-					<label className="space-y-2 text-sm">Status<select value={form.status} onChange={(e) => update('status', e.target.value)} className={CONTROL_CLASS}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
-					<label className="space-y-2 text-sm">Images<input type="file" accept="image/*" onChange={(e) => handleUpload(e.target.files?.[0])} className="text-sm" />{uploading && <span>Uploading...</span>}<span className="block text-xs text-slate-400">{form.images.join(', ')}</span></label>
-					<label className="space-y-2 text-sm">Tags<input value={form.tags.join(', ')} onChange={(e) => update('tags', e.target.value.split(','))} className={CONTROL_CLASS} /></label>
-					<label className="space-y-2 text-sm">Model<input value={form.model} onChange={(e) => update('model', e.target.value)} className={CONTROL_CLASS} /></label>
-					<label className="space-y-2 text-sm">Description<textarea rows={4} value={form.description} onChange={(e) => update('description', e.target.value)} className={CONTROL_CLASS} />{errors.description && <span className="text-xs text-rose-400">{errors.description}</span>}</label>
-					<label className="space-y-2 text-sm">
-                        Key features
-                            <textarea rows={4} 
-                                  value={(form.key_features || []).join('\n')}
-                                  onChange={(e) => update('key_features', e.target.value.split('\n'))} 
-                                  className={CONTROL_CLASS} 
-                            />
-                    </label>
-					<label className="space-y-2 text-sm sm:col-span-2">Medical information<textarea rows={3} value={form.medical_information} onChange={(e) => update('medical_information', e.target.value)} className={CONTROL_CLASS} /></label>
+			<form
+				onSubmit={submit}
+				className="
+							flex h-[85vh] 
+							max-h-[85vh] 
+							w-full flex-col 
+							overflow-hidden 
+							rounded-3xl 
+							border border-white/10 
+							bg-slate-950 
+							text-white 
+							shadow-2xl
+						"
+			> 																													  {/* Create Product Form */}
+				<div className="border-b border-white/10 px-6 py-5"> 															  {/* Form header with title and description */}
+					<h2 className="text-lg font-semibold">
+						New product
+					</h2>
+					<p className="text-sm text-gray-300">
+						Add a product to the storefront.
+					</p>
 				</div>
-				<div className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-slate-950 px-6 py-4"><button type="button" onClick={onClose} className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300">Cancel</button><button type="submit" className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white">Submit</button></div>
+
+				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8">
+					<label className="space-y-2 text-sm"> 																		  {/* Product name input field */}
+						Product name
+						<input
+							value={form.name}
+							onChange={(e) => update('name', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+						{errors.name &&
+							<span className="text-xs text-rose-400">
+								{errors.name}
+							</span>}
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Product handle input field */}
+						Handle
+						<select
+							value={form.handle}
+							onChange={(e) => update('handle', e.target.value)}
+							className={CONTROL_CLASS}
+						>
+							<option value="">
+								Select handle
+							</option>
+
+							{handles.map((handle) =>
+								<option
+									key={handle}
+									value={handle}
+								>
+									{handle}
+								</option>
+							)}
+						</select>
+
+						{errors.handle &&
+							<span className="text-xs text-rose-400">
+								{errors.handle}
+							</span>}
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* SKU input field */}
+						SKU
+						<input
+							value={form.sku}
+							onChange={(e) => update('sku', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+						{errors.sku &&
+							<span className="text-xs text-rose-400">
+								{errors.sku}
+							</span>}
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Price input field */}
+						Price
+						<input
+							type="number"
+							min="0"
+							step="0.01"
+							inputMode="decimal"
+							placeholder="2.45"
+							value={form.price}
+							onChange={(e) => update('price', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+						{errors.price &&
+							<span className="text-xs text-rose-400">
+								{errors.price}
+							</span>}
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Product type input field */}
+						Product type
+						<select
+							value={form.product_type}
+							onChange={(e) => update('product_type', e.target.value)}
+							className={CONTROL_CLASS}
+						>
+							{PRODUCT_TYPES.map((type) =>
+								<option
+									key={type.id}
+									value={type.id}
+								>
+									{type.type}
+								</option>
+							)}
+						</select>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Collection handle input field */}
+						Collection handle
+						<select
+							value={form.collectionHandle}
+							onChange={(e) => update('collectionHandle', e.target.value)}
+							className={CONTROL_CLASS}
+						>
+							<option value="">
+								Select collection
+							</option>
+
+							{collections.map((collection) =>
+								<option
+									key={collection}
+									value={collection}
+								>
+									{collection}
+								</option>
+							)}
+						</select>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Status input field */}
+						Status
+						<select
+							value={form.status}
+							onChange={(e) => update('status', e.target.value)}
+							className={CONTROL_CLASS}
+						>
+							<option value="draft">
+								Draft
+							</option>
+							<option value="published">
+								Published
+							</option>
+							<option value="archived">
+								Archived
+							</option>
+						</select>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Images input field */}
+						Images
+						<input
+							type="file"
+							accept="image/*"
+							onChange={(e) => handleUpload(e.target.files?.[0])}
+							className="text-sm"
+						/>
+						{uploading &&
+							<span>
+								Uploading...
+							</span>}
+						<span className="block text-xs text-slate-400">
+							{form.images.join(', ')}
+						</span>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Tags input field */}
+						Tags
+						<input
+							value={form.tags.join(', ')}
+							onChange={(e) => update('tags', e.target.value.split(','))}
+							className={CONTROL_CLASS}
+						/>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Model input field */}
+						Model
+						<input
+							value={form.model}
+							onChange={(e) => update('model', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Description input field */}
+						Description
+						<textarea
+							rows={4}
+							value={form.description}
+							onChange={(e) => update('description', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+						{errors.description &&
+							<span className="text-xs text-rose-400">
+								{errors.description}
+							</span>}
+					</label>
+
+					<label className="space-y-2 text-sm"> 																		  {/* Key features input field */}
+						Key features
+						<textarea
+							rows={4}
+							value={(form.key_features || []).join('\n')}
+							onChange={(e) => update('key_features', e.target.value.split('\n'))}
+							className={CONTROL_CLASS}
+						/>
+					</label>
+
+					<label className="space-y-2 text-sm sm:col-span-2"> 														  {/* Medical information input field */}
+						Medical information
+						<textarea
+							rows={3}
+							value={form.medical_information}
+							onChange={(e) => update('medical_information', e.target.value)}
+							className={CONTROL_CLASS}
+						/>
+					</label>
+				</div>
+
+				<div className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-slate-950 px-6 py-4">
+					<button
+						type="button"
+						onClick={onClose}
+						className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300"
+					>
+						Cancel
+					</button>
+
+					<button
+						type="submit"
+						className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white"
+					>
+						Submit
+					</button>
+				</div>
 			</form>
+
 			<AlertDialog open={Boolean(pendingProduct)} onOpenChange={(open) => { if (!open && !saving) setPendingProduct(null); }}>
 				<AlertDialogContent className="max-w-lg border border-white/10 bg-slate-950/95 p-0 text-white shadow-2xl shadow-black/40 backdrop-blur-xl">
 					<div className="rounded-t-3xl border-b border-white/10 bg-gradient-to-r from-sky-600/20 via-slate-900/90 to-cyan-500/20 px-6 py-5">
