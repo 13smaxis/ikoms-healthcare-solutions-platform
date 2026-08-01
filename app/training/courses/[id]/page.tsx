@@ -28,7 +28,7 @@ const CourseDetail: React.FC = () => {
   const book = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await supabase.from('biz_course_bookings').insert({ course_id: id, ...form });
+    await supabase.from('biz_course_bookings' as any).insert({ course_id: id, ...form } as any);
     try { await subscribeEmail({ email: form.email, name: form.full_name, source: 'course-booking', tags: ['training', course.title] }); } catch {}
     setSubmitting(false);
     setDone(true);

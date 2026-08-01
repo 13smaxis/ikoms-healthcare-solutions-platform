@@ -28,12 +28,15 @@ const OrderConfirmation: React.FC = () => {
     const fetchOrderData = async () => {
       try {
         const [orderRes, itemsRes] = await Promise.all([
-          supabase.from('ecom_orders').select('*').eq('id', oid).single(),
-          supabase.from('ecom_order_items').select('*').eq('order_id', oid),
+          supabase.from('ecom_orders' as any).select('*').eq('id', oid).single(),
+          supabase.from('ecom_order_items' as any).select('*').eq('order_id', oid),
         ]);
 
-        if (orderRes?.data) setOrder(orderRes.data);
-        if (itemsRes?.data) setItems(itemsRes.data);
+        const orderData = orderRes as { data?: any } | null | undefined;
+        const itemsData = itemsRes as { data?: any[] } | null | undefined;
+
+        if (orderData?.data) setOrder(orderData.data);
+        if (itemsData?.data) setItems(itemsData.data);
       } catch (error) {
         console.warn('⚠️ Could not load order data:', error);
         // Continue without order data - page still renders

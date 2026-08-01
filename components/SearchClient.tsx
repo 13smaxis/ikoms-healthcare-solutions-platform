@@ -17,7 +17,6 @@ export default function SearchClient() {
     // keep input in sync if query param changes
     const param = searchParams?.get('q') ?? '';
     if (param !== q) setQ(param);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {

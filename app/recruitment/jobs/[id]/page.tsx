@@ -44,7 +44,7 @@ const JobDetail: React.FC = () => {
         cv_url,
       } as any;
 
-      const { error: insErr } = await supabase.from('biz_applications').insert(application);
+      const { error: insErr } = await supabase.from('biz_applications' as any).insert(application);
       if (insErr) throw insErr;
 
       try { await subscribeEmail({ email: form.email, name: form.full_name, source: 'job-application', tags: ['candidate', job.title] }); } catch {}

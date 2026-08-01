@@ -28,7 +28,7 @@ const TopicDetail: React.FC = () => {
     e.preventDefault();
     if (!topic || !id) return;
     setSubmitting(true);
-    await supabase.from('biz_consultancy_bookings').insert({ topic_id: id, ...form } as any);
+    await supabase.from('biz_consultancy_bookings' as any).insert({ topic_id: id, ...form } as any);
     try { await subscribeEmail({ email: form.email, name: form.full_name, source: 'consultancy-booking', tags: ['consultancy', topic.title] }); } catch {}
     setSubmitting(false); setDone(true);
   };
