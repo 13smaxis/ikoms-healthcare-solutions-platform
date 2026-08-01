@@ -1,5 +1,5 @@
 /*
- * File: app/api/admin/products/[productid]/routes.ts
+ * File: app/api/admin/products/[productid]/route.ts
  * Responsible for handling product-related operations for a specific product ID in the admin context.
  * This includes updating and deleting products.
  */
@@ -22,17 +22,16 @@ export async function PUT(
 ) {
   try {
     
-    /*const userId = await verifyAuth(request);                                                                                     //- Verify user is authenticated
+    const userId = await verifyAuth(request);                                                                                     //- Verify user is authenticated
     if (!userId) 
     {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }*/
-   const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
+    }
 
-    const { productid } = await params;  // ✅ Await it
+    const { productid } = await params;                                                                                           //- Await the params to get the product ID
 
     console.log(`📦 Updating product: ${productid}`);
 
@@ -120,22 +119,21 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
-    // Verify user is authenticated
-    /*const userId = await verifyAuth(request);
-    if (!userId) {
+    const userId = await verifyAuth(request);                                                                                     //- Verify user is authenticated
+    if (!userId) 
+    {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }*/
-
-    const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
+    }
 
     const { productid } = await params;  // ✅ Await it
 
     console.log(`📦 Deleting product: ${productid}`);
 
-    if (!productid) {
+    if (!productid) 
+    {
       return NextResponse.json(
         { error: 'Product ID is required' },
         { status: 400 }
@@ -148,7 +146,8 @@ export async function DELETE(
       productid
     );
 
-    if (!result.success) {
+    if (!result.success) 
+    {
       console.error('❌ Service error:', result.error);
       if (typeof result.error === 'string' && result.error.includes('Unauthorized')) {
         return NextResponse.json(

@@ -42,11 +42,12 @@ const AdminDashboard: React.FC = () => {
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
 
   useEffect(() => {
-    if (!isManager) return; // Only load if user is manager
+    if (!isManager) return;                                                                                                       //- Only load if user is manager
 
     (async () => {
+      console.log('Dashboard stats load start', { isManager });
       try {
-        setStatsLoading(true);
+        setStatsLoading(true);                                                                                                    //- Set loading state to true before fetching stats
         setError(null);
 
         // Fetch stats from actual tables in your schema
@@ -76,11 +77,13 @@ const AdminDashboard: React.FC = () => {
           collections: collectionCount || 0,
           totalRevenue: revenue,
         });
+        console.log('Dashboard stats load success', { productCount, orderCount, customerCount, collectionCount, revenue });
       } catch (err) {
         console.error('Failed to fetch stats:', err);
         setError('Failed to load dashboard statistics');
       } finally {
         setStatsLoading(false);
+        console.log('Dashboard stats load finished');
       }
     })();
   }, [isManager]);

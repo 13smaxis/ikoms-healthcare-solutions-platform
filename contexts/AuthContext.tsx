@@ -44,11 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const beginHydration = () => {
     authSyncCountRef.current += 1;
+    console.log(`Auth hydration start (#${authSyncCountRef.current})`);
     setHydrating(true);
   };
 
   const endHydration = () => {
     authSyncCountRef.current = Math.max(0, authSyncCountRef.current - 1);
+    console.log(`Auth hydration end (#${authSyncCountRef.current})`);
 
     if (authSyncCountRef.current === 0) {
       setHydrating(false);
@@ -58,11 +60,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize auth on mount
   useEffect(() => {
     const initAuth = async () => {
+      console.log('Auth init start');
       beginHydration();
 
       try {
         // Get current session
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('Auth init session:', {
+          hasSession: Boolean(session),
+          userEmail: session?.user?.email,
+          userId: session?.user?.id,
+        });
         
         if (session?.user) {
           setUser(session.user);
@@ -73,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(err instanceof Error ? err.message : 'Failed to initialize auth');
       } finally {
         setLoading(false);
+        console.log('Auth init complete, loading false');
         endHydration();
       }
     };
@@ -82,7 +91,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Supabase auth state change:', {
+          event,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id,
+          currentUser: user?.email,
+          loading,
+          hydrating,
+        });
+
         if (event === 'SIGNED_OUT') {
+          console.log('Auth state change SIGNED_OUT - clearing auth state');
           setUser(null);
           setProfile(null);
           setRole(null);
@@ -92,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (event === 'SIGNED_IN' && session?.user && !user) {
+          console.log('Auth state change SIGNED_IN - fetching profile for', session.user.email);
           setUser(session.user);
           await fetchUserProfile(session.user.email!);
         }
@@ -102,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
 const fetchUserProfile = async (email: string) => {
+  console.log('fetchUserProfile start', { email });
   try {
     const { data: userData, error: userError } = await supabase
       .from('users')
@@ -110,30 +131,36 @@ const fetchUserProfile = async (email: string) => {
       .single();
 
     if (userError) throw userError;
+    console.log('fetchUserProfile userData:', {
+      email: userData?.email,
+      userid: userData?.userid,
+      usertype: userData?.usertype,
+    });
 
-      if (userData) {
-        setProfile(userData);
+    if (userData) {
+      setProfile(userData);
 
-        // Get user's role - handle case where it doesn't exist
-        const { data: assignmentData } = await supabase
-          .from('staff_assignments')
-          .select(`
-            roleid,
-            roles (
-              rolename
-            )
-          `)
-          .eq('userid', userData.userid)
-          .eq('status', 'active')
-          .maybeSingle();
+      // Get user's role - handle case where it doesn't exist
+      const { data: assignmentData } = await supabase
+        .from('staff_assignments')
+        .select(`
+          roleid,
+          roles (
+            rolename
+          )
+        `)
+        .eq('userid', userData.userid)
+        .eq('status', 'active')
+        .maybeSingle();
 
-        const roleRecord = Array.isArray(assignmentData?.roles)
-          ? assignmentData.roles[0]
-          : assignmentData?.roles;
+      const roleRecord = Array.isArray(assignmentData?.roles)
+        ? assignmentData.roles[0]
+        : assignmentData?.roles;
 
-        if (roleRecord) {
-          const userRole = roleRecord.rolename?.toLowerCase() as UserRole;
-          setRole(userRole);
+      if (roleRecord) {
+        const userRole = roleRecord.rolename?.toLowerCase() as UserRole;
+        setRole(userRole);
+        console.log('fetchUserProfile role resolved:', userRole);
 
         if (userRole === 'manager') {
           const { data: storeData } = await supabase
@@ -141,6 +168,7 @@ const fetchUserProfile = async (email: string) => {
             .select('storeid')
             .eq('managerid', userData.userid)
               .maybeSingle();
+          console.log('fetchUserProfile storeData:', storeData);
           
           if (storeData?.storeid) {
             setStoreid(storeData.storeid);
@@ -148,6 +176,7 @@ const fetchUserProfile = async (email: string) => {
         }
       }
     }
+    console.log('fetchUserProfile complete', { email });
   } catch (err) {
     console.error('Profile fetch error:', err);
     setError(err instanceof Error ? err.message : 'Failed to fetch profile');
@@ -155,6 +184,7 @@ const fetchUserProfile = async (email: string) => {
 };
 
   const login = async (email: string, password: string) => {
+    console.log('Auth login start', { email });
     beginHydration();
 
     try {
@@ -167,14 +197,17 @@ const fetchUserProfile = async (email: string) => {
       if (authError) throw authError;
 
       if (data.user) {
+        console.log('Auth login succeeded', { email, userId: data.user.id });
         setUser(data.user);
         await fetchUserProfile(email);
         return { error: null };
       }
 
+      console.warn('Auth login completed without user', { email });
       return { error: 'Login failed' };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
+      console.error('Auth login error:', message);
       setError(message);
       return { error: message };
     } finally {

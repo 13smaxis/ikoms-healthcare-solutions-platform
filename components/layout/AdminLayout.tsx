@@ -27,6 +27,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
   const { user, isAdmin, loading, hydrating, login, logout } = useAuth();
+  console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -152,7 +153,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 Admin sign in
               </DialogTitle>
               <DialogDescription className="text-sm leading-6 text-slate-300 sm:text-base">
-                Authenticate with your Supabase account to unlock the admin dashboard.
+                Authenticate to unlock the admin dashboard.
               </DialogDescription>
             </DialogHeader>
 

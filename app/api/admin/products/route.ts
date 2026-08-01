@@ -15,15 +15,15 @@ import { verifyAuth } from '@/lib/auth/middleware';
 export async function POST(request: NextRequest) 
 {
   try {
-   /* const userId = await verifyAuth(request);                                                                                     //- Verify user is authenticated
+   const userId = await verifyAuth(request);                                                                                     //- Verify user is authenticated
     if (!userId) 
     {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }*/
-const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
+    }
+//onst userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
                                                                                                 //- For testing - use fake user ID
     const body = await request.json();
     const { storeid, name, handle, sku, price, ...rest } = body;
@@ -121,14 +121,14 @@ const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659';
 export async function GET(request: NextRequest) {
   try {
     // Verify user is authenticated
-    /*const userId = await verifyAuth(request);
+    const userId = await verifyAuth(request);
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
-    }*/
-    const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
+    }
+    //const userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
 
     const { searchParams } = new URL(request.url);
     const storeid = searchParams.get('storeid');

@@ -14,7 +14,10 @@ export function ProtectedRoute({ children, requiredRole = 'manager' }: Protected
   const { user, role, loading } = useAuth();
   const router = useRouter();
 
+  console.log('ProtectedRoute render', { loading, userEmail: user?.email, role, requiredRole });
+
   if (loading) {
+    console.log('ProtectedRoute loading state');
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -26,6 +29,7 @@ export function ProtectedRoute({ children, requiredRole = 'manager' }: Protected
   }
 
   if (!user) {
+    console.log('ProtectedRoute redirecting to /admin because user is null');
     router.push('/admin');
     return null;
   }
@@ -36,6 +40,7 @@ export function ProtectedRoute({ children, requiredRole = 'manager' }: Protected
     (requiredRole === 'admin' && ['manager', 'staff', 'supervisor'].includes(role || ''));
 
   if (!hasAccess) {
+    console.log('ProtectedRoute access denied', { role, requiredRole });
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -55,5 +60,6 @@ export function ProtectedRoute({ children, requiredRole = 'manager' }: Protected
     );
   }
 
+  console.log('ProtectedRoute granting access');
   return <>{children}</>;
 }

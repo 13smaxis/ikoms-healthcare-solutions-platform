@@ -53,27 +53,33 @@ const AdminOrdersPage: React.FC = () => {
 
   const loadOrders = async () => {
     try {
+      console.log('📋 Starting loadOrders...');
       const { data, error } = await supabase
         .from('ecom_orders')
         .select('*, customer:ecom_customers(name,email), items:ecom_order_items(*)')
         .order('created_at', { ascending: false });
 
+      console.log('✅ loadOrders done:', data?.length);
       if (error) {
         setOrders([]);
         return;
       }
 
       setOrders((data || []) as OrderRow[]);
-    } catch {
+    } catch (err) {
+      console.error('❌ loadOrders failed:', err);
       setOrders([]);
     }
   };
 
   const loadProducts = async () => {
     try {
+      console.log('📦 Starting loadProducts...');
       const data = await getProducts(false);
+      console.log('✅ loadProducts done:', data.length);
       setProducts(data);
-    } catch {
+    } catch (err) {
+      console.error('❌ loadProducts failed:', err);
       setProducts([]);
     }
   };
@@ -134,9 +140,9 @@ const AdminOrdersPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
           <p className="text-slate-600">Loading...</p>
         </div>
       </div>

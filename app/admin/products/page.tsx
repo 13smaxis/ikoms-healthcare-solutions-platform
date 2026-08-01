@@ -45,7 +45,9 @@ const ProductsContent: React.FC = () => {
   // Load products on mount or when storeid changes
   useEffect(() => {
     const loadProducts = async () => {
+      console.log('Admin products load start', { storeid });
       if (!storeid) {
+        console.warn('Admin products load aborted because storeid is missing');
         setLoadingProducts(false);
         return;
       }
@@ -53,9 +55,13 @@ const ProductsContent: React.FC = () => {
       setLoadingProducts(true);
       const data = await getProductsByStore(storeid);
       if (data) {
+        console.log('Admin products load success', { count: data.length });
         setProducts(data);
+      } else {
+        console.warn('Admin products load returned no data');
       }
       setLoadingProducts(false);
+      console.log('Admin products load finished');
     };
 
     loadProducts();

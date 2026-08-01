@@ -1,6 +1,6 @@
 $kind: http-request
 name: DELETE Products
 description: ""
-url: http://localhost:3000/api/admin/products/5aaf694b-37d5-4a15-ae31-239c9879fe16
+url: http://localhost:3000/api/admin/products/5b4eb892-a32d-4d9a-86d5-d06c6eff9005
 method: DELETE
 order: 4460500382150868
