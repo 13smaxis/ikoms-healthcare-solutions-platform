@@ -124,24 +124,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 const fetchUserProfile = async (email: string) => {
   console.log('fetchUserProfile start', { email });
   try {
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await (supabase as any)
       .from('users')
       .select('*')
       .eq('email', email)
       .single();
 
     if (userError) throw userError;
+
+    const userRecord = userData as Partial<UserProfile> | null;
+
     console.log('fetchUserProfile userData:', {
-      email: userData?.email,
-      userid: userData?.userid,
-      usertype: userData?.usertype,
+      email: userRecord?.email,
+      userid: userRecord?.userid,
+      usertype: userRecord?.usertype,
     });
 
-    if (userData) {
-      setProfile(userData);
+    if (userRecord) {
+      setProfile(userRecord as UserProfile);
 
       // Get user's role - handle case where it doesn't exist
-      const { data: assignmentData } = await supabase
+      const { data: assignmentData } = await (supabase as any)
         .from('staff_assignments')
         .select(`
           roleid,
@@ -149,13 +152,13 @@ const fetchUserProfile = async (email: string) => {
             rolename
           )
         `)
-        .eq('userid', userData.userid)
+        .eq('userid', userRecord.userid)
         .eq('status', 'active')
         .maybeSingle();
 
       const roleRecord = Array.isArray(assignmentData?.roles)
-        ? assignmentData.roles[0]
-        : assignmentData?.roles;
+        ? (assignmentData.roles[0] as { rolename?: string } | undefined)
+        : (assignmentData?.roles as { rolename?: string } | undefined);
 
       if (roleRecord) {
         const userRole = roleRecord.rolename?.toLowerCase() as UserRole;
@@ -163,11 +166,11 @@ const fetchUserProfile = async (email: string) => {
         console.log('fetchUserProfile role resolved:', userRole);
 
         if (userRole === 'manager') {
-          const { data: storeData } = await supabase
+          const { data: storeData } = await (supabase as any)
             .from('stores')
             .select('storeid')
-            .eq('managerid', userData.userid)
-              .maybeSingle();
+            .eq('managerid', userRecord.userid)
+            .maybeSingle();
           console.log('fetchUserProfile storeData:', storeData);
           
           if (storeData?.storeid) {

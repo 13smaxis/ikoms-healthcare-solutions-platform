@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import type { Store, Product, Collection, Tag, ProductImage, ProductFeature } from '@/types/database';
 
+const supabaseClient = supabase as any;
+
 // ============================================================================
 // STORE OPERATIONS
 // ============================================================================
@@ -18,7 +20,7 @@ export const storeDB = {
   },
 
   async getAllStores(): Promise<Store[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('stores')
       .select('*')
       .eq('status', 'active');
@@ -28,7 +30,7 @@ export const storeDB = {
   },
 
   async updateStore(storeid: string, updates: Partial<Store>): Promise<Store | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('stores')
       .update({
         ...updates,
@@ -43,7 +45,7 @@ export const storeDB = {
   },
 
   async createStore(store: Omit<Store, 'storeid' | 'createdat' | 'updatedat'>): Promise<Store | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('stores')
       .insert([store])
       .select()
@@ -71,7 +73,7 @@ export const productDB = {
   },
 
   async getProductById(productid: string): Promise<Product | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('products')
       .select('*')
       .eq('productid', productid)
@@ -82,9 +84,9 @@ export const productDB = {
   },
 
   async createProduct(product: Omit<Product, 'productid' | 'createdat' | 'updatedat'>): Promise<Product | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('products')
-      .insert([product])
+      .insert([product as any])
       .select()
       .single();
 
@@ -93,12 +95,12 @@ export const productDB = {
   },
 
   async updateProduct(productid: string, updates: Partial<Product>): Promise<Product | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('products')
       .update({
-        ...updates,
+        ...(updates as any),
         updatedat: new Date().toISOString(),
-      })
+      } as any)
       .eq('productid', productid)
       .select()
       .single();
@@ -108,7 +110,7 @@ export const productDB = {
   },
 
   async deleteProduct(productid: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('products')
       .delete()
       .eq('productid', productid);
@@ -118,7 +120,7 @@ export const productDB = {
   },
 
   async getPublishedProducts(storeid: string): Promise<Product[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('products')
       .select('*')
       .eq('storeid', storeid)
@@ -136,7 +138,7 @@ export const productDB = {
 
 export const productImageDB = {
   async getImagesByProduct(productid: string): Promise<ProductImage[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('product_images')
       .select('*')
       .eq('productid', productid)
@@ -147,9 +149,9 @@ export const productImageDB = {
   },
 
   async addImage(image: Omit<ProductImage, 'imageid' | 'createdat' | 'updatedat'>): Promise<ProductImage | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('product_images')
-      .insert([image])
+      .insert([image as any])
       .select()
       .single();
 
@@ -158,12 +160,12 @@ export const productImageDB = {
   },
 
   async updateImage(imageid: string, updates: Partial<ProductImage>): Promise<ProductImage | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('product_images')
       .update({
-        ...updates,
+        ...(updates as any),
         updatedat: new Date().toISOString(),
-      })
+      } as any)
       .eq('imageid', imageid)
       .select()
       .single();
@@ -189,7 +191,7 @@ export const productImageDB = {
 
 export const collectionDB = {
   async getCollectionsByStore(storeid: string): Promise<Collection[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('collections')
       .select('*')
       .eq('storeid', storeid)
@@ -200,9 +202,9 @@ export const collectionDB = {
   },
 
   async createCollection(collection: Omit<Collection, 'collectionid' | 'createdat'>): Promise<Collection | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('collections')
-      .insert([collection])
+      .insert([collection as any])
       .select()
       .single();
 
@@ -211,12 +213,12 @@ export const collectionDB = {
   },
 
   async updateCollection(collectionid: string, updates: Partial<Collection>): Promise<Collection | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('collections')
       .update({
-        ...updates,
+        ...(updates as any),
         updatedat: new Date().toISOString(),
-      })
+      } as any)
       .eq('collectionid', collectionid)
       .select()
       .single();
@@ -242,7 +244,7 @@ export const collectionDB = {
 
 export const tagDB = {
   async getTagsByStore(storeid: string): Promise<Tag[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('tags')
       .select('*')
       .eq('storeid', storeid)
@@ -253,9 +255,9 @@ export const tagDB = {
   },
 
   async createTag(tag: Omit<Tag, 'tagid' | 'createdat'>): Promise<Tag | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('tags')
-      .insert([tag])
+      .insert([tag as any])
       .select()
       .single();
 
@@ -280,7 +282,7 @@ export const tagDB = {
 
 export const productFeatureDB = {
   async getFeaturesByProduct(productid: string): Promise<ProductFeature[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('product_features')
       .select('*')
       .eq('productid', productid)
@@ -291,9 +293,9 @@ export const productFeatureDB = {
   },
 
   async addFeature(feature: Omit<ProductFeature, 'featureid' | 'createdat' | 'updatedat'>): Promise<ProductFeature | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('product_features')
-      .insert([feature])
+      .insert([feature as any])
       .select()
       .single();
 

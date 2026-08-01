@@ -260,6 +260,10 @@ export const productService = {
    */
   async getPublishedProductsByStore(storeid: string): Promise<ProductResponse> {
     try {
+      if (!supabaseAdmin) {
+        return { success: false, error: 'Supabase admin client is unavailable.' };
+      }
+
       const { data, error } = await supabaseAdmin
         .from('products')
         .select(
@@ -297,6 +301,10 @@ export const productService = {
    */
   async getProduct(productid: string): Promise<ProductResponse> {
     try {
+      if (!supabaseAdmin) {
+        return { success: false, error: 'Supabase admin client is unavailable.' };
+      }
+
       const { data, error } = await supabaseAdmin
         .from('products')
         .select(
@@ -340,7 +348,11 @@ export const productService = {
     newValues: any
   ) {
     try {
-      await supabaseAdmin.from('audit_logs').insert([
+      if (!supabaseAdmin) {
+        return;
+      }
+
+      await (supabaseAdmin as any).from('audit_logs').insert([
         {
           userid: userId,
           entitytype: entityType,

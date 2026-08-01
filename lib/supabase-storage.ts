@@ -69,12 +69,12 @@ export async function uploadProductImage(file: File): Promise<{ publicUrl: strin
     throw new Error(error?.message || 'Failed to upload image to Supabase Storage.');
   }
 
-  const { data: urlData, error: urlError } = await supabaseAdmin.storage
+  const { data: urlData } = await supabaseAdmin.storage
     .from(PRODUCT_IMAGE_BUCKET)
     .getPublicUrl(data.path);
 
-  if (urlError || !urlData?.publicUrl) {
-    throw new Error(urlError?.message || 'Failed to create public URL for uploaded image.');
+  if (!urlData?.publicUrl) {
+    throw new Error('Failed to create public URL for uploaded image.');
   }
 
   return {
@@ -88,11 +88,7 @@ export function getProductImagePublicUrl(path: string): string {
     throw new Error('Supabase admin client is only available on the server.');
   }
 
-  const { data, error } = supabaseAdmin.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
-
-  if (error) {
-    throw new Error(error.message || 'Failed to create public URL for uploaded image.');
-  }
+  const { data } = supabaseAdmin.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
 
   if (!data?.publicUrl) {
     throw new Error('Failed to create public URL for uploaded image.');
