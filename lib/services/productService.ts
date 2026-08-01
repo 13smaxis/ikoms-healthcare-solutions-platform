@@ -12,6 +12,7 @@ export interface CreateProductInput {
   handle: string;
   sku: string;
   price: number;
+  image_url?: string;
   description?: string;
   producttypeid?: string;
   model?: string;
@@ -72,6 +73,7 @@ export const productService = {
             handle: input.handle,
             sku: input.sku,
             price: input.price,
+            image_url: input.image_url || null,
             description: input.description || null,
             producttypeid: input.producttypeid || null,
             model: input.model || null,

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
@@ -20,6 +20,42 @@ export type UploadedProductImage = {
   path: string;
   alttext?: string;
   displayorder: number;
+};
+
+const FORM_STORAGE_KEY = 'product-form-create-state';
+
+type PersistedProductFormState = {
+	form: FormState;
+	uploadedImages: UploadedProductImage[];
+};
+
+const readSavedProductFormState = (): PersistedProductFormState | null => {
+	if (typeof window === 'undefined') return null;
+	try {
+		const raw = sessionStorage.getItem(FORM_STORAGE_KEY);
+		if (!raw) return null;
+		return JSON.parse(raw) as PersistedProductFormState;
+	} catch {
+		return null;
+	}
+};
+
+const saveProductFormState = (state: PersistedProductFormState) => {
+	if (typeof window === 'undefined') return;
+	try {
+		sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+	} catch {
+		// ignore storage write failures
+	}
+};
+
+const clearSavedProductFormState = () => {
+	if (typeof window === 'undefined') return;
+	try {
+		sessionStorage.removeItem(FORM_STORAGE_KEY);
+	} catch {
+		// ignore storage remove failures
+	}
 };
 
 export const PRODUCT_TYPES = [
@@ -63,13 +99,16 @@ function buildPayload(form: FormState): ShopProduct {
 }
 
 export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props) {
-	const [form, setForm] = useState<FormState>(emptyForm);
+	const [form, setForm] = useState<FormState>(() => {
+		const saved = readSavedProductFormState();
+		return saved?.form ?? emptyForm();
+	});
 
 	const [products, setProducts] = useState<ShopProduct[]>([]);
 	const [loadingProducts, setLoadingProducts] = useState(true);
 	const [uploading, setUploading] = useState(false);
 	const [uploadError, setUploadError] = useState<string | null>(null);
-	const [uploadedImages, setUploadedImages] = useState<UploadedProductImage[]>([]);
+	const [uploadedImages, setUploadedImages] = useState<UploadedProductImage[]>(() => readSavedProductFormState()?.uploadedImages ?? []);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [pendingProduct, setPendingProduct] = useState<ShopProduct | null>(null);
 	const [saving, setSaving] = useState(false);
@@ -96,7 +135,13 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		}
 	}, [collections, handles]);
 
-	const update = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((current) => ({ ...current, [key]: value }));
+	const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+		setForm((current) => {
+			const next = { ...current, [key]: value };
+			saveProductFormState({ form: next, uploadedImages });
+			return next;
+		});
+	};
 
 	const validate = () => {
 		const next: Record<string, string> = {};
@@ -110,8 +155,15 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		return Object.keys(next).length === 0;
 	};
 
+	const suppressFocusRefreshForFileUpload = (duration = 15000) => {
+		if (typeof window !== 'undefined') {
+			(window as any).__suppressFocusRefreshUntil = Date.now() + duration;
+		}
+	};
+
 	const handleUpload = async (file?: File) => {
 		if (!file) return;
+		suppressFocusRefreshForFileUpload();
 		setUploadError(null);
 		setUploading(true);
 
@@ -143,15 +195,19 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 				throw new Error(data.error || 'Image upload failed.');
 			}
 
-			setUploadedImages((current) => [
-				...current,
-				{
-					publicUrl: data.publicUrl,
-					path: data.path,
-					alttext: file.name,
-					displayorder: current.length,
-				},
-			]);
+			setUploadedImages((current) => {
+				const next = [
+					...current,
+					{
+						publicUrl: data.publicUrl,
+						path: data.path,
+						alttext: file.name,
+						displayorder: current.length,
+					},
+				];
+				saveProductFormState({ form, uploadedImages: next });
+				return next;
+			});
 		} catch (error) {
 			setUploadError(error instanceof Error ? error.message : 'Upload failed');
 		} finally {
@@ -198,6 +254,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 			const result = await response.json();
 			if (!response.ok) throw new Error(result.error || 'Failed to create product');
 			setPendingProduct(null);
+			clearSavedProductFormState();
 			onSuccess?.(result.data || pendingProduct);
 			onClose();
 
@@ -252,24 +309,12 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 					<label className="space-y-2 text-sm"> 																		  {/* Product handle input field */}
 						Handle
-						<select
+						<input
 							value={form.handle}
 							onChange={(e) => update('handle', e.target.value)}
+							placeholder="Enter handle"
 							className={CONTROL_CLASS}
-						>
-							<option value="">
-								Select handle
-							</option>
-
-							{handles.map((handle) =>
-								<option
-									key={handle}
-									value={handle}
-								>
-									{handle}
-								</option>
-							)}
-						</select>
+						/>
 
 						{errors.handle &&
 							<span className="text-xs text-rose-400">
@@ -328,24 +373,12 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 					<label className="space-y-2 text-sm"> 																		  {/* Collection handle input field */}
 						Collection handle
-						<select
+						<input
 							value={form.collectionHandle}
 							onChange={(e) => update('collectionHandle', e.target.value)}
+							placeholder="Enter collection handle"
 							className={CONTROL_CLASS}
-						>
-							<option value="">
-								Select collection
-							</option>
-
-							{collections.map((collection) =>
-								<option
-									key={collection}
-									value={collection}
-								>
-									{collection}
-								</option>
-							)}
-						</select>
+						/>
 					</label>
 
 					<label className="space-y-2 text-sm"> 																		  {/* Status input field */}
@@ -372,8 +405,18 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 						<input
 							type="file"
 							accept="image/*"
-							onChange={(e) => handleUpload(e.target.files?.[0])}
-							className="text-sm"
+							onPointerDown={suppressFocusRefreshForFileUpload}
+							onMouseDown={suppressFocusRefreshForFileUpload}
+							onClick={suppressFocusRefreshForFileUpload}
+							onFocus={suppressFocusRefreshForFileUpload}
+							onKeyDown={suppressFocusRefreshForFileUpload}
+							onBlur={suppressFocusRefreshForFileUpload}
+							onChange={(e) => {
+								suppressFocusRefreshForFileUpload();
+								handleUpload(e.target.files?.[0]);
+								e.currentTarget.value = '';
+							}}
+							className="text-sm rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-white"
 						/>
 						{uploading &&
 							<span>
@@ -453,7 +496,10 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 				<div className="flex shrink-0 justify-end gap-3 border-t border-white/10 bg-slate-950 px-6 py-4">
 					<button
 						type="button"
-						onClick={onClose}
+						onClick={() => {
+							clearSavedProductFormState();
+							onClose();
+						}}
 						className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300"
 					>
 						Cancel

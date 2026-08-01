@@ -3,6 +3,7 @@
 // GET /api/admin/products?storeid=xxx - Get all products for a store
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabase';
 import { productService } from '@/lib/services/productService';
 import { verifyAuth } from '@/lib/auth/middleware';
@@ -75,9 +76,20 @@ export async function POST(request: NextRequest)
       );
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase admin client unavailable' },
+        { status: 500 }
+      );
+    }
+
     // Call service to create product
+    const imageUrl = Array.isArray(images) && images.length > 0
+      ? String(images[0].imageurl || images[0].publicUrl || '')
+      : '';
+
     const result = await productService.createProduct(
-      supabaseAdmin,
+      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
       userId,
       storeid,
       {
@@ -85,6 +97,7 @@ export async function POST(request: NextRequest)
         handle: handle.trim(),
         sku: sku.trim(),
         price,
+        image_url: imageUrl || undefined,
         ...rest, // description, producttypeid, model, medical_information, status
       }
     );
@@ -98,41 +111,16 @@ export async function POST(request: NextRequest)
     }
 
     const product = result.data;
-    let insertedImages = [];
 
-    if (images && Array.isArray(images) && images.length > 0) {
-      console.log(`📷 Saving ${images.length} image(s) for product ${product.productid}`);
-      const imageRecords = images.map((image: any, index: number) => ({
-        productid: product.productid,
-        imageurl: String(image.imageurl || image.publicUrl || ''),
-        alttext: typeof image.alttext === 'string' ? image.alttext : null,
-        displayorder: typeof image.displayorder === 'number' ? image.displayorder : index,
-      })).filter((image) => image.imageurl);
-
-      if (imageRecords.length > 0) {
-        const { data: imageData, error: imageError } = await supabaseAdmin
-          .from('product_images')
-          .insert(imageRecords)
-          .select();
-
-        if (imageError) {
-          console.error('❌ Failed saving product images:', imageError);
-          return NextResponse.json(
-            { error: imageError.message || 'Failed to save product images' },
-            { status: 500 }
-          );
-        }
-
-        insertedImages = imageData || [];
-        console.log(`✅ Saved ${insertedImages.length} image row(s) for product ${product.productid}`);
-      } else {
-        console.log('⚠️ No valid image records found in payload');
-      }
+    if (imageUrl) {
+      console.log(`📷 Saved product image URL for product ${product.productid}`);
+    } else {
+      console.log('⚠️ No image URL provided for product create');
     }
 
     console.log(`✅ Created product: ${product.productid}`);
     return NextResponse.json(
-      { success: true, data: { ...product, product_images: insertedImages } },
+      { success: true, data: product },
       { status: 201 }
     );
   } catch (error) {
@@ -175,8 +163,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase admin client unavailable' },
+        { status: 500 }
+      );
+    }
+
     // Verify user owns the store
-    const { data: store, error: storeError } = await supabaseAdmin
+    const { data: store, error: storeError } = await (supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>)
       .from('stores')
       .select('managerid')
       .eq('storeid', storeid)
@@ -190,7 +185,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await productService.getProductsByStore(supabaseAdmin, storeid);
+    const result = await productService.getProductsByStore(
+      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
+      storeid
+    );
 
     if (!result.success) {
       return NextResponse.json(

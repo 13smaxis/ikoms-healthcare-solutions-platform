@@ -20,9 +20,12 @@ const mapBackendProduct = (product: any): ShopProduct => ({
   product_type: product.producttypeid || '',
   collectionHandle: product.collectionHandle || '',
   price: Number(product.price) || 0,
-  images: Array.isArray(product.product_images) 
+  images: Array.isArray(product.product_images)
     ? product.product_images.map((img: any) => img.imageurl)
+    : product.image_url
+    ? [product.image_url]
     : [],
+  image_url: product.image_url || (Array.isArray(product.product_images) ? product.product_images[0]?.imageurl : ''),
   tags: Array.isArray(product.tags) ? product.tags : [],
   description: product.description || '',
   model: product.model || '',

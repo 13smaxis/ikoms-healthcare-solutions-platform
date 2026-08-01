@@ -5,9 +5,15 @@ export function useSessionRefresh() {
   const refreshPendingRef = useRef(false);
   const wasHiddenRef = useRef(document.hidden);
 
+  const shouldSuppressRefresh = () => {
+    if (typeof window === 'undefined') return false;
+    const suppressUntil = Number((window as any).__suppressFocusRefreshUntil ?? 0);
+    return suppressUntil > Date.now();
+  };
+
   useEffect(() => {
     const refreshSession = async () => {
-      if (refreshPendingRef.current || document.hidden) return;
+      if (refreshPendingRef.current || document.hidden || shouldSuppressRefresh()) return;
       refreshPendingRef.current = true;
 
       try {
@@ -49,6 +55,7 @@ export function useSessionRefresh() {
 
       if (wasHiddenRef.current) {
         wasHiddenRef.current = false;
+        if (shouldSuppressRefresh()) return;
         window.location.reload();
       }
     };

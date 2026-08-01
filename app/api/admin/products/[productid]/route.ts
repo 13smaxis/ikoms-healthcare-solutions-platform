@@ -4,6 +4,7 @@
  * This includes updating and deleting products.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@/lib/supabase';
 import { productService } from '@/lib/services/productService';
 import { verifyAuth } from '@/lib/auth/middleware';
@@ -70,11 +71,18 @@ export async function PUT(
       );
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase admin client unavailable' },
+        { status: 500 }
+      );
+    }
+
     const result = await productService.updateProduct(
-                                                        supabaseAdmin,
-                                                        userId,
-                                                        productid,
-                                                        body
+      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
+      userId,
+      productid,
+      body
     );                                                                                                                            //- Call the product service to update the product with the provided data
 
     if (!result.success) 
@@ -140,8 +148,15 @@ export async function DELETE(
       );
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Supabase admin client unavailable' },
+        { status: 500 }
+      );
+    }
+
     const result = await productService.deleteProduct(
-      supabaseAdmin,
+      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
       userId,
       productid
     );

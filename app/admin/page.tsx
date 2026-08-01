@@ -65,8 +65,8 @@ const AdminDashboard: React.FC = () => {
           supabase.from('orders').select('totalamount'),
         ]);
 
-        const revenue = (orderData || []).reduce(
-          (sum, order: any) => sum + (parseFloat(order?.totalamount as string) || 0),
+        const revenue = ((orderData || []) as Array<{ totalamount?: string }>).reduce(
+          (sum, order) => sum + (parseFloat(order.totalamount || '0') || 0),
           0
         );
 

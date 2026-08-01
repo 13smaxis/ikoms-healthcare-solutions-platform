@@ -131,7 +131,7 @@ const AdminOrdersPage: React.FC = () => {
   }, []);
 
   const updStatus = async (id: string, status: string) => {
-    await (supabase as any).from('ecom_orders').update({ status } as any).eq('id', id);
+    await (supabase as any).from('ecom_orders').update({ status }).eq('id', id);
     loadOrders();
   };
 
@@ -383,10 +383,8 @@ const AdminOrdersPage: React.FC = () => {
 
       <Dialog open={showCreateProductModal} onOpenChange={(open) => { if (!open) setShowCreateProductModal(false); }}>
         <DialogContent className="max-h-[90vh] max-w-4xl border-white/10 bg-slate-950 p-0 text-white shadow-2xl shadow-black/30 sm:rounded-3xl">
-          {/* Force remount on each open to ensure the form is empty every time */}
           {showCreateProductModal ? (
             <ProductFormCreate
-              key={String(Date.now())}
               storeid={storeid || ''}
               onSuccess={loadProducts}
               onClose={() => setShowCreateProductModal(false)}

@@ -11,9 +11,21 @@ export default function FocusRefresh() {
     const minInterval = 1500; // ms between refreshes to avoid loops
     let lastRefresh = 0;
 
+    const shouldSuppressRefresh = () => {
+      if (typeof window === 'undefined') return false;
+      const suppressUntil = Number((window as any).__suppressFocusRefreshUntil ?? 0);
+      return suppressUntil > Date.now();
+    };
+
     const doRefresh = (reason?: string) => {
       try {
         if (!mounted) return;
+        if (shouldSuppressRefresh()) {
+          // eslint-disable-next-line no-console
+          console.log('[FocusRefresh] refresh suppressed due to active file upload dialog', reason);
+          return;
+        }
+
         const now = Date.now();
         if (now - lastRefresh < minInterval) {
           // eslint-disable-next-line no-console

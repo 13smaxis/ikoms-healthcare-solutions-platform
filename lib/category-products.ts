@@ -90,7 +90,7 @@ export async function getProducts(includeInactive = false): Promise<ShopProduct[
         collectionHandle: 'general',
         price: product.price,
         images: product.product_images?.map((img: any) => img.imageurl) || [],
-        image_url: product.product_images?.[0]?.imageurl,
+        image_url: product.image_url || product.product_images?.[0]?.imageurl,
         tags: [],
         description: product.description || '',
         model: product.model,
