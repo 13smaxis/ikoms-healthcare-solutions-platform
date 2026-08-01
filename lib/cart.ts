@@ -9,7 +9,9 @@ export interface CartItem {
   image?: string;
 }
 
-export function getCart(): CartItem[] {
+export function getCart(): CartItem[] 
+
+{
   try {
     return JSON.parse(localStorage.getItem('ecom_cart') || '[]');
   } catch {

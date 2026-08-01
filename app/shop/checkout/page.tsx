@@ -120,13 +120,13 @@ const Checkout: React.FC = () => {
         unit_price: i.price,
         total: i.price * i.quantity,
       }));
-      await supabase.from('ecom_order_items').insert(items);
+      await supabase.from('ecom_order_items' as any).insert(items as any);
     }
 
     try { await subscribeEmail({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }); } catch {}
 
     clearCart();
-    nav.push(`/shop/order-confirmation?oid=${order?.id || ''}`);
+    nav.push(`/shop/order-confirmation?oid=${createdOrder?.id || ''}`);
   };
 
   if (cart.length === 0) {
