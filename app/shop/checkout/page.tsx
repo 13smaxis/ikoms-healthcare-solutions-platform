@@ -87,14 +87,22 @@ const Checkout: React.FC = () => {
     if (error) { setPayError(error.message || 'Payment failed'); setLoading(false); return; }
     if (paymentIntent?.status !== 'succeeded') { setPayError('Payment did not complete'); setLoading(false); return; }
 
-    const { data: customer } = await supabase.from('ecom_customers').upsert({
-      email: addr.email, name: addr.name, phone: addr.phone, address: addr,
-    }, { onConflict: 'email' }).select('id').single();
+    const customerPayload: any = {
+      email: addr.email,
+      name: addr.name,
+      phone: addr.phone,
+      address: addr,
+    };
 
-    const { data: order } = await supabase.from('ecom_orders').insert({
+    const { data: customer } = await supabase.from('ecom_customers' as any).upsert(
+      customerPayload,
+      { onConflict: 'email' } as any,
+    ).select('id').single();
+
+    const { data: order } = await supabase.from('ecom_orders' as any).insert({
       customer_id: customer?.id, status: 'paid', subtotal, tax, shipping, total,
       shipping_address: addr, stripe_payment_intent_id: paymentIntent.id,
-    }).select('id').single();
+    } as any).select('id').single();
 
     if (order) {
       const items = cart.map(i => ({
