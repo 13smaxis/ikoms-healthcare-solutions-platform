@@ -72,7 +72,7 @@ const ShopHome: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-rose-950/75 via-rose-900/55 to-pink-700/30" />
         </div>
-        <div className="absolute top-4 right-4 z-20 sm:top-6 sm:right-6 lg:top-8 lg:right-8">
+        <div className="absolute top-4 right-4 z-20 sm:top-6 sm:right-6 lg:top-8 lg:right-8 hidden">
           <ShopOverlayMenu />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -136,7 +136,7 @@ export default function ShopOverlayMenu({ className }: { className?: string })
   }, [open]);
 
   return (
-    <div className={className}>
+    <div className={`sr-only ${className ?? ''}`} aria-hidden="true">
       <div className="flex items-center gap-3">
         <button
           type="button"

@@ -66,7 +66,9 @@ const CollectionPage: React.FC = () => {
                 { label: collectionTitle },
               ]}
             />
-            <ShopOverlayMenu className="hidden xl:flex" />                                                      {/* Keep desktop category menu visible only on larger screens */}
+            <div className="hidden">
+              <ShopOverlayMenu className="hidden xl:flex" />
+            </div>
           </div>
         </div>
       </section>
