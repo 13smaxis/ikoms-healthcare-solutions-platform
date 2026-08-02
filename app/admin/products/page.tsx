@@ -83,6 +83,19 @@ const ProductsContent: React.FC = () => {
     if (updatedProducts) setProducts(updatedProducts);
   };
 
+  useEffect(() => {
+    const handleSoftFocusRefresh = () => {
+      if (!storeid) return;
+      console.log('[ProductsPage] soft focus refresh received — refreshing product list silently');
+      refreshProducts();
+    };
+
+    window.addEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
+    return () => {
+      window.removeEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
+    };
+  }, [storeid, getProductsByStore]);
+
   const handleDeleteProduct = (product: ShopProduct) => {
     setPendingDeleteProduct(product);
   };

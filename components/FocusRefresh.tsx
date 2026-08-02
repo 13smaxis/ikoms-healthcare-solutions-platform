@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function FocusRefresh() {
-  const router = useRouter();
-
   useEffect(() => {
     let mounted = true;
-    const minInterval = 1500; // ms between refreshes to avoid loops
+    const minInterval = 1500; // ms between refresh events to avoid loops
     let lastRefresh = 0;
 
     const shouldSuppressRefresh = () => {
@@ -29,16 +26,20 @@ export default function FocusRefresh() {
         const now = Date.now();
         if (now - lastRefresh < minInterval) {
           // eslint-disable-next-line no-console
-          console.log('[FocusRefresh] skipping refresh (throttled) due to', reason);
+          console.log('[FocusRefresh] skipping soft refresh (throttled) due to', reason);
           return;
         }
         lastRefresh = now;
+
         // eslint-disable-next-line no-console
-        console.log('[FocusRefresh] refreshing due to', reason || 'event');
-        router.refresh();
+        console.log('[FocusRefresh] soft refresh event due to', reason || 'event');
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('soft-focus-refresh', { detail: { reason } }));
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('[FocusRefresh] refresh failed', e);
+        console.error('[FocusRefresh] soft refresh failed', e);
       }
     };
 
@@ -62,7 +63,7 @@ export default function FocusRefresh() {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pageshow', onPageShow as EventListener);
     };
-  }, [router]);
+  }, []);
 
   return null;
 }

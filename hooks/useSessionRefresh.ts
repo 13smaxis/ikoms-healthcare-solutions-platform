@@ -60,7 +60,8 @@ export function useSessionRefresh() {
       if (wasHiddenRef.current) {
         wasHiddenRef.current = false;
         if (shouldSuppressRefresh()) return;
-        window.location.reload();
+        console.log('🔄 Admin session resume detected; refreshing session silently');
+        refreshSession();
       }
     };
 
@@ -75,13 +76,20 @@ export function useSessionRefresh() {
       }
     };
 
+    const handleSoftFocusRefresh = () => {
+      if (shouldSuppressRefresh()) return;
+      refreshSession();
+    };
+
     refreshSession();
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
     };
   }, []);
 }

@@ -92,7 +92,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (loading || hydrating || loginLoading) 
   {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white px-4">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white px-4">                                {/* Loading state - show spinner while auth is loading or hydrating */}
         <div className="text-center max-w-md">
           <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-white" />
