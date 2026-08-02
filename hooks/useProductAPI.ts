@@ -7,17 +7,21 @@
 
 import { useCallback, useState } from 'react';
 import { getAuthToken } from '@/lib/auth/client';
-import type { ShopProduct } from '@/lib/category-products';
+import { getProductTypeLabel, type ShopProduct } from '@/lib/category-products';
 
 // Use same domain/protocol - no need to specify localhost:3001
 const BACKEND_URL = '';
 
+/*
+ * Maps the backend product object to the ShopProduct interface used in the frontend.
+ * Responsible for transforming field names and handling optional fields.
+ */
 const mapBackendProduct = (product: any): ShopProduct => ({
   id: product.productid,
   handle: product.handle || '',
   name: product.name || '',
   sku: product.sku || '',
-  product_type: product.producttypeid || '',
+  product_type: getProductTypeLabel(product.producttypeid),
   collectionHandle: product.collectionHandle || '',
   price: Number(product.price) || 0,
   images: Array.isArray(product.product_images)

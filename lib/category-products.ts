@@ -1,4 +1,23 @@
 
+const PRODUCT_TYPE_LABELS: Record<string, string> = {
+  '5d929bda-2cf9-4d3c-8957-5a2093d1f34b': 'Clinical Supplies',
+  '98753de8-7394-4dc9-8865-db651ac207b3': 'PPE & Safety Equipment',
+  '4d71ac64-3355-417d-a454-15a4acd26a03': 'Diagnostic Equipment',
+  '341a1e6f-ebe7-446e-a8df-372e312bd588': 'Training & Education',
+  '71f0d6be-c2e9-4dec-820c-29f82e3eb477': 'Home Care & Patient Support',
+  '3fe11527-e310-4887-95c8-4d16d75be3cd': 'Emergency & First Aid',
+  '422f0a13-36ed-461f-adfa-13b8055b8e0f': 'Other',
+};
+
+export function getProductTypeLabel(productType?: string | null): string {
+  if (!productType) return '';
+
+  const normalized = productType.trim();
+  if (!normalized) return '';
+
+  return PRODUCT_TYPE_LABELS[normalized] || normalized;
+}
+
 export type ShopProduct = {
   id: string;
   handle: string;
@@ -86,7 +105,7 @@ export async function getProducts(includeInactive = false): Promise<ShopProduct[
         handle: product.handle,
         name: product.name,
         sku: product.sku,
-        product_type: product.producttypeid || '',
+        product_type: getProductTypeLabel(product.producttypeid),
         collectionHandle: 'general',
         price: product.price,
         images: product.product_images?.map((img: any) => img.imageurl) || [],
