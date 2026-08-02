@@ -2,13 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Bell } from "lucide-react";
 import { COMPANY } from "@/lib/constants";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSessionRefresh } from "@/hooks/useSessionRefresh";
+import { getAuthToken } from "@/lib/auth/client";
+import { checkBackendHealth, rehydrateSupabaseSession } from "@/lib/auth/recovery";
 
 const navLinks = [
   { href: "/admin", label: "Overview" },
@@ -20,6 +22,7 @@ const navLinks = [
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [profileImage, setProfileImage] = React.useState<string | null>(null);
   const [loginOpen, setLoginOpen] = React.useState(false);
@@ -27,11 +30,63 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [password, setPassword] = React.useState("");
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
-  const { user, isAdmin, loading, hydrating, login, logout } = useAuth();
+  const { user, isAdmin, loading, hydrating, login, logout, storeid } = useAuth();
 
-  useSessionRefresh();                                                                                                            //- Call the custom hook to refresh the session when the window gains focus
-  
-  console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });            //- Log the current state of the AdminLayout component for debugging
+  useSessionRefresh();
+
+  const handleAdminRoute = async (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    event.preventDefault();
+
+    const targetUrl = `/api/products?storeid=${encodeURIComponent(storeid ?? '')}`;
+
+    console.log('[admin nav] step 1: health check before navigation', { href, targetUrl, storeid });
+    const healthy = await checkBackendHealth();
+    console.log('[admin nav] step 1 result', { href, healthy });
+
+    console.log('[admin nav] step 2: rehydrating session before navigation', { href, storeid });
+    const rehydrated = await rehydrateSupabaseSession();
+    console.log('[admin nav] step 2 result', { href, rehydrated });
+
+    const token = await getAuthToken();
+    if (!token) {
+      console.warn('[admin nav] step 3 no auth token after rehydration; continuing navigation anyway', { href, storeid });
+    } else {
+      console.log('[admin nav] step 3: sending authenticated GET request', {
+        href,
+        url: targetUrl,
+        hasToken: true,
+      });
+
+      const response = await fetch(targetUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+        credentials: 'include',
+      });
+
+      console.log('[admin nav] step 3 result', {
+        href,
+        status: response.status,
+        ok: response.ok,
+      });
+
+      if (!response.ok) {
+        console.warn('[admin nav] authenticated GET failed before navigation; continuing to route', {
+          href,
+          status: response.status,
+          body: await response.text().catch(() => 'unable to read body'),
+        });
+      }
+    }
+
+    console.log('[admin nav] navigation allowed after recovery attempt', { href, storeid });
+    router.push(href);
+  };
+
+  console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });
 
   const handleProfileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -257,7 +312,10 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <Link
           key={link.href}
           href={link.href}
-          onClick={onClick}
+          onClick={(event) => {
+            if (onClick) onClick();
+            void handleAdminRoute(event, link.href);
+          }}
           className={`
                       block 
                       bg-slate-600

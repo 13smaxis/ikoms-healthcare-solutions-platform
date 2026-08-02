@@ -7,6 +7,7 @@
 
 import { useCallback, useState } from 'react';
 import { getAuthToken } from '@/lib/auth/client';
+import { ensureSessionRecovery } from '@/lib/auth/recovery';
 import { getProductTypeLabel, type ShopProduct } from '@/lib/category-products';
 
 // Use same domain/protocol - no need to specify localhost:3001
@@ -85,6 +86,11 @@ export function useProductAPI() {
       setError(null);
 
       try {
+        const recovered = await ensureSessionRecovery();
+        if (!recovered) {
+          throw new Error('The connection needs a moment to recover. Please try again in a moment.');
+        }
+
         const url = `${BACKEND_URL}${path}`;
         let headers = await getHeaders();
 

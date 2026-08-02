@@ -89,17 +89,17 @@ export async function POST(request: NextRequest)
       : '';
 
     const result = await productService.createProduct(
-      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
-      userId,
-      storeid,
-      {
-        name: name.trim(),
-        handle: handle.trim(),
-        sku: sku.trim(),
-        price,
-        image_url: imageUrl || undefined,
-        ...rest, // description, producttypeid, model, medical_information, status
-      }
+                                                      supabaseAdmin as SupabaseClient<any, 'public', 'public', any, any>,
+                                                      userId,
+                                                      storeid,
+                                                      {
+                                                        name: name.trim(),
+                                                        handle: handle.trim(),
+                                                        sku: sku.trim(),
+                                                        price,
+                                                        image_url: imageUrl || undefined,
+                                                        ...rest,                                                                  //- description, producttypeid, model, medical_information, status
+                                                      }
     );
 
     if (!result.success) {

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { ensureSessionRecovery } from '@/lib/auth/recovery';
 
 export function useSessionRefresh() {
   const refreshPendingRef = useRef(false);
@@ -16,34 +16,18 @@ export function useSessionRefresh() {
       return;
     }
 
-    const refreshSession = async () => {
+    const refreshSession = async (reason = 'event') => {
       if (refreshPendingRef.current || document.hidden || shouldSuppressRefresh()) return;
       refreshPendingRef.current = true;
 
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.warn('⚠️ Admin session refresh skipped: getSession failed', sessionError.message ?? sessionError);
+        const recovered = await ensureSessionRecovery();
+        if (!recovered) {
+          console.warn('⚠️ Admin session recovery failed', { reason });
           return;
         }
 
-        if (!sessionData.session?.refresh_token) {
-          return;
-        }
-
-        console.log('🔄 Admin session refresh triggered');
-        const { data, error } = await supabase.auth.refreshSession();
-
-        if (error || !data.session?.access_token) {
-          console.warn('⚠️ Admin session expired or refresh failed', error?.message ?? error);
-          await supabase.auth.signOut().catch(() => undefined);
-          return;
-        }
-
-        console.log('✅ Admin session refreshed', {
-          userEmail: data.session.user?.email,
-          expiresAt: data.session.expires_at,
-        });
+        console.log('✅ Admin session refreshed silently', { reason });
       } catch (err) {
         console.error('❌ Admin session refresh failed:', err);
       } finally {
@@ -60,33 +44,37 @@ export function useSessionRefresh() {
       if (wasHiddenRef.current) {
         wasHiddenRef.current = false;
         if (shouldSuppressRefresh()) return;
-        console.log('🔄 Admin session resume detected; refreshing session silently');
-        refreshSession();
+        refreshSession('resume');
       }
     };
 
     const handleFocus = () => {
       reloadOnResume();
-      refreshSession();
+      refreshSession('focus');
     };
     const handleVisibility = () => {
       reloadOnResume();
       if (document.visibilityState === 'visible') {
-        refreshSession();
+        refreshSession('visibility');
       }
     };
 
     const handleSoftFocusRefresh = () => {
       if (shouldSuppressRefresh()) return;
-      refreshSession();
+      refreshSession('soft-focus');
     };
 
-    refreshSession();
+    const keepAlive = window.setInterval(() => {
+      refreshSession('keepalive');
+    }, 4 * 60 * 1000);
+
+    refreshSession('startup');
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
 
     return () => {
+      window.clearInterval(keepAlive);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
