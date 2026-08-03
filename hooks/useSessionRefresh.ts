@@ -17,17 +17,23 @@ export function useSessionRefresh() {
     }
 
     const refreshSession = async (reason = 'event') => {
-      if (refreshPendingRef.current || document.hidden || shouldSuppressRefresh()) return;
+      if (refreshPendingRef.current || shouldSuppressRefresh()) return;
       refreshPendingRef.current = true;
+
+      console.info('[focus recovery] starting recovery check', {
+        reason,
+        hidden: document.hidden,
+        visibilityState: document.visibilityState,
+      });
 
       try {
         const recovered = await ensureSessionRecovery();
         if (!recovered) {
-          console.warn('⚠️ Admin session recovery failed', { reason });
+          console.warn('⚠️ Admin session recovery failed', { reason, hidden: document.hidden });
           return;
         }
 
-        console.log('✅ Admin session refreshed silently', { reason });
+        console.log('✅ Admin session refreshed silently', { reason, hidden: document.hidden });
       } catch (err) {
         console.error('❌ Admin session refresh failed:', err);
       } finally {
@@ -50,12 +56,12 @@ export function useSessionRefresh() {
 
     const handleFocus = () => {
       reloadOnResume();
-      refreshSession('focus');
+      refreshSession('focus-gain');
     };
     const handleVisibility = () => {
       reloadOnResume();
       if (document.visibilityState === 'visible') {
-        refreshSession('visibility');
+        refreshSession('visibility-visible');
       }
     };
 
