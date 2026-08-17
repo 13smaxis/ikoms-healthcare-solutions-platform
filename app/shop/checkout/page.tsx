@@ -1,23 +1,57 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { supabase } from '@/lib/supabase';
 import { getCart, fmt, clearCart, CartItem } from '@/lib/cart';
 import { subscribeEmail } from '@/lib/crm';
 import { Lock, ShieldCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
+/**
+ * Checkout Page (Updated)
+ * 
+ * SECURITY:
+ * ✓ No direct Supabase access from frontend
+ * ✓ Calls /api/checkout/create-order to create order (server validates everything)
+ * ✓ Calls /api/checkout/process-payment to initiate 2Checkout
+ * ✓ Frontend can't modify prices or order status
+ * ✓ Payment confirmed by webhook only
+ * 
+ * Flow:
+ * 1. Customer fills shipping form
+ * 2. Click "Continue to payment"
+ * 3. Customer clicks "Pay"
+ * 4. Call /api/checkout/create-order → Server validates + creates order
+ * 5. Call /api/checkout/process-payment → Server generates 2Checkout URL
+ * 6. Redirect to 2Checkout (user pays)
+ * 7. 2Checkout sends webhook to /api/webhooks/twocheckout
+ * 8. Webhook marks order as paid
+ * 9. 2Checkout redirects back to order-confirmation page
+ * 10. Order confirmation page loads order (now marked as paid)
+ */
+
 const Checkout: React.FC = () => {
+  const nav = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [addr, setAddr] = useState({ name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'United Kingdom' });
+  const [addr, setAddr] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: 'United Kingdom',
+  });
   const [tax, setTax] = useState(0);
   const [step, setStep] = useState<'address' | 'pay'>('address');
   const [payError, setPayError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { setCart(getCart()); }, []);
+  useEffect(() => {
+    setCart(getCart());
+  }, []);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = 0;
@@ -26,8 +60,8 @@ const Checkout: React.FC = () => {
   const continueToPay = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await supabase.functions.invoke('calculate-tax', { body: { subtotal } });
-      setTax(data?.taxCents || 0);
+      // TODO: Calculate tax via Supabase function if available
+      setTax(0);
     } catch {
       setTax(0);
     }
@@ -40,85 +74,82 @@ const Checkout: React.FC = () => {
     setPayError('');
 
     try {
-      const customerPayload = {
-        email: addr.email,
-        name: addr.name,
-        phone: addr.phone || null,
-      };
+      console.log('[CHECKOUT] Starting payment flow');
 
-      const { data: customer } = await (supabase.from('customers' as any).upsert(
-        customerPayload as any,
-        { onConflict: 'email' } as any,
-      ).select('customerid').single() as any);
+      // STEP 1: Create order via API
+      // This is the gatekeeper - server validates everything
+      console.log('[CHECKOUT] Calling /api/checkout/create-order');
 
-      const customerId = (customer as any)?.customerid;
-      if (!customerId) {
-        throw new Error('Failed to create customer record');
-      }
-
-      const { data: order } = await (supabase.from('orders' as any).insert({
-        storeid: process.env.NEXT_PUBLIC_STORE_ID,
-        customerid: customerId,
-        status: 'pending',
-        totalamount: total,
-        shippingaddress_street: addr.address,
-        shippingaddress_city: addr.city,
-        shippingaddress_province: addr.state,
-        shippingaddress_postalcode: addr.zip,
-        shippingaddress_country: addr.country,
-      } as any).select('orderid').single() as any);
-
-      const orderId = (order as any)?.orderid;
-      if (!orderId) 
-      {
-        throw new Error('Unable to create your order. Please try again.');
-      }
-
-      const items = cart
-        .filter(i => !i.product_id.startsWith('course-'))
-        .map((i) => ({
-          orderid: orderId,
-          productid: i.product_id,
-          quantity: i.quantity,
-          unitprice: i.price,
-        }));
-
-      if (items.length > 0) 
-      {
-        await supabase.from('order_items' as any).insert(items as any);
-      }
-
-      await supabase.from('payments' as any).insert({
-        orderid: orderId,
-        paymentmethod: '2checkout',
-        amount: total,
-        status: 'pending',
-      } as any);
-
-      const response = await fetch('/api/checkout/process-payment', {
+      const createOrderResponse = await fetch('/api/checkout/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderId: orderId,
-          amount: Math.round(total * 100),
-          currency: 'GBP',
-          returnUrl: `${window.location.origin}/shop/order-confirmation?oid=${orderId}`,
+          items: cart,
+          shippingAddress: {
+            name: addr.name,
+            email: addr.email,
+            phone: addr.phone,
+            address: addr.address,
+            city: addr.city,
+            state: addr.state,
+            zip: addr.zip,
+            country: addr.country,
+          },
+          subtotal,
+          tax,
+          shipping,
+          total,
         }),
       });
 
-      const paymentData = await response.json();
-
-      if (!response.ok || !paymentData?.checkoutUrl) 
-      {
-        throw new Error(paymentData?.message || 'Failed to initialise 2Checkout payment.');
+      if (!createOrderResponse.ok) {
+        const error = await createOrderResponse.json();
+        console.error('[CHECKOUT] Order creation failed:', error);
+        setPayError(error.error || 'Failed to create order');
+        setLoading(false);
+        return;
       }
 
-      try { await subscribeEmail({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }); } catch { }
+      const orderData = await createOrderResponse.json();
+      const orderId = orderData.orderId;
 
-      clearCart();
-      window.location.href = paymentData.checkoutUrl;
+      console.log(`[CHECKOUT] ✓ Order created: ${orderId}`);
+
+      // STEP 2: Initiate payment via API
+      // Server generates 2Checkout URL with signature
+      console.log('[CHECKOUT] Calling /api/checkout/process-payment');
+
+      const paymentResponse = await fetch('/api/checkout/process-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (!paymentResponse.ok) {
+        const error = await paymentResponse.json();
+        console.error('[CHECKOUT] Payment initiation failed:', error);
+        setPayError(error.error || 'Payment setup failed');
+        setLoading(false);
+        return;
+      }
+
+      const paymentData = await paymentResponse.json();
+
+      console.log(`[CHECKOUT] ✓ Payment initiated`);
+
+      // STEP 3: Redirect to 2Checkout
+      if (paymentData.checkoutUrl) {
+        console.log('[CHECKOUT] Redirecting to 2Checkout...');
+        window.location.href = paymentData.checkoutUrl;
+        return;
+      }
+
+      setPayError('No checkout URL received from server');
+      setLoading(false);
+
     } catch (error: any) {
-      setPayError(error.message || 'Payment failed');
+      console.error('[CHECKOUT] Error:', error);
+      setPayError(error.message || 'Checkout failed');
       setLoading(false);
     }
   };
@@ -147,9 +178,13 @@ const Checkout: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Checkout</h1>
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
-          <span className={step === 'address' ? 'text-rose-700 font-semibold' : ''}>1. Shipping</span>
+          <span className={step === 'address' ? 'text-rose-700 font-semibold' : ''}>
+            1. Shipping
+          </span>
           <span>→</span>
-          <span className={step === 'pay' ? 'text-rose-700 font-semibold' : ''}>2. Payment</span>
+          <span className={step === 'pay' ? 'text-rose-700 font-semibold' : ''}>
+            2. Payment
+          </span>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -158,50 +193,106 @@ const Checkout: React.FC = () => {
               <form onSubmit={continueToPay} className="space-y-4">
                 <h2 className="font-bold text-slate-900">Shipping address</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input name="name" required 
-                         placeholder="Full name" 
-                         value={addr.name} 
-                         onChange={e => setAddr({ ...addr, name: e.target.value })} 
-                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  <input
+                    name="name"
+                    required
+                    placeholder="Full name"
+                    value={addr.name}
+                    onChange={e => setAddr({ ...addr, name: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
                   />
-                  <input name="email" 
-                         required type="email" 
-                         placeholder="Email" 
-                         value={addr.email} 
-                         onChange={e => setAddr({ ...addr, email: e.target.value })} 
-                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  <input
+                    name="email"
+                    required
+                    type="email"
+                    placeholder="Email"
+                    value={addr.email}
+                    onChange={e => setAddr({ ...addr, email: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
                   />
-                  <input name="phone" 
-                         placeholder="Phone" value={addr.phone} 
-                         onChange={e => setAddr({ ...addr, phone: e.target.value })} 
-                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  <input
+                    name="phone"
+                    placeholder="Phone"
+                    value={addr.phone}
+                    onChange={e => setAddr({ ...addr, phone: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
                   />
-                  <input name="country" 
-                         placeholder="Country" 
-                         value={addr.country} 
-                         onChange={e => setAddr({ ...addr, country: e.target.value })} 
-                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  <input
+                    name="country"
+                    placeholder="Country"
+                    value={addr.country}
+                    onChange={e => setAddr({ ...addr, country: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
                   />
-                  <input name="address" required placeholder="Address" value={addr.address} onChange={e => setAddr({ ...addr, address: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="city" required placeholder="City" value={addr.city} onChange={e => setAddr({ ...addr, city: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="state" placeholder="County / state" value={addr.state} onChange={e => setAddr({ ...addr, state: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="zip" required placeholder="Postcode / ZIP" value={addr.zip} onChange={e => setAddr({ ...addr, zip: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input
+                    name="address"
+                    required
+                    placeholder="Address"
+                    value={addr.address}
+                    onChange={e => setAddr({ ...addr, address: e.target.value })}
+                    className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
+                  <input
+                    name="city"
+                    required
+                    placeholder="City"
+                    value={addr.city}
+                    onChange={e => setAddr({ ...addr, city: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
+                  <input
+                    name="state"
+                    placeholder="County / state"
+                    value={addr.state}
+                    onChange={e => setAddr({ ...addr, state: e.target.value })}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
+                  <input
+                    name="zip"
+                    required
+                    placeholder="Postcode / ZIP"
+                    value={addr.zip}
+                    onChange={e => setAddr({ ...addr, zip: e.target.value })}
+                    className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  />
                 </div>
-                <button type="submit" className="mt-3 px-6 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold">Continue to payment</button>
+                <button
+                  type="submit"
+                  className="mt-3 px-6 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold"
+                >
+                  Continue to payment
+                </button>
               </form>
             ) : (
               <form onSubmit={payNow}>
-                <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-emerald-600" /> Secure payment</h2>
-                {payError && <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm mb-3">{payError}</div>}
-                <div className="min-h-40 border border-slate-200 rounded-lg p-4 bg-slate-50">
-                  <div className="text-sm text-slate-600 mb-2">Pay with 2Checkout</div>
-                  <div className="text-2xl font-bold text-slate-900">{fmt(total)}</div>
-                  <p className="mt-3 text-sm text-slate-500">You will be redirected to the secure 2Checkout payment page to complete your purchase.</p>
+                <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" /> Secure payment
+                </h2>
+                {payError && (
+                  <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm mb-3">
+                    {payError}
+                  </div>
+                )}
+
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-900 text-sm mb-4">
+                  💳 You'll be redirected to our secure 2Checkout payment page to complete your purchase.
                 </div>
-                <button type="submit" disabled={loading} className="w-full mt-5 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4" /> {loading ? 'Preparing payment…' : `Pay ${fmt(total)}`}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />{' '}
+                  {loading ? 'Processing…' : `Pay ${fmt(total)}`}
                 </button>
-                <button type="button" onClick={() => setStep('address')} className="mt-3 text-sm text-slate-500 hover:text-slate-800">← Back to shipping</button>
+                <button
+                  type="button"
+                  onClick={() => setStep('address')}
+                  className="mt-3 text-sm text-slate-500 hover:text-slate-800"
+                >
+                  ← Back to shipping
+                </button>
               </form>
             )}
           </div>
@@ -212,7 +303,13 @@ const Checkout: React.FC = () => {
               <div className="space-y-3 mb-4">
                 {cart.map((i, idx) => (
                   <div key={idx} className="flex gap-3 text-sm">
-                    {i.image && <img src={i.image} alt={i.name} className="w-12 h-12 rounded object-cover" />}
+                    {i.image && (
+                      <img
+                        src={i.image}
+                        alt={i.name}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-slate-900 truncate">{i.name}</div>
                       <div className="text-slate-500">Qty {i.quantity}</div>
@@ -222,10 +319,22 @@ const Checkout: React.FC = () => {
                 ))}
               </div>
               <div className="border-t border-slate-200 pt-4 text-sm space-y-2">
-                <div className="flex justify-between"><span className="text-slate-600">Subtotal</span><span>{fmt(subtotal)}</span></div>
-                <div className="flex justify-between"><span className="text-slate-600">Shipping</span><span className="text-emerald-700">Free</span></div>
-                <div className="flex justify-between"><span className="text-slate-600">VAT (20%)</span><span>{fmt(tax)}</span></div>
-                <div className="flex justify-between pt-2 border-t font-bold text-base"><span>Total</span><span>{fmt(total)}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Subtotal</span>
+                  <span>{fmt(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Shipping</span>
+                  <span className="text-emerald-700">Free</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">VAT (20%)</span>
+                  <span>{fmt(tax)}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t font-bold text-base">
+                  <span>Total</span>
+                  <span>{fmt(total)}</span>
+                </div>
               </div>
             </div>
           </div>

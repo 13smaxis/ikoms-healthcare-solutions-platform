@@ -5,6 +5,7 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { subscribeEmail } from '@/lib/crm';
 import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type JobRecord = {
   id: string;
@@ -28,6 +29,10 @@ type JobRecord = {
 };
 
 type AuthModalType = 'register' | 'login' | null;
+
+const navigateToCandidateProfile = () => {
+  window.location.href = '/recruitment/candidate/profile';
+};
 
 const formatDate = (value?: string | null) => {
   if (!value) return 'TBD';
@@ -225,31 +230,38 @@ const RecruitmentHome: React.FC = () => {
     }
   };
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    setAuthSuccess('');
-    setAuthLoading(true);
+const handleLoginSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setAuthError('');
+  setAuthSuccess('');
+  setAuthLoading(true);
 
-    try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: loginForm.email,
-        password: loginForm.password,
-      });
+  try {
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: loginForm.email,
+      password: loginForm.password,
+    });
 
-      if (signInError) throw signInError;
+    if (signInError) throw signInError;
 
-      if (data.user) {
-        setAuthSuccess('Login successful.');
-        setAuthModal(null);
-        setLoginForm({ email: '', password: '' });
-      }
-    } catch (err: any) {
-      setAuthError(err.message || 'Login failed.');
-    } finally {
-      setAuthLoading(false);
+    if (data.user) {
+      // Show success message first
+      setAuthSuccess('Login successful. Redirecting to your profile...');
+      setAuthModal(null);
+      setLoginForm({ email: '', password: '' });
+      
+      // Give user time to see the success message before redirect
+      // This improves perceived performance and UX
+      setTimeout(() => {
+        window.location.href = '/recruitment/candidate/profile';
+      }, 800); // 800ms gives plenty of time to see the message
     }
-  };
+  } catch (err: any) {
+    setAuthError(err.message || 'Login failed.');
+  } finally {
+    setAuthLoading(false);
+  }
+};
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
