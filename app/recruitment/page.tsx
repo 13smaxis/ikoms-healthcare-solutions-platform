@@ -93,7 +93,6 @@ const RecruitmentHome: React.FC = () => {
       salary_range: '£22,000 - £26,000',
       short_description: 'Support patients and clinical teams by delivering compassionate daily care in a safe, welcoming environment.',
       description: 'Support patients and clinical teams by delivering compassionate daily care in a safe, welcoming environment.',
-      required_qualications: 'Level 2/3 Health and Social Care qualification or equivalent experience',
       required_qualifications: 'Level 2/3 Health and Social Care qualification or equivalent experience',
       experience_required: 'Previous care or healthcare support experience preferred but not essential.',
     };
@@ -105,7 +104,19 @@ const RecruitmentHome: React.FC = () => {
     });
   }, []);
 
-  const departments = useMemo(() => ['all', ...Array.from(new Set(jobs.map((j) => j.department).filter(Boolean)))], [jobs]);
+  const departments = useMemo(
+  () => [
+    'all',
+    ...Array.from(
+      new Set(
+        jobs
+          .map((j) => j.department)
+          .filter((department): department is string => Boolean(department))
+      )
+    ),
+  ],
+  [jobs]
+);
   const types = useMemo(() => ['all', ...Array.from(new Set(jobs.map((j) => getEmploymentType(j)).filter(Boolean)))], [jobs]);
 
   const filtered = jobs.filter((job) => {
