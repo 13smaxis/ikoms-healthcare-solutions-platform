@@ -5,8 +5,6 @@
 
 'use client';
 
-import { useState, useRef, type PointerEvent } from 'react';
-import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import ShopProductCard from '@/components/ShopProductCard';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -22,159 +20,14 @@ interface ShopProductSpecificationProps {
   relatedProducts: ShopProduct[];
 }
 
-export default function ShopProductSpecification({ product, category, categories, relatedProducts }: ShopProductSpecificationProps) {
+export default function ShopProductSpecification({ product, category, relatedProducts }: ShopProductSpecificationProps) {
   const { wishlist, toggleWishlist } = useWishlist();                                                           //-Allows users to add or remove products from their wishlist and updates the UI accordingly.
   const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
-
-  const [showMobileCategories, setShowMobileCategories] = useState(false);
-  const dragStartX = useRef<number | null>(null);
-
-  const handleCategoryHandlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    dragStartX.current = event.clientX;
-  };
-
-  const handleCategoryHandlePointerUp = (event: PointerEvent<HTMLButtonElement>) => {
-    if (dragStartX.current === null) return;
-    if (event.clientX - dragStartX.current > 20) {
-      setShowMobileCategories(true);
-    }
-    dragStartX.current = null;
-  };
-
-  const closeMobileCategories = () => setShowMobileCategories(false);
 
   return (
     <section className="bg-slate-50 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="xl:hidden">                                                                           {/* Mobile category menu button and sliding panel */}
-            <button
-              type="button"
-              aria-expanded={showMobileCategories}
-              onClick={() => setShowMobileCategories((prev) => !prev)}
-              onPointerDown={handleCategoryHandlePointerDown}
-              onPointerUp={handleCategoryHandlePointerUp}
-              className={`
-                      fixed top-1/2 right-0 z-20
-                      -mr-5 flex
-                      h-32 w-14
-                      items-center justify-center
-                      rounded-tl-3xl rounded-bl-3xl
-                      bg-slate-950
-                      px-2
-                      text-[10px] font-semibold
-                      uppercase tracking-[0.35em]
-                      text-white shadow-lg
-                      transition-transform duration-300
-                      ${showMobileCategories ? '-translate-x-72' : 'translate-x-0'}
-                    `}
-            >
-              <span className="
-                            flex h-full flex-col
-                            pr-4
-                            justify-center text-center
-                            leading-none
-                          "
-              >
-                <span>C</span>
-                <span>A</span>
-                <span>T</span>
-                <span>E</span>
-                <span>G</span>
-                <span>O</span>
-                <span>R</span>
-                <span>Y</span>
-              </span>
-            </button>
-
-            <div
-              className={`
-                      fixed top-36 bottom-4 right-0 z-30 w-72
-                      overflow-y-auto
-                      bg-gray-300
-                      rounded-l-3xl
-                      px-6 py-8
-                      shadow-2xl
-                      transition-transform
-                      duration-300
-                      ${showMobileCategories ? 'translate-x-0' : 'translate-x-full'}
-                    `}
-            >
-              <div className="
-                              flex min-h-[calc(100%-4.5rem)] 
-                              flex-col 
-                              items-center 
-                              justify-center 
-                              gap-3 
-                              pt-16
-                            "
-              >                                                                                                 {/* Mobile category menu links */}
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.handle}
-                    href={`/shop/collections/${cat.handle}`}
-                    onClick={closeMobileCategories}
-                    className="
-                              w-full max-w-[18rem]
-                              rounded-2xl 
-                              border border-slate-200 
-                              bg-slate-50 
-                              px-4 py-3 
-                              text-center text-sm font-medium text-slate-700 
-                              transition 
-                              hover:border-rose-300 hover:bg-rose-30"
-                  >
-                    {cat.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {showMobileCategories ? (
-              <button
-                type="button"
-                aria-label="Close categories"
-                onClick={closeMobileCategories}
-                className="fixed inset-0 z-10 bg-slate-900/30 backdrop-blur-xs"
-              />
-            ) : null}
-          </div>
-
-          <aside className="
-                            hidden xl:block 
-                            sticky top-24 
-                            self-start 
-                            rounded-3xl 
-                            border border-slate-200 
-                            bg-white 
-                            p-6 
-                            shadow-sm
-                          "
-          >
-            <div className="mb-8">                                                                              {/* Menu slider sidebar displays the product categories */}
-              <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Categories</p>
-            </div>
-            <div className="space-y-3">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.handle}
-                  href={`/shop/collections/${cat.handle}`}
-                  className="
-                              block rounded-2xl 
-                              border border-slate-200 
-                              bg-slate-50 
-                              px-4 py-3 
-                              text-sm font-medium text-slate-700 
-                              transition 
-                              hover:border-rose-300 hover:bg-rose-300
-                            "
-                >                                                                                               {/*Provides nav links to different catergoriesin the shop*/}
-                  {cat.title}
-                </Link>
-              ))}
-            </div>
-          </aside>
-
+        <div className="space-y-10">
           <main className="space-y-10">                                                                         {/* Main content area displaying product details and related products */}
             <section className="
                                 grid gap-8 

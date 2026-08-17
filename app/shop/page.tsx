@@ -88,21 +88,6 @@ const ShopHome: React.FC = () => {
             — everything healthcare teams need, in one store.
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/shop/account"
-              className="
-                              inline-flex items-center gap-2 flex-nowrap whitespace-nowrap 
-                              text-sm font-semibold text-slate-700 
-                              px-4 py-2 
-                              bg-white/90 
-                              rounded-full 
-                              shadow-sm shrink-0
-                              hover:bg-slate-100
-                            "
-            >
-              <UserCircle2 size={20} className="shrink-0" />
-              Account
-            </Link>
-
             <form
               onSubmit={(e) => {
                 e.preventDefault();
