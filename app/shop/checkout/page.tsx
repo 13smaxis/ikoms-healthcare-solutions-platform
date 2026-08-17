@@ -7,35 +7,13 @@ import { supabase } from '@/lib/supabase';
 import { getCart, fmt, clearCart, CartItem } from '@/lib/cart';
 import { subscribeEmail } from '@/lib/crm';
 import { Lock, ShieldCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import ShopBreadcrumbs from '@/components/ShopBreadcrumbs';
 
-declare global { interface Window { Stripe?: any } }
-
-const STRIPE_PK = 'pk_live_51OJhJBHdGQpsHqInIzu7c6PzGPSH0yImD4xfpofvxvFZs0VFhPRXZCyEgYkkhOtBOXFWvssYASs851mflwQvjnrl00T6DbUwWZ';
-const STRIPE_ACCOUNT_ID = 'acct_1TPRzkHTDFR3zcgW';
-
-const loadStripeJs = (): Promise<any> => new Promise((resolve, reject) => {
-  if (window.Stripe) return resolve(window.Stripe);
-  const existing = document.querySelector('script[src="https://js.stripe.com/v3/"]') as HTMLScriptElement | null;
-  const onReady = () => window.Stripe ? resolve(window.Stripe) : reject(new Error('Stripe failed to load'));
-  if (existing) { existing.addEventListener('load', onReady); return; }
-  const s = document.createElement('script');
-  s.src = 'https://js.stripe.com/v3/';
-  s.onload = onReady;
-  s.onerror = () => reject(new Error('Stripe failed to load'));
-  document.head.appendChild(s);
-});
-
 const Checkout: React.FC = () => {
-  const nav = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [addr, setAddr] = useState({ name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'United Kingdom' });
   const [tax, setTax] = useState(0);
   const [step, setStep] = useState<'address' | 'pay'>('address');
-  const [stripe, setStripe] = useState<any>(null);
-  const [elements, setElements] = useState<any>(null);
-  const [clientSecret, setClientSecret] = useState('');
   const [payError, setPayError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -44,29 +22,6 @@ const Checkout: React.FC = () => {
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = 0;
   const total = subtotal + shipping + tax;
-
-  useEffect(() => {
-    if (step !== 'pay' || total <= 0 || clientSecret) return;
-    (async () => {
-      try {
-        const S = await loadStripeJs();
-        const stripeInstance = S(STRIPE_PK, { stripeAccount: STRIPE_ACCOUNT_ID });
-        setStripe(stripeInstance);
-        const { data, error } = await supabase.functions.invoke('create-payment-intent', { body: { amount: total, currency: 'gbp' } });
-        if (error || !data?.clientSecret) { setPayError('Unable to initialise payment. Please try again.'); return; }
-        setClientSecret(data.clientSecret);
-        const els = stripeInstance.elements({ clientSecret: data.clientSecret });
-        const paymentEl = els.create('payment');
-        setTimeout(() => {
-          const node = document.getElementById('stripe-payment-el');
-          if (node) paymentEl.mount('#stripe-payment-el');
-        }, 0);
-        setElements(els);
-      } catch (e: any) {
-        setPayError(e.message || 'Payment setup failed');
-      }
-    })();
-  }, [step, total, clientSecret]);
 
   const continueToPay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,52 +36,91 @@ const Checkout: React.FC = () => {
 
   const payNow = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
     setLoading(true);
     setPayError('');
-    const { error, paymentIntent } = await stripe.confirmPayment({ elements, redirect: 'if_required' });
-    if (error) { setPayError(error.message || 'Payment failed'); setLoading(false); return; }
-    if (paymentIntent?.status !== 'succeeded') { setPayError('Payment did not complete'); setLoading(false); return; }
 
-    const customerPayload: any = {
-      email: addr.email,
-      name: addr.name,
-      phone: addr.phone,
-      address: addr,
-    };
+    try {
+      const customerPayload = {
+        email: addr.email,
+        name: addr.name,
+        phone: addr.phone || null,
+      };
 
-    const { data: customer } = await supabase.from('ecom_customers' as any).upsert(
-      customerPayload,
-      { onConflict: 'email' } as any,
-    ).select('id').single();
+      const { data: customer } = await (supabase.from('customers' as any).upsert(
+        customerPayload as any,
+        { onConflict: 'email' } as any,
+      ).select('customerid').single() as any);
 
-    const createdCustomer = customer as { id?: number | string | null } | null | undefined;
-    const { data: order } = await supabase.from('ecom_orders' as any).insert({
-      customer_id: createdCustomer?.id, status: 'paid', subtotal, tax, shipping, total,
-      shipping_address: addr, stripe_payment_intent_id: paymentIntent.id,
-    } as any).select('id').single();
+      const customerId = (customer as any)?.customerid;
+      if (!customerId) {
+        throw new Error('Failed to create customer record');
+      }
 
-    const createdOrder = order as { id?: number | string | null } | null | undefined;
+      const { data: order } = await (supabase.from('orders' as any).insert({
+        storeid: process.env.NEXT_PUBLIC_STORE_ID,
+        customerid: customerId,
+        status: 'pending',
+        totalamount: total,
+        shippingaddress_street: addr.address,
+        shippingaddress_city: addr.city,
+        shippingaddress_province: addr.state,
+        shippingaddress_postalcode: addr.zip,
+        shippingaddress_country: addr.country,
+      } as any).select('orderid').single() as any);
 
-    if (createdOrder) {
-      const items = cart.map(i => ({
-        order_id: createdOrder.id,
-        product_id: i.product_id.startsWith('course-') ? null : i.product_id,
-        variant_id: i.variant_id || null,
-        product_name: i.name,
-        variant_title: i.variant_title || null,
-        sku: i.sku || null,
-        quantity: i.quantity,
-        unit_price: i.price,
-        total: i.price * i.quantity,
-      }));
-      await supabase.from('ecom_order_items' as any).insert(items as any);
+      const orderId = (order as any)?.orderid;
+      if (!orderId) 
+      {
+        throw new Error('Unable to create your order. Please try again.');
+      }
+
+      const items = cart
+        .filter(i => !i.product_id.startsWith('course-'))
+        .map((i) => ({
+          orderid: orderId,
+          productid: i.product_id,
+          quantity: i.quantity,
+          unitprice: i.price,
+        }));
+
+      if (items.length > 0) 
+      {
+        await supabase.from('order_items' as any).insert(items as any);
+      }
+
+      await supabase.from('payments' as any).insert({
+        orderid: orderId,
+        paymentmethod: '2checkout',
+        amount: total,
+        status: 'pending',
+      } as any);
+
+      const response = await fetch('/api/checkout/process-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: orderId,
+          amount: Math.round(total * 100),
+          currency: 'GBP',
+          returnUrl: `${window.location.origin}/shop/order-confirmation?oid=${orderId}`,
+        }),
+      });
+
+      const paymentData = await response.json();
+
+      if (!response.ok || !paymentData?.checkoutUrl) 
+      {
+        throw new Error(paymentData?.message || 'Failed to initialise 2Checkout payment.');
+      }
+
+      try { await subscribeEmail({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }); } catch { }
+
+      clearCart();
+      window.location.href = paymentData.checkoutUrl;
+    } catch (error: any) {
+      setPayError(error.message || 'Payment failed');
+      setLoading(false);
     }
-
-    try { await subscribeEmail({ email: addr.email, name: addr.name, source: 'checkout', tags: ['customer'] }); } catch {}
-
-    clearCart();
-    nav.push(`/shop/order-confirmation?oid=${createdOrder?.id || ''}`);
   };
 
   if (cart.length === 0) {
@@ -164,10 +158,30 @@ const Checkout: React.FC = () => {
               <form onSubmit={continueToPay} className="space-y-4">
                 <h2 className="font-bold text-slate-900">Shipping address</h2>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input name="name" required placeholder="Full name" value={addr.name} onChange={e => setAddr({ ...addr, name: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="email" required type="email" placeholder="Email" value={addr.email} onChange={e => setAddr({ ...addr, email: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="phone" placeholder="Phone" value={addr.phone} onChange={e => setAddr({ ...addr, phone: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
-                  <input name="country" placeholder="Country" value={addr.country} onChange={e => setAddr({ ...addr, country: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+                  <input name="name" required 
+                         placeholder="Full name" 
+                         value={addr.name} 
+                         onChange={e => setAddr({ ...addr, name: e.target.value })} 
+                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  />
+                  <input name="email" 
+                         required type="email" 
+                         placeholder="Email" 
+                         value={addr.email} 
+                         onChange={e => setAddr({ ...addr, email: e.target.value })} 
+                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  />
+                  <input name="phone" 
+                         placeholder="Phone" value={addr.phone} 
+                         onChange={e => setAddr({ ...addr, phone: e.target.value })} 
+                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  />
+                  <input name="country" 
+                         placeholder="Country" 
+                         value={addr.country} 
+                         onChange={e => setAddr({ ...addr, country: e.target.value })} 
+                         className="px-3 py-2 border border-slate-300 rounded-lg text-sm" 
+                  />
                   <input name="address" required placeholder="Address" value={addr.address} onChange={e => setAddr({ ...addr, address: e.target.value })} className="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm" />
                   <input name="city" required placeholder="City" value={addr.city} onChange={e => setAddr({ ...addr, city: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
                   <input name="state" placeholder="County / state" value={addr.state} onChange={e => setAddr({ ...addr, state: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
@@ -179,11 +193,13 @@ const Checkout: React.FC = () => {
               <form onSubmit={payNow}>
                 <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-emerald-600" /> Secure payment</h2>
                 {payError && <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm mb-3">{payError}</div>}
-                <div id="stripe-payment-el" className="min-h-40 border border-slate-200 rounded-lg p-3 bg-white">
-                  {!clientSecret && !payError && <div className="text-slate-500 text-sm">Loading secure payment form…</div>}
+                <div className="min-h-40 border border-slate-200 rounded-lg p-4 bg-slate-50">
+                  <div className="text-sm text-slate-600 mb-2">Pay with 2Checkout</div>
+                  <div className="text-2xl font-bold text-slate-900">{fmt(total)}</div>
+                  <p className="mt-3 text-sm text-slate-500">You will be redirected to the secure 2Checkout payment page to complete your purchase.</p>
                 </div>
-                <button type="submit" disabled={!stripe || !clientSecret || loading} className="w-full mt-5 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4" /> {loading ? 'Processing…' : `Pay ${fmt(total)}`}
+                <button type="submit" disabled={loading} className="w-full mt-5 py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2">
+                  <Lock className="w-4 h-4" /> {loading ? 'Preparing payment…' : `Pay ${fmt(total)}`}
                 </button>
                 <button type="button" onClick={() => setStep('address')} className="mt-3 text-sm text-slate-500 hover:text-slate-800">← Back to shipping</button>
               </form>

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "validate:2checkout": "node scripts/validate-2checkout-setup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

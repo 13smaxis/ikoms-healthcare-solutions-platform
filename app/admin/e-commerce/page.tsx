@@ -13,7 +13,6 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
@@ -55,9 +54,9 @@ const AdminOrdersPage: React.FC = () => {
     try {
       console.log('📋 Starting loadOrders...');
       const { data, error } = await supabase
-        .from('ecom_orders')
-        .select('*, customer:ecom_customers(name,email), items:ecom_order_items(*)')
-        .order('created_at', { ascending: false });
+        .from('orders')
+        .select('*, customer:customers(name,email), items:order_items(*)')
+        .order('createdat', { ascending: false });
 
       console.log('✅ loadOrders done:', data?.length);
       if (error) {
@@ -131,7 +130,7 @@ const AdminOrdersPage: React.FC = () => {
   }, []);
 
   const updStatus = async (id: string, status: string) => {
-    await (supabase as any).from('ecom_orders').update({ status }).eq('id', id);
+    await (supabase as any).from('orders').update({ status }).eq('orderid', id);
     loadOrders();
   };
 

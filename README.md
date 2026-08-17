@@ -100,6 +100,10 @@ ikoms-healthcare-solutions-platform/
 │   │
 │   ├── api/                         # API routes
 │   │   ├── admin/                   # Admin-related endpoints
+│   │   ├── checkout/                # Payment processing routes
+│   │   │   ├── process-payment/     # 2Checkout payment initializer
+│   │   │   └── webhooks/            # 2Checkout webhook handlers
+│   │   │       └── twocheckout/     # 2Checkout payment callbacks
 │   │   ├── health/                  # Health check endpoints
 │   │   ├── products/                # Product endpoints
 │   │   └── shop-nav/                # Shop navigation endpoints
@@ -257,8 +261,9 @@ Create a `.env.local` file in the root directory with the following variables:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | `eyJhbGc...` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only) | `eyJhbGc...` |
 | `NEXT_PUBLIC_API_URL` | API base URL | `http://localhost:3000/api` |
-| `NEXT_PUBLIC_STORE_ID` | Store identifier | `ikoms-store` |
-
+| `NEXT_PUBLIC_STORE_ID` | Store identifier | `ikoms-store` || `NEXT_PUBLIC_2CHECKOUT_MERCHANT_CODE` | 2Checkout merchant code | `123456` |
+| `NEXT_PUBLIC_APP_URL` | App URL for 2Checkout redirect | `https://yourdomain.com` |
+| `TWOCHECKOUT_WEBHOOK_SECRET` | 2Checkout webhook signing secret (server-only) | `webhook_secret_key` |
 ## Key Components
 
 ### Layout Components
@@ -282,7 +287,7 @@ Create a `.env.local` file in the root directory with the following variables:
 ### Routing Structure
 - **Public Routes**: Home, about, recruitment, consultancy, training, contact, shop
 - **Protected Routes**: Admin section with layout protection via `ProtectedRoute.tsx`
-- **API Routes**: RESTful endpoints for product, admin, and shop operations
+- **API Routes**: RESTful endpoints for product, admin, shop, and payment operations
 
 ### Data Flow
 1. **Client Components**: UI components that handle user interactions
@@ -296,6 +301,42 @@ Create a `.env.local` file in the root directory with the following variables:
 2. Supabase session is established and stored in `AuthContext`
 3. `ProtectedRoute.tsx` wraps admin pages and checks session
 4. Session is refreshed automatically via `useSessionRefresh` hook
+
+### Payment & Checkout Flow (2Checkout)
+The app uses a redirect-based payment flow with 2Checkout:
+
+1. **Order Creation** (`app/shop/checkout/page.tsx`):
+   - Customer enters shipping and payment details
+   - App creates a customer record in Supabase (upsert by email)
+   - App inserts order into `orders` table with `totalamount` and shipping fields
+   - App inserts line items into `order_items` table
+   - App creates a payment record in `payments` table with initial `pending` status
+
+2. **Payment Initialization** (`app/api/checkout/process-payment/route.js`):
+   - Backend builds a secure redirect URL to 2Checkout
+   - Returns `checkoutUrl` to the browser
+   - Browser redirects customer to 2Checkout payment gateway
+
+3. **External Payment Processing**:
+   - Customer completes payment on 2Checkout servers
+   - 2Checkout processes the transaction
+
+4. **Webhook Callback** (`app/api/checkout/webhooks/twocheckout/route.js`):
+   - 2Checkout sends success or failure notification to the webhook
+   - Webhook updates `payments` table status (`completed` or `failed`)
+   - Webhook updates `orders` table status to match payment result
+   - Updates are atomic and traceable
+
+5. **Order Confirmation** (`app/shop/order-confirmation/page.tsx`):
+   - Customer returns to the app
+   - Confirmation page loads order details from Supabase
+   - Displays order summary and items
+
+**Database Schema**:
+- `customers`: `customerid`, `userid`, `email`
+- `orders`: `orderid`, `customerid`, `totalamount`, `shippingaddress1`, `shippingcity`, `shippingstate`, `shippingpostcode`, `shippingcountry`, `status`, `createdat`
+- `order_items`: `orderitemid`, `orderid`, `productid`, `quantity`, `unitprice`
+- `payments`: `paymentid`, `orderid`, `paymentmethod`, `amount`, `status`, `createdat`
 
 ## Notes
 

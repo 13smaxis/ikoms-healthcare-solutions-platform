@@ -19,11 +19,24 @@ export default function OrdersClient() {
           setUser(data.user);
 
           try {
+            // Get customer record for this user
+            const { data: customerData } = await (supabase
+              .from('customers')
+              .select('customerid')
+              .eq('userid', data.user.id)
+              .single() as any);
+
+            if (!(customerData as any)?.customerid) {
+              setOrders([]);
+              return;
+            }
+
+            // Get orders for this customer
             const { data: ordersData } = await supabase
-              .from('ecom_orders')
+              .from('orders')
               .select('*')
-              .eq('user_id', data.user.id)
-              .order('created_at', { ascending: false });
+              .eq('customerid', (customerData as any).customerid)
+              .order('createdat', { ascending: false });
 
             if (ordersData) {
               setOrders(ordersData);
