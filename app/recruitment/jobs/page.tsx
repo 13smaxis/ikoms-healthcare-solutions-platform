@@ -62,7 +62,19 @@ const JobsList: React.FC = () => {
     });
   }, []);
 
-  const departments = useMemo(() => ['all', ...Array.from(new Set(jobs.map((j) => j.department).filter(Boolean)))], [jobs]);
+  const departments = useMemo(
+    () => [
+      'all',
+      ...Array.from(
+        new Set(
+          jobs
+            .map((j) => j.department)
+            .filter((department): department is string => Boolean(department))
+        )
+      ),
+    ],
+    [jobs]
+  );
   const types = useMemo(() => ['all', ...Array.from(new Set(jobs.map((j) => getEmploymentType(j)).filter(Boolean)))], [jobs]);
 
   const filtered = jobs.filter((job) => {
@@ -110,7 +122,7 @@ const JobsList: React.FC = () => {
 
       try {
         await subscribeEmail({ email: form.email, name: form.full_name, source: 'job-application', tags: ['candidate', selectedJob.title] });
-      } catch {}
+      } catch { }
 
       setDone(true);
       setShowApplicationForm(false);
