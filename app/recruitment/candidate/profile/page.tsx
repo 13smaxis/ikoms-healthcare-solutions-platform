@@ -66,19 +66,19 @@ const CandidateProfile: React.FC = () => {
         setUser(currentUser);
 
         // Fetch candidate profile
-        const { data: candidateData, error } = await supabase
-          .from('candidates')
-          .select('*')
-          .eq('id', currentUser.id)
-          .single();
+const { data: candidateData, error } = await supabase
+  .from('candidates')
+  .select('*')
+  .eq('id', currentUser.id)
+  .single<CandidateProfile>();
 
-        if (error && error.code !== 'PGRST116') {
-          throw error;
-        }
+if (error && error.code !== 'PGRST116') {
+  throw error;
+}
 
-        if (candidateData) {
-          setProfile(candidateData as CandidateProfile);
-          setFormData(candidateData);
+if (candidateData) {
+  setProfile(candidateData);
+  setFormData(candidateData);
         } else {
           // Create initial profile with auth data
           const initialProfile = {
@@ -151,20 +151,20 @@ const CandidateProfile: React.FC = () => {
         updated_at: new Date().toISOString(),
       };
 
-      if (profile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('candidates')
-          .update(dataToSave)
-          .eq('id', user.id);
-        if (error) throw error;
-      } else {
-        // Create new profile
-        const { error } = await supabase
-          .from('candidates')
-          .insert([{ id: user.id, ...dataToSave }]);
-        if (error) throw error;
-      }
+if (profile) {
+  // Update existing profile
+  const { error } = await (supabase
+    .from('candidates') as any)
+    .update(dataToSave)
+    .eq('id', user.id);
+  if (error) throw error;
+} else {
+  // Create new profile
+  const { error } = await (supabase
+    .from('candidates') as any)
+    .insert([{ id: user.id, ...dataToSave }]);
+  if (error) throw error;
+}
 
       setProfile(dataToSave as CandidateProfile);
       setCvFile(null);
