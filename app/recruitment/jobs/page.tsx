@@ -58,7 +58,7 @@ const JobsList: React.FC = () => {
     supabase
     .from('jobs')
     .select('*')
-    .order('createdat', { ascending: false })
+    .order('created_at', { ascending: false })
     .then(({ data }) => {
       const activeJobs = ((data as JobRecord[]) || []).filter((job) => job.is_active !== false);
       setJobs(activeJobs);
@@ -250,7 +250,7 @@ const JobsList: React.FC = () => {
                       </div>
                       <div className="rounded-xl border border-slate-200 p-4">
                         <div className="flex items-center gap-2 text-sm font-semibold text-slate-500"><CalendarDays className="w-4 h-4" /> Posted Date</div>
-                        <div className="mt-2 text-base font-medium text-slate-900">{formatDate(selectedJob.posted_date || selectedJob.createdat)}</div>
+                        <div className="mt-2 text-base font-medium text-slate-900">{formatDate(selectedJob.posted_date || selectedJob.created_at)}</div>
                       </div>
                     </div>
 

@@ -40,28 +40,29 @@ const JobDetail: React.FC = () => {
         return;
       }
 
-      const loc = data?.location;
-      const mappedJob = {
-        ...data,
-        id: data?.id,
-        title: data?.title,
-        department: data?.healthcare_specialization,
-        location: loc ? [loc.city, loc.country].filter(Boolean).join(', ') : data?.facility_name,
-        job_type: data?.employment_type?.name || 'Full-time',
-        employment_type: data?.employment_type?.name || 'Full-time',
-        job_level: data?.job_level?.name || 'Mid',
-        status: data?.status || 'Active',
-        is_active: data?.status === 'Active',
-        closing_date: data?.application_deadline,
-        posted_date: data?.posted_at,
-        created_at: data?.posted_at,
-        salary_range: data?.salary_min != null || data?.salary_max != null
-          ? `${data?.salary_currency || 'ZAR'} ${Number(data?.salary_min || 0).toLocaleString()} - ${Number(data?.salary_max || 0).toLocaleString()}`
+      const row = (data ?? {}) as Record<string, any>;
+      const loc = row?.location as { city?: string; country?: string } | null;
+      const mappedJob: Record<string, any> = {
+        ...row,
+        id: row?.id,
+        title: row?.title,
+        department: row?.healthcare_specialization,
+        location: loc ? [loc.city, loc.country].filter(Boolean).join(', ') : row?.facility_name,
+        job_type: row?.employment_type?.name || 'Full-time',
+        employment_type: row?.employment_type?.name || 'Full-time',
+        job_level: row?.job_level?.name || 'Mid',
+        status: row?.status || 'Active',
+        is_active: row?.status === 'Active',
+        closing_date: row?.application_deadline,
+        posted_date: row?.posted_at,
+        created_at: row?.posted_at,
+        salary_range: row?.salary_min != null || row?.salary_max != null
+          ? `${row?.salary_currency || 'ZAR'} ${Number(row?.salary_min || 0).toLocaleString()} - ${Number(row?.salary_max || 0).toLocaleString()}`
           : 'Not disclosed',
-        description: data?.description,
-        requirements: data?.requirements,
-        required_qualifications: data?.qualifications_required || data?.requirements,
-        experience_required: data?.min_years_experience ? `${data.min_years_experience}+ years` : undefined,
+        description: row?.description,
+        requirements: row?.requirements,
+        required_qualifications: row?.qualifications_required || row?.requirements,
+        experience_required: row?.min_years_experience ? `${row.min_years_experience}+ years` : undefined,
       };
 
       setJob(mappedJob);
