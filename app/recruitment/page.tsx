@@ -283,7 +283,17 @@ const RecruitmentHome: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Registration error:', err);
-      setAuthError(err.message || 'Registration failed.');
+
+      const message = String(err?.message || '').toLowerCase();
+      const isRateLimit = message.includes('email rate limit exceeded') || message.includes('rate limit');
+
+      setShowVerificationModal(false);
+      setVerificationEmail(null);
+      setAuthError(
+        isRateLimit
+          ? 'Too many sign-up attempts for this email. Please wait a few minutes and try again, or use a different email address.'
+          : (err?.message || 'Registration failed.')
+      );
     } finally {
       setAuthLoading(false);
     }
