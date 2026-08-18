@@ -6,7 +6,7 @@ The IKOMS Healthcare platform uses **2Checkout** as the payment processor for th
 
 ### Architecture Decision: Path 1 (ecom_* Tables)
 
-This implementation preserves the existing **ecom schema** (ecom_customers, ecom_orders, ecom_order_items) instead of refactoring to a new schema. The Stripe integration was replaced with 2Checkout while keeping the checkout data model stable.
+This implementation preserves the existing **ecom schema** (ecom_customers, ecom_orders, ecom_order_items) instead of refactoring to a new schema. The 2Checkout integration was replaced with 2Checkout while keeping the checkout data model stable.
 
 **Key components:**
 - [app/shop/checkout/page.tsx](app/shop/checkout/page.tsx) — Creates order in ecom_orders, redirects to 2Checkout

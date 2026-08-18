@@ -21,8 +21,54 @@ const JobDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    supabase.from('biz_jobs').select('*').eq('id', id).single()
-      .then(({ data }) => { setJob(data); setLoading(false); });
+
+    const loadJob = async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          employment_type:employment_types(id, name),
+          job_level:job_levels(id, name),
+          location:locations(id, city, country)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error loading job:', error);
+        setLoading(false);
+        return;
+      }
+
+      const loc = data?.location;
+      const mappedJob = {
+        ...data,
+        id: data?.id,
+        title: data?.title,
+        department: data?.healthcare_specialization,
+        location: loc ? [loc.city, loc.country].filter(Boolean).join(', ') : data?.facility_name,
+        job_type: data?.employment_type?.name || 'Full-time',
+        employment_type: data?.employment_type?.name || 'Full-time',
+        job_level: data?.job_level?.name || 'Mid',
+        status: data?.status || 'Active',
+        is_active: data?.status === 'Active',
+        closing_date: data?.application_deadline,
+        posted_date: data?.posted_at,
+        created_at: data?.posted_at,
+        salary_range: data?.salary_min != null || data?.salary_max != null
+          ? `${data?.salary_currency || 'ZAR'} ${Number(data?.salary_min || 0).toLocaleString()} - ${Number(data?.salary_max || 0).toLocaleString()}`
+          : 'Not disclosed',
+        description: data?.description,
+        requirements: data?.requirements,
+        required_qualifications: data?.qualifications_required || data?.requirements,
+        experience_required: data?.min_years_experience ? `${data.min_years_experience}+ years` : undefined,
+      };
+
+      setJob(mappedJob);
+      setLoading(false);
+    };
+
+    loadJob();
   }, [id]);
 
   const submit = async (e: React.FormEvent) => {

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { subscribeEmail } from '@/lib/crm';
-import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload } from 'lucide-react';
+import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 type JobRecord = {
@@ -75,33 +75,66 @@ const RecruitmentHome: React.FC = () => {
   });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [authSuccess, setAuthSuccess] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   useEffect(() => {
-    const demoJob: JobRecord = {
-      id: 'demo-healthcare-helper',
-      title: 'Healthcare Helper',
-      department: 'Support Services',
-      location: 'Birmingham, UK',
-      employment_type: 'Full-time',
-      job_type: 'Full-time',
-      job_level: 'Entry',
-      status: 'Open',
-      is_active: true,
-      closing_date: '2026-09-15',
-      posted_date: '2026-08-17',
-      created_at: '2026-08-17',
-      salary_range: '£22,000 - £26,000',
-      short_description: 'Support patients and clinical teams by delivering compassionate daily care in a safe, welcoming environment.',
-      description: 'Support patients and clinical teams by delivering compassionate daily care in a safe, welcoming environment.',
-      required_qualifications: 'Level 2/3 Health and Social Care qualification or equivalent experience',
-      experience_required: 'Previous care or healthcare support experience preferred but not essential.',
+    const loadJobs = async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          employment_type:employment_types(id, name),
+          job_level:job_levels(id, name),
+          location:locations(id, city, country)
+        `)
+        .eq('status', 'Active')
+        .order('posted_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading jobs:', error);
+        setLoading(false);
+        return;
+      }
+
+      const mappedJobs = (data || []).map((job: any) => {
+        const loc = job.location;
+        const locationText = loc
+          ? [loc.city, loc.country].filter(Boolean).join(', ')
+          : job.facility_name;
+
+        const salaryRange = job.salary_min != null || job.salary_max != null
+          ? `${job.salary_currency || 'ZAR'} ${Number(job.salary_min || 0).toLocaleString()} - ${Number(job.salary_max || 0).toLocaleString()}`
+          : 'Not disclosed';
+
+        return {
+          ...job,
+          id: job.id,
+          title: job.title,
+          department: job.healthcare_specialization,
+          location: locationText,
+          job_type: job.employment_type?.name || 'Full-time',
+          employment_type: job.employment_type?.name || 'Full-time',
+          job_level: job.job_level?.name || 'Mid',
+          status: job.status || 'Active',
+          is_active: job.status === 'Active',
+          closing_date: job.application_deadline,
+          posted_date: job.posted_at,
+          created_at: job.posted_at,
+          salary_range: salaryRange,
+          description: job.description,
+          short_description: job.description,
+          requirements: job.requirements,
+          required_qualifications: job.qualifications_required || job.requirements,
+          experience_required: job.min_years_experience ? `${job.min_years_experience}+ years` : undefined,
+        } as JobRecord;
+      });
+
+      setJobs(mappedJobs);
+      setLoading(false);
     };
 
-    supabase.from('biz_jobs').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-      const dbJobs = ((data as JobRecord[]) || []).filter((job) => job.is_active !== false);
-      setJobs([demoJob, ...dbJobs]);
-      setLoading(false);
-    });
+    loadJobs();
   }, []);
 
   const departments = useMemo(
@@ -213,6 +246,7 @@ const RecruitmentHome: React.FC = () => {
     }
 
     setAuthLoading(true);
+    console.log('Registration attempt:', { email: registerForm.email, first_name: registerForm.first_name, last_name: registerForm.last_name });
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -227,14 +261,28 @@ const RecruitmentHome: React.FC = () => {
         },
       });
 
+      console.log('Registration response:', { data, error: signUpError });
+
       if (signUpError) throw signUpError;
 
       if (data.user) {
-        setAuthSuccess('Registration successful. Please check your email to confirm your account before signing in.');
-        setAuthModal('login');
-        setLoginForm({ email: registerForm.email, password: '' });
+        console.log('Registration successful for user:', data.user.id);
+        setVerificationEmail(registerForm.email);
+        setShowVerificationModal(true);
+        setAuthModal(null);
+        setRegisterForm({
+          first_name: '',
+          last_name: '',
+          email: '',
+          mobile_number: '',
+          password: '',
+          confirm_password: '',
+          accept_terms: false,
+          privacy_consent: false,
+        });
       }
     } catch (err: any) {
+      console.error('Registration error:', err);
       setAuthError(err.message || 'Registration failed.');
     } finally {
       setAuthLoading(false);
@@ -246,6 +294,7 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
   setAuthError('');
   setAuthSuccess('');
   setAuthLoading(true);
+  console.log('Login attempt:', { email: loginForm.email });
 
   try {
     const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -253,9 +302,12 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
       password: loginForm.password,
     });
 
+    console.log('Login response:', { data, error: signInError });
+
     if (signInError) throw signInError;
 
     if (data.user) {
+      console.log('Login successful for user:', data.user.id);
       // Show success message first
       setAuthSuccess('Login successful. Redirecting to your profile...');
       setAuthModal(null);
@@ -268,10 +320,20 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
       }, 800); // 800ms gives plenty of time to see the message
     }
   } catch (err: any) {
+    console.error('Login error:', err);
     setAuthError(err.message || 'Login failed.');
   } finally {
     setAuthLoading(false);
   }
+};
+
+const handleVerificationComplete = () => {
+    setShowVerificationModal(false);
+  setAuthModal('login');
+  if (verificationEmail) {
+    setLoginForm({ email: verificationEmail, password: '' });
+  }
+  setAuthSuccess('Please sign in with your account details.');
 };
 
   const submit = async (e: React.FormEvent) => {
@@ -401,6 +463,46 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
           )}
         </div>
       </section>
+
+      {showVerificationModal && verificationEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-8 text-center">
+              <div className="mb-6 flex justify-center">
+                <div className="rounded-full bg-emerald-100 p-4">
+                  <Mail className="w-8 h-8 text-emerald-600" />
+                </div>
+              </div>
+              
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Verification email sent</h2>
+              
+              <p className="text-slate-600 mb-6">
+                We've sent a verification email to <span className="font-semibold text-slate-900">{verificationEmail}</span>
+              </p>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">Next steps:</h3>
+                <ol className="text-left text-sm text-blue-800 space-y-1">
+                  <li>1. Check your email inbox</li>
+                  <li>2. Click the verification link</li>
+                  <li>3. Return here to sign in</li>
+                </ol>
+              </div>
+              
+              <button
+                onClick={handleVerificationComplete}
+                className="w-full rounded-lg bg-blue-700 px-6 py-3 text-base font-semibold text-white hover:bg-blue-800 transition-colors"
+              >
+                Continue to Login
+              </button>
+              
+              <p className="text-xs text-slate-500 mt-4">
+                Didn't receive the email? Check your spam folder or try registering again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {authModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" onClick={closeAuthModal}>

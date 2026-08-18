@@ -48,57 +48,78 @@ export async function POST(req) {
     console.log(`[ORDER] Creating order for ${shippingAddress.email}, items: ${items.length}`);
 
     // 2. UPSERT CUSTOMER (using email as unique key)
+    // IKOMS schema: customers table
     const customerPayload = {
       email: shippingAddress.email,
       name: shippingAddress.name,
+      surname: null, // null instead of empty string
       phone: shippingAddress.phone || null,
-      address: shippingAddress, // Store full address as JSON
+      status: 'active',
+      userid: null, // Nullable field
     };
 
+    console.log('[ORDER] Upserting customer:', customerPayload);
+
     const { data: customer, error: customerError } = await supabase
-      .from('ecom_customers')
+      .from('customers')
       .upsert(customerPayload, { onConflict: 'email' })
-      .select('id')
+      .select('customerid')
       .single();
 
     if (customerError) {
       console.error('[ORDER] Customer upsert error:', customerError);
+      console.error('[ORDER] Customer payload:', customerPayload);
       return Response.json(
-        { error: 'Failed to create/update customer' },
+        { error: 'Failed to create/update customer', details: customerError.message },
         { status: 500 }
       );
     }
 
-    const customerId = customer?.id;
+    const customerId = customer?.customerid;
+
+    if (!customerId) {
+      console.error('[ORDER] No customerid returned from upsert');
+      return Response.json(
+        { error: 'Customer ID not returned' },
+        { status: 500 }
+      );
+    }
+
+    console.log(`[ORDER] Customer created/updated: ${customerId}`);
 
     // 3. CREATE ORDER RECORD
+    // IKOMS schema: orders table
     const orderPayload = {
-      customer_id: customerId,
+      storeid: process.env.NEXT_PUBLIC_STORE_ID || 'default-store',
+      customerid: customerId,
+      orderdate: new Date().toISOString(),
       status: 'pending', // Not 'paid' yet - must come from webhook
-      subtotal,
-      tax,
-      shipping,
-      total,
-      currency: 'EUR',
-      shipping_address: shippingAddress,
-      stripe_payment_intent_id: null, // Will be set by webhook (2Checkout transaction ID)
+      totalamount: total,
+      shippingaddress_street: shippingAddress.address,
+      shippingaddress_city: shippingAddress.city,
+      shippingaddress_province: shippingAddress.state || null,
+      shippingaddress_postalcode: shippingAddress.zip,
+      shippingaddress_country: shippingAddress.country,
+      notes: null,
+      createdat: new Date().toISOString(),
+      updatedat: new Date().toISOString(),
     };
 
     const { data: order, error: orderError } = await supabase
-      .from('ecom_orders')
+      .from('orders')
       .insert([orderPayload])
-      .select('id')
+      .select('orderid')
       .single();
 
     if (orderError) {
       console.error('[ORDER] Order creation error:', orderError);
       return Response.json(
-        { error: 'Failed to create order' },
+        { error: 'Failed to create order', details: orderError.message },
         { status: 500 }
       );
     }
 
-    const orderId = order?.id;
+    const orderId = order?.orderid;
 
     if (!orderId) {
       return Response.json(
@@ -110,20 +131,18 @@ export async function POST(req) {
     console.log(`[ORDER] Order created: ${orderId}`);
 
     // 4. CREATE ORDER ITEMS
+    // IKOMS schema: order_items table
     const orderItems = items.map(item => ({
-      order_id: orderId,
-      product_id: item.product_id.startsWith('course-') ? null : item.product_id,
-      product_name: item.name,
-      variant_id: item.variant_id || null,
-      variant_title: item.variant_title || null,
-      sku: item.sku || null,
+      orderid: orderId,
+      productid: item.product_id,
       quantity: item.quantity,
-      unit_price: item.price,
-      total: item.price * item.quantity,
+      unitprice: item.price,
+      createdat: new Date().toISOString(),
+      updatedat: new Date().toISOString(),
     }));
 
     const { error: itemsError } = await supabase
-      .from('ecom_order_items')
+      .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {

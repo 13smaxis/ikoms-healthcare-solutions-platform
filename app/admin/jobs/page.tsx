@@ -25,7 +25,16 @@ type JobApplication = {
   job?: { title?: string | null } | null;
 };
 
-const empty: JobForm = { title: '', department: '', location: '', job_type: 'Full-time', salary_range: '', description: '', requirements: '', is_active: true };
+const empty: JobForm = { 
+                          title: '', 
+                          department: '', 
+                          location: '', 
+                          job_type: 'Full-time', 
+                          salary_range: '', 
+                          description: '', 
+                          requirements: '', 
+                          is_active: true 
+                        };
 
 const AdminJobsPage: React.FC = () => {
   const [jobs, setJobs] = useState<JobForm[]>([]);
@@ -35,27 +44,70 @@ const AdminJobsPage: React.FC = () => {
   const [view, setView] = useState<'jobs' | 'applications'>('jobs');
 
   const load = async () => {
-    const { data } = await supabase.from('biz_jobs').select('*').order('created_at', { ascending: false });
-    setJobs(data || []);
-    const { data: a } = await supabase.from('biz_applications').select('*, job:biz_jobs(title)').order('created_at', { ascending: false });
+    const { data: jobsData, error: jobsError } = await supabase
+      .from('jobs')
+      .select(`
+        *,
+        employment_type:employment_types(id, name),
+        job_level:job_levels(id, name),
+        location:locations(id, city, country)
+      `)
+      .order('posted_at', { ascending: false });
+
+    if (jobsError) {
+      console.error('Error loading jobs:', jobsError);
+      setJobs([]);
+      return;
+    }
+
+    setJobs((jobsData || []).map((job: any) => ({
+      ...job,
+      id: job.id,
+      title: job.title,
+      department: job.healthcare_specialization,
+      location: job.location ? [job.location.city, job.location.country].filter(Boolean).join(', ') : job.facility_name,
+      job_type: job.employment_type?.name || 'Full-time',
+      salary_range: job.salary_min != null || job.salary_max != null
+        ? `${job.salary_currency || 'ZAR'} ${Number(job.salary_min || 0).toLocaleString()} - ${Number(job.salary_max || 0).toLocaleString()}`
+        : 'Not disclosed',
+      description: job.description,
+      requirements: job.requirements,
+      is_active: job.status === 'Active',
+    })));
+
+    const { data: a } = await supabase
+      .from('applications')
+      .select('*, job:jobs(title)')
+      .order('createdat', { ascending: false });
     setApps(a || []);
   };
   useEffect(() => { load(); }, []);
 
   const save = async () => {
-    if (editing.id) {
-      await (supabase as any).from('biz_jobs').update(editing as any).eq('id', editing.id);
+    if (editing.id) 
+    {
+      await (supabase as any).from('jobs').update(editing as any).eq('id', editing.id);
     } else {
-      await (supabase as any).from('biz_jobs').insert(editing as any);
+      await (supabase as any).from('jobs').insert(editing as any);
     }
     setModal(false); setEditing(empty); load();
   };
+  
   const del = async (id: string) => {
     if (!confirm('Delete this job?')) return;
-    await (supabase as any).from('biz_jobs').delete().eq('id', id); load();
+    await (supabase as any)
+    .from('jobs')
+    .delete()
+    .eq('id', id); 
+    load();
   };
+
   const updateAppStatus = async (id: string, status: string) => {
-    await (supabase as any).from('biz_applications').update({ status } as any).eq('id', id); load();
+    await (supabase as any)
+    .from('applications')
+    .update({ status } as any)
+    .eq('id', id); 
+    load();
   };
 
   return (

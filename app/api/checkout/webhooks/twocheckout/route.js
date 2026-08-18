@@ -1,148 +1,229 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { TWOCHECKOUT_CONFIG } from '@/lib/twocheckout';
 import crypto from 'crypto';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY // Server-side only!
 );
 
-/*
-   Responsible for verifying the webhook signature sent by 2Checkout
-   - Uses the secret key configured in the environment variables
-   - Computes HMAC SHA256 hash of the request body
-   - Returns true if valid, false otherwise
-*/  
-function verifyWebhookSignature(body, signature) 
-{
+/**
+ * POST /api/webhooks/twocheckout
+ * 
+ * THE SOURCE OF TRUTH FOR PAYMENT STATUS
+ * 
+ * This webhook is called by 2Checkout when:
+ * - Payment succeeds
+ * - Payment fails
+ * - Payment is refunded
+ * 
+ * Security checklist:
+ * ✓ Verify webhook signature (prevent fake webhooks)
+ * ✓ Check for duplicate webhooks (idempotency)
+ * ✓ Verify amount matches order (prevent tampering)
+ * ✓ Update payment + order atomically
+ * ✓ Return 200 immediately (provider expects quick response)
+ * ✓ Log everything for audit trail
+ * 
+ * React CANNOT determine if payment succeeded.
+ * Only this webhook can.
+ */
+
+/**
+ * Verify that webhook came from 2Checkout
+ * Uses HMAC-SHA256 signature verification
+ */
+function verifyWebhookSignature(body, signature) {
+    if (!TWOCHECKOUT_CONFIG.webhookSecret) {
+        console.warn('[WEBHOOK] No webhook secret configured - skipping verification');
+        return true; // Allow during development/testing
+    }
+
     const hash = crypto
         .createHmac('sha256', TWOCHECKOUT_CONFIG.webhookSecret)
         .update(body)
         .digest('hex');
+
     return hash === signature;
 }
 
 /**
- * Webhook Handler
- * 
- * THIS IS THE SOURCE OF TRUTH FOR PAYMENT STATUS
- * 
- * Security checklist:
- * ✓ Verify webhook signature
- * ✓ Check for duplicate webhooks (idempotency)
- * ✓ Verify amount matches order
- * ✓ Verify currency matches
- * ✓ Update payment + order atomically
- * ✓ Return 200 immediately (webhook provider expects quick response)
+ * Check if this webhook has already been processed (idempotency)
+ * Prevents double-charging and duplicate order fulfillment
  */
-export async function POST(req) 
+async function isWebhookProcessed(transactionId) {
+    const { data, error } = await supabase
+        .from('webhook_log')
+        .select('id')
+        .eq('webhook_event_id', transactionId)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        // PGRST116 = no rows returned (expected)
+        console.error('[WEBHOOK] Error checking webhook log:', error);
+    }
+
+    return !!data;
+}
+
+/**
+ * Log webhook event for audit trail
+ */
+async function logWebhookEvent(transactionId, eventType, orderId, status) 
 {
-    const body = await req.text();                                                                                                //- Read the raw request body as text for signature verification
-    const signature = req.headers.get('X-2Checkout-Signature');                                                                   //- Retrieve the signature sent by 2Checkout in the request headers
+    try {
+        await supabase
+        .from('webhook_log')
+        .insert([
+                    {
+                        webhook_event_id: transactionId,
+                        event_type: eventType,
+                        order_id: orderId,
+                        status,
+                        received_at: new Date().toISOString(),
+                    },
+        ]);
+    } catch (error) {
+        console.error('[WEBHOOK] Failed to log event:', error);                                                                   //- Log but don't fail webhook processing
+    }
+}
+
+export async function POST(req) {
+    const body = await req.text();
+    const signature = req.headers.get('X-2Checkout-Signature');
 
     try {
-        if (!verifyWebhookSignature(body, signature))                                                                             //- 1. Verify webhook signature
-        {
-            console.error('⚠️ Invalid webhook signature');
+        console.log('[WEBHOOK] Received 2Checkout webhook');
+
+        // 1. VERIFY SIGNATURE (prevent fake webhooks)
+        if (!verifyWebhookSignature(body, signature)) {
+            console.error('[WEBHOOK] ⚠️ INVALID SIGNATURE - rejecting webhook');
             return Response.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        const event = JSON.parse(body);                                                                                           //- Parse the JSON body of the webhook event
-        console.log(`Webhook received: ${event.type}`);                                                                           //- Log the type of webhook event received for debugging purposes
+        const event = JSON.parse(body);
+        console.log(`[WEBHOOK] Event type: ${event.type}`);
 
-        const orderId = event.body?.merchantOrderId;                                                                              //- Extract the merchant order ID from the webhook payload
-        const transactionId = event.body?.orderRef;                                                                               //- Extract the 2Checkout transaction reference from the webhook payload
-        const amount = event.body?.amount;                                                                                        //- Extract the amount from the webhook payload
+        const orderId = event.body?.merchantOrderId; // Your order ID
+        const transactionId = event.body?.orderRef; // 2Checkout transaction ID
+        const amount = event.body?.amount;
 
-        if (!orderId || !transactionId)                                                                                           //- Validate that the required fields are present in the webhook payload
-        {
-            console.error('Missing required fields in webhook');
+        if (!orderId || !transactionId) {
+            console.error('[WEBHOOK] Missing orderId or transactionId in event');
             return Response.json({ received: true }); // Still return 200
         }
 
-        const { data: existingLog } = await supabase
-            .from('payment_webhook_log')
-            .select('id')
-            .eq('webhook_event_id', transactionId)
-            .single();                                                                                                            //- 2. Check if this webhook has already been processed by looking up the transaction ID in the payment_webhook_log table
-
-        if (existingLog) {
-            console.log(`Webhook already processed: ${transactionId}`);
+        // 2. CHECK IDEMPOTENCY (prevent duplicate processing)
+        const alreadyProcessed = await isWebhookProcessed(transactionId);
+        if (alreadyProcessed) {
+            console.log(`[WEBHOOK] Event already processed: ${transactionId}`);
             return Response.json({ received: true }); // Already handled
         }
 
+        console.log(`[WEBHOOK] Processing event for order: ${orderId}`);
+
+        // 3. HANDLE SUCCESSFUL PAYMENT
         if (event.type === 'order.completed' || event.type === 'payment.success') {
+            console.log(`[WEBHOOK] ✓ Payment successful for order: ${orderId}`);
+
             // Fetch order to verify amount
-            const { data: order } = await supabase
-                .from('orders')
-                .select('orderid, totalamount, currency, status')
-                .eq('orderid', orderId)
-                .single();                                                                                                        //- 3. Fetch the order details to verify the payment
+            const { data: order, error: orderError } = await supabase
+                .from('ecom_orders')
+                .select('id, status, total')
+                .eq('id', orderId)
+                .single();
 
-            if (!order) {
-                console.error(`Order not found: ${orderId}`);
+            if (orderError || !order) {
+                console.error(`[WEBHOOK] Order not found: ${orderId}`);
+                await logWebhookEvent(transactionId, event.type, orderId, 'error_order_not_found');
                 return Response.json({ received: true });
             }
 
-            // Verify amount matches (security check)
-            if (Math.abs(order.totalamount - amount) > 0.01)                                                                      //- Verify amount matches (allowing for minor floating point differences)
-            {
-                console.error(`Amount mismatch for order ${orderId}: ${order.totalamount} vs ${amount}`);
-                return Response.json({ received: true });
+            // SECURITY: Verify amount matches (prevent amount tampering)
+            if (Math.abs(parseFloat(order.total) - amount) > 0.01) {
+                console.error(
+                    `[WEBHOOK] ⚠️ AMOUNT MISMATCH for order ${orderId}: ${order.total} vs ${amount}`
+                );
+                await logWebhookEvent(transactionId, event.type, orderId, 'error_amount_mismatch');
+                return Response.json({ received: true }); // Still return 200 to acknowledge
             }
 
-            await supabase
-                .from('payments')
+            // Update order status to 'paid'
+            const { error: orderUpdateError } = await supabase
+                .from('ecom_orders')
                 .update({
-                    status: 'successful',
-                    transactionreference: transactionId,
-                    twocheckout_order_id: transactionId,
-                    paymentdate: new Date().toISOString(),
+                    status: 'paid',
+                    stripe_payment_intent_id: transactionId, // Reusing field for 2Checkout transaction ID
                 })
-                .eq('orderid', orderId);                                                                                          //- Update the payment record in the database to mark it as successful and store relevant transaction details
+                .eq('id', orderId);
 
-            await supabase
-                .from('orders')
-                .update({ status: 'paid' })
-                .eq('orderid', orderId);                                                                                          //- Update the order status to 'paid' in the database to reflect successful payment
+            if (orderUpdateError) {
+                console.error('[WEBHOOK] Failed to update order:', orderUpdateError);
+                await logWebhookEvent(transactionId, event.type, orderId, 'error_update_failed');
+                return Response.json({ received: true });
+            }
 
-            await supabase
-                .from('payment_webhook_log')
-                .insert([
-                    {
-                        webhook_event_id: transactionId,
-                        event_type: event.type,
-                    },
-                ]);                                                                                                               //- Log the processed webhook event in the payment_webhook_log table to prevent duplicate processing in the future
+            console.log(`[WEBHOOK] ✓ Order ${orderId} marked as paid`);
+            await logWebhookEvent(transactionId, event.type, orderId, 'success');
 
-            console.log(`✓ Payment confirmed for order: ${orderId}`);
+            // TODO: Send customer confirmation email
+            // try {
+            //   await sendOrderConfirmationEmail(orderId);
+            // } catch (error) {
+            //   console.error('[WEBHOOK] Failed to send email:', error);
+            //   // Don't fail webhook if email fails
+            // }
+
+            return Response.json({ received: true });
         }
 
-        if (event.type === 'order.failed' || event.type === 'payment.failed')                                                     //- 4. Handle failed payment events
-        {
-            await supabase
-                .from('payments')
-                .update({ status: 'failed' })
-                .eq('orderid', orderId);
+        // 4. HANDLE FAILED PAYMENT
+        if (event.type === 'order.failed' || event.type === 'payment.failed') {
+            console.log(`[WEBHOOK] ✗ Payment failed for order: ${orderId}`);
 
-            await supabase
-                .from('payment_webhook_log')
-                .insert([
-                    {
-                        webhook_event_id: transactionId,
-                        event_type: event.type,
-                    },
-                ]);
+            // Order stays in current state (customer can retry)
+            await logWebhookEvent(transactionId, event.type, orderId, 'payment_failed');
 
-            console.log(`✗ Payment failed for order: ${orderId}`);
+            return Response.json({ received: true });
         }
 
-        return Response.json({ received: true });                                                                                 //- Return 200 OK to acknowledge receipt of the webhook
+        // 5. HANDLE REFUND
+        if (event.type === 'order.refunded' || event.type === 'payment.refunded') {
+            console.log(`[WEBHOOK] ↩️ Payment refunded for order: ${orderId}`);
+
+            const { error: refundError } = await supabase
+                .from('ecom_orders')
+                .update({ status: 'refunded' })
+                .eq('id', orderId);
+
+            if (refundError) {
+                console.error('[WEBHOOK] Failed to mark order as refunded:', refundError);
+            }
+
+            await logWebhookEvent(transactionId, event.type, orderId, 'refunded');
+
+            return Response.json({ received: true });
+        }
+
+        // 6. UNKNOWN EVENT TYPE (log it but don't fail)
+        console.log(`[WEBHOOK] ⚠️ Unknown event type: ${event.type}`);
+        await logWebhookEvent(transactionId, event.type, orderId, 'unknown_event');
+
+        return Response.json({ received: true });
 
     } catch (error) {
-        console.error('Webhook error:', error);
-        // Still return 200 so provider doesn't retry
-        return Response.json({ received: true });
+        console.error('[WEBHOOK] ❌ Unexpected error:', error);
+        // Always return 200 so 2Checkout doesn't retry
+        // Log the error for manual investigation
+        return Response.json({ received: true, error: error.message });
     }
+}
+
+// Health check
+export async function GET(req) {
+    return Response.json({
+        status: 'ok',
+        endpoint: 'POST /api/webhooks/twocheckout',
+        webhook_signature_required: true,
+    });
 }

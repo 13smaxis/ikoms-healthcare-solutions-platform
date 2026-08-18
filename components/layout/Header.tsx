@@ -35,7 +35,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     const update = () => {
       try {
-        const cart = JSON.parse(localStorage.getItem('ecom_cart') || '[]') as CartItem[];
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]') as CartItem[];
         setCartCount(cart.reduce((s: number, i: CartItem) => s + (i.quantity || 0), 0));
       } catch { setCartCount(0); }
     };

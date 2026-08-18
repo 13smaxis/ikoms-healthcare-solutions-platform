@@ -13,14 +13,14 @@ export function getCart(): CartItem[]
 
 {
   try {
-    return JSON.parse(localStorage.getItem('ecom_cart') || '[]');
+    return JSON.parse(localStorage.getItem('cart') || '[]');
   } catch {
     return [];
   }
 }
 
 export function saveCart(cart: CartItem[]) {
-  localStorage.setItem('ecom_cart', JSON.stringify(cart));
+  localStorage.setItem('cart', JSON.stringify(cart));
   window.dispatchEvent(new Event('cartUpdated'));
 }
 

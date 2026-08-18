@@ -43,7 +43,7 @@ const Checkout: React.FC = () => {
     state: '',
     zip: '',
     country: 'United Kingdom',
-  });
+  });                                                                                                                             //- Creates a new shipping object
   const [tax, setTax] = useState(0);
   const [step, setStep] = useState<'address' | 'pay'>('address');
   const [payError, setPayError] = useState('');

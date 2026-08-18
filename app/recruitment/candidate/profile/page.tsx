@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
-import { 
-  User, 
-  MapPin, 
-  Briefcase, 
-  GraduationCap, 
-  FileText, 
-  Camera, 
-  Save, 
+import {
+  User,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  FileText,
+  Camera,
+  Save,
   Check,
   AlertCircle,
   Loader,
@@ -66,19 +66,19 @@ const CandidateProfile: React.FC = () => {
         setUser(currentUser);
 
         // Fetch candidate profile
-const { data: candidateData, error } = await supabase
-  .from('candidates')
-  .select('*')
-  .eq('id', currentUser.id)
-  .single<CandidateProfile>();
+        const { data: candidateData, error } = await supabase
+          .from('candidates')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single<CandidateProfile>();
 
-if (error && error.code !== 'PGRST116') {
-  throw error;
-}
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
 
-if (candidateData) {
-  setProfile(candidateData);
-  setFormData(candidateData);
+        if (candidateData) {
+          setProfile(candidateData);
+          setFormData(candidateData);
         } else {
           // Create initial profile with auth data
           const initialProfile = {
@@ -151,20 +151,20 @@ if (candidateData) {
         updated_at: new Date().toISOString(),
       };
 
-if (profile) {
-  // Update existing profile
-  const { error } = await (supabase
-    .from('candidates') as any)
-    .update(dataToSave)
-    .eq('id', user.id);
-  if (error) throw error;
-} else {
-  // Create new profile
-  const { error } = await (supabase
-    .from('candidates') as any)
-    .insert([{ id: user.id, ...dataToSave }]);
-  if (error) throw error;
-}
+      if (profile) {
+        // Update existing profile
+        const { error } = await (supabase
+          .from('candidates') as any)
+          .update(dataToSave)
+          .eq('id', user.id);
+        if (error) throw error;
+      } else {
+        // Create new profile
+        const { error } = await (supabase
+          .from('candidates') as any)
+          .insert([{ id: user.id, ...dataToSave }]);
+        if (error) throw error;
+      }
 
       setProfile(dataToSave as CandidateProfile);
       setCvFile(null);
@@ -227,11 +227,10 @@ if (profile) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {message && (
             <div
-              className={`mb-6 rounded-lg border p-4 flex gap-3 ${
-                message.type === 'success'
+              className={`mb-6 rounded-lg border p-4 flex gap-3 ${message.type === 'success'
                   ? 'border-emerald-200 bg-emerald-50'
                   : 'border-red-200 bg-red-50'
-              }`}
+                }`}
             >
               {message.type === 'success' ? (
                 <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -239,9 +238,8 @@ if (profile) {
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               )}
               <p
-                className={`text-sm ${
-                  message.type === 'success' ? 'text-emerald-800' : 'text-red-800'
-                }`}
+                className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'
+                  }`}
               >
                 {message.text}
               </p>
@@ -305,11 +303,10 @@ if (profile) {
                   key={id}
                   type="button"
                   onClick={() => setActiveTab(id as any)}
-                  className={`py-4 px-1 border-b-2 font-semibold text-sm flex gap-2 items-center transition-colors ${
-                    activeTab === id
+                  className={`py-4 px-1 border-b-2 font-semibold text-sm flex gap-2 items-center transition-colors ${activeTab === id
                       ? 'border-blue-700 text-blue-700'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
