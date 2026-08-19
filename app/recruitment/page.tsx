@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { subscribeEmail } from '@/lib/crm';
-import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload, Mail } from 'lucide-react';
+import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 type JobRecord = {
@@ -75,8 +75,6 @@ const RecruitmentHome: React.FC = () => {
   });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [authSuccess, setAuthSuccess] = useState('');
-  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   useEffect(() => {
     const loadJobs = async () => {
@@ -266,20 +264,9 @@ const RecruitmentHome: React.FC = () => {
       if (signUpError) throw signUpError;
 
       if (data.user) {
-        console.log('Registration successful for user:', data.user.id);
-        setVerificationEmail(registerForm.email);
-        setShowVerificationModal(true);
-        setAuthModal(null);
-        setRegisterForm({
-          first_name: '',
-          last_name: '',
-          email: '',
-          mobile_number: '',
-          password: '',
-          confirm_password: '',
-          accept_terms: false,
-          privacy_consent: false,
-        });
+        setAuthSuccess('Registration successful. Please check your email to confirm your account before signing in.');
+        setAuthModal('login');
+        setLoginForm({ email: registerForm.email, password: '' });
       }
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -287,8 +274,6 @@ const RecruitmentHome: React.FC = () => {
       const message = String(err?.message || '').toLowerCase();
       const isRateLimit = message.includes('email rate limit exceeded') || message.includes('rate limit');
 
-      setShowVerificationModal(false);
-      setVerificationEmail(null);
       setAuthError(
         isRateLimit
           ? 'Too many sign-up attempts for this email. Please wait a few minutes and try again, or use a different email address.'
@@ -335,15 +320,6 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
   } finally {
     setAuthLoading(false);
   }
-};
-
-const handleVerificationComplete = () => {
-    setShowVerificationModal(false);
-  setAuthModal('login');
-  if (verificationEmail) {
-    setLoginForm({ email: verificationEmail, password: '' });
-  }
-  setAuthSuccess('Please sign in with your account details.');
 };
 
   const submit = async (e: React.FormEvent) => {
@@ -432,7 +408,7 @@ const handleVerificationComplete = () => {
           {loading ? (
             <div className="text-center py-12 text-slate-500">Loading roles...</div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">No roles match your filters.</div>
+            <div className="text-center py-12 text-slate-500">No roles available at this time.</div>
           ) : (
             <div className="overflow-x-auto bg-white border border-slate-200 rounded-xl">
               <table className="min-w-full text-left text-sm">
@@ -473,46 +449,6 @@ const handleVerificationComplete = () => {
           )}
         </div>
       </section>
-
-      {showVerificationModal && verificationEmail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
-          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-8 text-center">
-              <div className="mb-6 flex justify-center">
-                <div className="rounded-full bg-emerald-100 p-4">
-                  <Mail className="w-8 h-8 text-emerald-600" />
-                </div>
-              </div>
-              
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Verification email sent</h2>
-              
-              <p className="text-slate-600 mb-6">
-                We've sent a verification email to <span className="font-semibold text-slate-900">{verificationEmail}</span>
-              </p>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-                <h3 className="text-sm font-semibold text-blue-900 mb-2">Next steps:</h3>
-                <ol className="text-left text-sm text-blue-800 space-y-1">
-                  <li>1. Check your email inbox</li>
-                  <li>2. Click the verification link</li>
-                  <li>3. Return here to sign in</li>
-                </ol>
-              </div>
-              
-              <button
-                onClick={handleVerificationComplete}
-                className="w-full rounded-lg bg-blue-700 px-6 py-3 text-base font-semibold text-white hover:bg-blue-800 transition-colors"
-              >
-                Continue to Login
-              </button>
-              
-              <p className="text-xs text-slate-500 mt-4">
-                Didn't receive the email? Check your spam folder or try registering again.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {authModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" onClick={closeAuthModal}>
