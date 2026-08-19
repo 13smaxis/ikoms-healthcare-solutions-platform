@@ -145,7 +145,7 @@ const CandidateProfile: React.FC = () => {
         });
 
         try {
-          return await Promise.race([operation, timeout]);
+          return await Promise.race([operation, timeout]) as T;
         } finally {
           clearTimeout(timeoutId!);
         }
@@ -191,11 +191,17 @@ const CandidateProfile: React.FC = () => {
         const fileExtension = photoFile.name.split('.').pop() || 'jpg';
         const fileName = `profile-${user.id}-${Date.now()}.${fileExtension}`;
         const { error: uploadErr } = await withTimeout(
-          supabase.storage.from('profile-photos').upload(fileName, photoFile),
-          'Profile photo upload'
+          supabase.storage.from('profile-photo').upload(fileName, photoFile, {
+            contentType: photoFile.type,
+            upsert: false,
+          }),
+          'Profile photo upload to profile-photo bucket'
         );
-        if (uploadErr) throw uploadErr;
-        photoUrl = supabase.storage.from('profile-photos').getPublicUrl(fileName).data.publicUrl;
+        if (uploadErr) {
+          console.error('Profile photo upload failed:', uploadErr);
+          throw new Error(uploadErr.message || 'Profile photo upload failed.');
+        }
+        photoUrl = supabase.storage.from('profile-photo').getPublicUrl(fileName).data.publicUrl;
       }
 
       // Save profile data
@@ -211,7 +217,7 @@ const CandidateProfile: React.FC = () => {
       if (profile) {
         // Update existing profile
         console.log('Profile save: updating candidate record');
-        const { error } = await withTimeout(
+        const { error } = await withTimeout<{ error?: Error | null }>(
           (supabase.from('candidates') as any).update(dataToSave).eq('id', user.id),
           'Profile update'
         );
@@ -219,7 +225,7 @@ const CandidateProfile: React.FC = () => {
       } else {
         // Create new profile
         console.log('Profile save: creating candidate record');
-        const { error } = await withTimeout(
+        const { error } = await withTimeout<{ error?: Error | null }>(
           (supabase.from('candidates') as any).insert([{ id: user.id, ...dataToSave }]),
           'Profile creation'
         );
@@ -229,6 +235,11 @@ const CandidateProfile: React.FC = () => {
       console.log('Profile save: completed');
       setSaveStatus('');
       setProfile(dataToSave as CandidateProfile);
+      setFormData((previous) => ({
+        ...previous,
+        cv_url: cvUrl,
+        profile_photo_url: photoUrl,
+      }));
       setCvFile(null);
       setPhotoFile(null);
       setMessage({ type: 'success', text: 'Profile saved successfully!' });
