@@ -46,6 +46,7 @@ type CandidateProfile = {
 const CandidateProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [formData, setFormData] = useState<Partial<CandidateProfile>>({});
@@ -53,6 +54,7 @@ const CandidateProfile: React.FC = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'personal' | 'education' | 'experience' | 'files'>('personal');
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -101,6 +103,18 @@ const CandidateProfile: React.FC = () => {
     loadProfile();
   }, []);
 
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreviewUrl(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(photoFile);
+    setPhotoPreviewUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [photoFile]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -120,29 +134,72 @@ const CandidateProfile: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveStatus('Preparing profile...');
     setMessage(null);
 
     try {
+      const withTimeout = async <T,>(operation: Promise<T>, label: string): Promise<T> => {
+        let timeoutId: ReturnType<typeof setTimeout>;
+        const timeout = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error(`${label} timed out. Please try again.`)), 30000);
+        });
+
+        try {
+          return await Promise.race([operation, timeout]);
+        } finally {
+          clearTimeout(timeoutId!);
+        }
+      };
+
       let cvUrl = formData.cv_url;
       let photoUrl = formData.profile_photo_url;
 
       // Upload CV if new file selected
       if (cvFile) {
-        const fileName = `cv-${user.id}-${Date.now()}.pdf`;
-        const { error: uploadErr } = await supabase.storage.from('cvs').upload(fileName, cvFile);
+        if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(cvFile.type)) {
+          throw new Error('CV must be a PDF, DOC, or DOCX file.');
+        }
+
+        if (cvFile.size > 10 * 1024 * 1024) {
+          throw new Error('CV must be 10MB or smaller.');
+        }
+
+        setSaveStatus('Uploading CV...');
+        console.log('Profile save: uploading CV');
+        const fileExtension = cvFile.name.split('.').pop() || 'pdf';
+        const fileName = `cv-${user.id}-${Date.now()}.${fileExtension}`;
+        const { error: uploadErr } = await withTimeout(
+          supabase.storage.from('cvs').upload(fileName, cvFile, { contentType: cvFile.type }),
+          'CV upload'
+        );
         if (uploadErr) throw uploadErr;
         cvUrl = supabase.storage.from('cvs').getPublicUrl(fileName).data.publicUrl;
       }
 
       // Upload profile photo if new file selected
       if (photoFile) {
-        const fileName = `profile-${user.id}-${Date.now()}.jpg`;
-        const { error: uploadErr } = await supabase.storage.from('profile-photos').upload(fileName, photoFile);
+        if (!['image/jpeg', 'image/png'].includes(photoFile.type)) {
+          throw new Error('Profile photo must be a JPG or PNG file.');
+        }
+
+        if (photoFile.size > 5 * 1024 * 1024) {
+          throw new Error('Profile photo must be 5MB or smaller.');
+        }
+
+        setSaveStatus('Uploading profile photo...');
+        console.log('Profile save: uploading profile photo');
+        const fileExtension = photoFile.name.split('.').pop() || 'jpg';
+        const fileName = `profile-${user.id}-${Date.now()}.${fileExtension}`;
+        const { error: uploadErr } = await withTimeout(
+          supabase.storage.from('profile-photos').upload(fileName, photoFile),
+          'Profile photo upload'
+        );
         if (uploadErr) throw uploadErr;
         photoUrl = supabase.storage.from('profile-photos').getPublicUrl(fileName).data.publicUrl;
       }
 
       // Save profile data
+      setSaveStatus('Saving profile details...');
       const dataToSave = {
         ...formData,
         cv_url: cvUrl,
@@ -153,19 +210,24 @@ const CandidateProfile: React.FC = () => {
 
       if (profile) {
         // Update existing profile
-        const { error } = await (supabase
-          .from('candidates') as any)
-          .update(dataToSave)
-          .eq('id', user.id);
+        console.log('Profile save: updating candidate record');
+        const { error } = await withTimeout(
+          (supabase.from('candidates') as any).update(dataToSave).eq('id', user.id),
+          'Profile update'
+        );
         if (error) throw error;
       } else {
         // Create new profile
-        const { error } = await (supabase
-          .from('candidates') as any)
-          .insert([{ id: user.id, ...dataToSave }]);
+        console.log('Profile save: creating candidate record');
+        const { error } = await withTimeout(
+          (supabase.from('candidates') as any).insert([{ id: user.id, ...dataToSave }]),
+          'Profile creation'
+        );
         if (error) throw error;
       }
 
+      console.log('Profile save: completed');
+      setSaveStatus('');
       setProfile(dataToSave as CandidateProfile);
       setCvFile(null);
       setPhotoFile(null);
@@ -174,9 +236,11 @@ const CandidateProfile: React.FC = () => {
       setTimeout(() => setMessage(null), 5000);
     } catch (err: any) {
       console.error('Failed to save profile:', err);
+      setSaveStatus('');
       setMessage({ type: 'error', text: err.message || 'Failed to save profile' });
     } finally {
       setSaving(false);
+      setSaveStatus('');
     }
   };
 
@@ -251,9 +315,9 @@ const CandidateProfile: React.FC = () => {
             <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 <div className="relative">
-                  {formData.profile_photo_url ? (
+                  {photoPreviewUrl || formData.profile_photo_url ? (
                     <img
-                      src={formData.profile_photo_url}
+                      src={photoPreviewUrl || formData.profile_photo_url || ''}
                       alt="Profile"
                       className="w-24 h-24 rounded-full object-cover border-4 border-blue-700"
                     />
@@ -623,7 +687,7 @@ const CandidateProfile: React.FC = () => {
                 {saving ? (
                   <>
                     <Loader className="w-4 h-4 animate-spin" />
-                    Saving...
+                    {saveStatus || 'Saving...'}
                   </>
                 ) : (
                   <>
