@@ -6,6 +6,8 @@ import type { User } from '@supabase/supabase-js';
 
 export type UserRole = 'customer' | 'staff' | 'supervisor' | 'manager';
 
+const ADMIN_ROLES: UserRole[] = ['manager', 'staff', 'supervisor'];
+
 interface UserProfile {
   userid: string;
   name: string;
@@ -160,8 +162,15 @@ const fetchUserProfile = async (email: string) => {
         ? (assignmentData.roles[0] as { rolename?: string } | undefined)
         : (assignmentData?.roles as { rolename?: string } | undefined);
 
-      if (roleRecord) {
-        const userRole = roleRecord.rolename?.toLowerCase() as UserRole;
+      const assignedRole = roleRecord?.rolename?.toLowerCase() as UserRole | undefined;
+      const profileRole = userRecord.usertype?.toLowerCase() as UserRole | undefined;
+      const userRole = assignedRole && ADMIN_ROLES.includes(assignedRole)
+        ? assignedRole
+        : profileRole && ADMIN_ROLES.includes(profileRole)
+          ? profileRole
+          : null;
+
+      if (userRole) {
         setRole(userRole);
         console.log('fetchUserProfile role resolved:', userRole);
 
@@ -242,7 +251,7 @@ const fetchUserProfile = async (email: string) => {
     error,
     login,
     logout,
-    isAdmin: role ? ['manager', 'staff', 'supervisor'].includes(role) : false,
+    isAdmin: role ? ADMIN_ROLES.includes(role) : false,
     isManager: role === 'manager',
   };
 

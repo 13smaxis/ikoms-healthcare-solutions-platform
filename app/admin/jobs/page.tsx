@@ -25,6 +25,56 @@ type JobApplication = {
   job?: { title?: string | null } | null;
 };
 
+type DatabaseJob = Record<string, any> & { id: string };
+
+const parseSalaryRange = (value: string) => {
+  const amounts = value.match(/[0-9][0-9,]*(?:\.\d+)?/g)?.map((amount) => Number(amount.replace(/,/g, ''))) ?? [];
+  return {
+    salary_min: amounts[0] ?? null,
+    salary_max: amounts[1] ?? amounts[0] ?? null,
+  };
+};
+
+const toDatabaseJob = async (job: JobForm) => {
+  const salary = parseSalaryRange(job.salary_range);
+  const { data: employmentType, error: employmentTypeError } = await (supabase as any)
+    .from('employment_types')
+    .select('id')
+    .ilike('name', job.job_type)
+    .maybeSingle();
+
+  if (employmentTypeError) throw employmentTypeError;
+
+  return {
+    title: job.title.trim(),
+    healthcare_specialization: job.department.trim() || null,
+    facility_name: job.location.trim() || null,
+    description: job.description.trim() || null,
+    requirements: job.requirements.trim() || null,
+    ...(employmentType?.id ? { employment_type_id: employmentType.id } : {}),
+    salary_currency: 'ZAR',
+    salary_min: salary.salary_min,
+    salary_max: salary.salary_max,
+    status: job.is_active ? 'Active' : 'Inactive',
+    posted_at: new Date().toISOString(),
+  };
+};
+
+const toAdminJob = (job: DatabaseJob): JobForm => ({
+  id: job.id,
+  title: job.title ?? '',
+  department: job.healthcare_specialization ?? '',
+  location: job.location
+    ? [job.location.city, job.location.country].filter(Boolean).join(', ')
+    : job.facility_name ?? '',
+  job_type: job.employment_type?.name ?? job.job_type ?? 'Full-time',
+  salary_range: job.salary_min != null || job.salary_max != null
+    ? `${job.salary_currency || 'ZAR'} ${Number(job.salary_min || 0).toLocaleString()} - ${Number(job.salary_max || 0).toLocaleString()}`
+    : '',
+  description: job.description ?? '',
+  requirements: job.requirements ?? '',
+  is_active: job.status === 'Active',
+});
 const empty: JobForm = { 
                           title: '', 
                           department: '', 
@@ -42,6 +92,7 @@ const AdminJobsPage: React.FC = () => {
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<JobForm>(empty);
   const [view, setView] = useState<'jobs' | 'applications'>('jobs');
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = async () => {
     const { data: jobsData, error: jobsError } = await supabase
@@ -81,16 +132,53 @@ const AdminJobsPage: React.FC = () => {
       .order('createdat', { ascending: false });
     setApps(a || []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const handleFocusRefresh = () => {
+      void load();
+    };
+
+    void load();
+    window.addEventListener('soft-focus-refresh', handleFocusRefresh);
+    return () => window.removeEventListener('soft-focus-refresh', handleFocusRefresh);
+  }, []);
 
   const save = async () => {
-    if (editing.id) 
-    {
-      await (supabase as any).from('jobs').update(editing as any).eq('id', editing.id);
-    } else {
-      await (supabase as any).from('jobs').insert(editing as any);
+    setSaveError(null);
+
+    if (!editing.title.trim()) {
+      setSaveError('A job title is required.');
+      return;
     }
-    setModal(false); setEditing(empty); load();
+
+    let payload;
+    try {
+      payload = await toDatabaseJob(editing);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to prepare this job.');
+      return;
+    }
+
+    const result = editing.id
+      ? await (supabase as any).from('jobs').update(payload).eq('id', editing.id).select(`
+          *, employment_type:employment_types(id, name), job_level:job_levels(id, name), location:locations(id, city, country)
+        `).single()
+      : await (supabase as any).from('jobs').insert(payload).select(`
+          *, employment_type:employment_types(id, name), job_level:job_levels(id, name), location:locations(id, city, country)
+        `).single();
+
+    if (result.error) {
+      console.error('Error saving job:', result.error);
+      setSaveError(result.error.message || 'Unable to save this job.');
+      return;
+    }
+
+    const savedJob = toAdminJob(result.data as DatabaseJob);
+    setJobs((currentJobs) => editing.id
+      ? currentJobs.map((job) => job.id === savedJob.id ? savedJob : job)
+      : [savedJob, ...currentJobs]);
+    setModal(false);
+    setEditing(empty);
+    void load();
   };
   
   const del = async (id: string) => {
@@ -195,6 +283,7 @@ const AdminJobsPage: React.FC = () => {
               <textarea rows={4} placeholder="Description" value={editing.description} onChange={e => setEditing({ ...editing, description: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               <textarea rows={3} placeholder="Requirements" value={editing.requirements} onChange={e => setEditing({ ...editing, requirements: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_active} onChange={e => setEditing({ ...editing, is_active: e.target.checked })} /> Active (visible on site)</label>
+              {saveError && <p className="text-sm text-red-600">{saveError}</p>}
             </div>
             <div className="p-6 border-t border-slate-200 flex justify-end gap-2">
               <button onClick={() => setModal(false)} className="px-4 py-2 border border-slate-300 rounded-lg">Cancel</button>
