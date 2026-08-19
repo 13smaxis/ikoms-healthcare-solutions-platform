@@ -608,7 +608,9 @@ const CandidateProfile: React.FC = () => {
             <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 flex gap-3 justify-end">
               <button
                 type="button"
-                onClick={() => window.history.back()}
+                onClick={() => {
+                  window.location.href = '/recruitment/jobs';
+                }}
                 className="rounded-lg border border-slate-300 px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 Cancel
