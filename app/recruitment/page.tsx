@@ -244,7 +244,12 @@ const RecruitmentHome: React.FC = () => {
     }
 
     setAuthLoading(true);
-    console.log('Registration attempt:', { email: registerForm.email, first_name: registerForm.first_name, last_name: registerForm.last_name });
+    console.log('Registration attempt:', { 
+                                            email: registerForm.email, 
+                                            first_name: registerForm.first_name, 
+                                            last_name: registerForm.last_name 
+                                          }
+    );
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -263,7 +268,8 @@ const RecruitmentHome: React.FC = () => {
 
       if (signUpError) throw signUpError;
 
-      if (data.user) {
+      if (data.user) 
+      {
         setAuthSuccess('Registration successful. Please check your email to confirm your account before signing in.');
         setAuthModal('login');
         setLoginForm({ email: registerForm.email, password: '' });
@@ -322,6 +328,10 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
   }
 };
 
+  /*
+    Handle the submission of the job application form.
+    This function uploads the CV to Supabase storage if provided, then inserts the application data into the 'applications' table.
+  */
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedJob) return;
@@ -330,7 +340,8 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
 
     try {
       let cvUrl: string | null = null;
-      if (cv) {
+      if (cv) 
+      {
         const fileName = `${Date.now()}-${cv.name}`;
         const { data: upload, error: uploadErr } = await supabase.storage.from('cvs').upload(fileName, cv);
         if (uploadErr) throw uploadErr;

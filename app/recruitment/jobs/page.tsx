@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import { subscribeEmail } from '@/lib/crm';
-import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload } from 'lucide-react';
+import { MapPin, Briefcase, Search, X, CalendarDays, Building2, CircleCheckBig, Upload, UserRound, LogOut, MessageCircle, Camera } from 'lucide-react';
 
 type JobRecord = {
   id: string;
@@ -47,6 +47,7 @@ const JobsList: React.FC = () => {
   const [dept, setDept] = useState('all');
   const [type, setType] = useState('all');
   const [selectedJob, setSelectedJob] = useState<JobRecord | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', cover_letter: '' });
   const [cv, setCv] = useState<File | null>(null);
@@ -55,6 +56,10 @@ const JobsList: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(Boolean(data.user));
+    });
+
     supabase
     .from('jobs')
     .select('*')
@@ -146,6 +151,66 @@ const JobsList: React.FC = () => {
           <p className="text-blue-100">Browse {jobs.length} active healthcare roles across the UK.</p>
         </div>
       </section>
+
+      {isLoggedIn && (
+        <section className="border-b border-slate-200 bg-white py-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-3">
+              <a
+                href="/recruitment/candidate/profile"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-700 hover:text-blue-700"
+              >
+                <UserRound className="h-4 w-4" />
+                My Profile
+              </a>
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  window.location.href = '/recruitment';
+                }}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <a
+                href="https://www.linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+                className="rounded-full p-2 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                <Briefcase className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                title="Facebook"
+                className="rounded-full p-2 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                title="Instagram"
+                className="rounded-full p-2 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                <Camera className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
