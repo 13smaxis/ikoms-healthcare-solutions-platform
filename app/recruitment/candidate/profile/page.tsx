@@ -5,11 +5,9 @@ import SiteLayout from '@/components/layout/SiteLayout';
 import { supabase } from '@/lib/supabase';
 import {
   User,
-  MapPin,
   Briefcase,
   GraduationCap,
   FileText,
-  Camera,
   Save,
   Check,
   AlertCircle,
@@ -37,6 +35,7 @@ type CandidateProfile = {
   current_employer: string | null;
   skills: string | null;
   cv_url: string | null;
+  cover_page_url: string | null;
   profile_photo_url: string | null;
   profile_completed: boolean | null;
   created_at: string | null;
@@ -46,15 +45,15 @@ type CandidateProfile = {
 const CandidateProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [formData, setFormData] = useState<Partial<CandidateProfile>>({});
   const [cvFile, setCvFile] = useState<File | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'personal' | 'education' | 'experience' | 'files'>('personal');
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -81,6 +80,7 @@ const CandidateProfile: React.FC = () => {
         if (candidateData) {
           setProfile(candidateData);
           setFormData(candidateData);
+          setSubmitted(true);
         } else {
           // Create initial profile with auth data
           const initialProfile = {
@@ -103,20 +103,9 @@ const CandidateProfile: React.FC = () => {
     loadProfile();
   }, []);
 
-  useEffect(() => {
-    if (!photoFile) {
-      setPhotoPreviewUrl(null);
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(photoFile);
-    setPhotoPreviewUrl(previewUrl);
-
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [photoFile]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    setSubmitted(false);
     setFormData((prev) => ({
       ...prev,
       [name]: value || null,
@@ -125,6 +114,7 @@ const CandidateProfile: React.FC = () => {
 
   const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setSubmitted(false);
     setFormData((prev) => ({
       ...prev,
       [name]: value ? parseInt(value) : null,
@@ -152,7 +142,7 @@ const CandidateProfile: React.FC = () => {
       };
 
       let cvUrl = formData.cv_url;
-      let photoUrl = formData.profile_photo_url;
+      let coverPageUrl = formData.cover_page_url;
 
       // Upload CV if new file selected
       if (cvFile) {
@@ -176,32 +166,32 @@ const CandidateProfile: React.FC = () => {
         cvUrl = supabase.storage.from('cvs').getPublicUrl(fileName).data.publicUrl;
       }
 
-      // Upload profile photo if new file selected
-      if (photoFile) {
-        if (!['image/jpeg', 'image/png'].includes(photoFile.type)) {
-          throw new Error('Profile photo must be a JPG or PNG file.');
+      // Upload cover page if a new file is selected
+      if (coverFile) {
+        if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(coverFile.type)) {
+          throw new Error('Cover page must be a PDF, DOC, or DOCX file.');
         }
 
-        if (photoFile.size > 5 * 1024 * 1024) {
-          throw new Error('Profile photo must be 5MB or smaller.');
+        if (coverFile.size > 10 * 1024 * 1024) {
+          throw new Error('Cover page must be 10MB or smaller.');
         }
 
-        setSaveStatus('Uploading profile photo...');
-        console.log('Profile save: uploading profile photo');
-        const fileExtension = photoFile.name.split('.').pop() || 'jpg';
-        const fileName = `profile-${user.id}-${Date.now()}.${fileExtension}`;
+        setSaveStatus('Uploading cover page...');
+        console.log('Profile save: uploading cover page');
+        const fileExtension = coverFile.name.split('.').pop() || 'pdf';
+        const fileName = `cover-page-${user.id}-${Date.now()}.${fileExtension}`;
         const { error: uploadErr } = await withTimeout(
-          supabase.storage.from('profile-photo').upload(fileName, photoFile, {
-            contentType: photoFile.type,
+          supabase.storage.from('cvs').upload(fileName, coverFile, {
+            contentType: coverFile.type,
             upsert: false,
           }),
-          'Profile photo upload to profile-photo bucket'
+          'Cover page upload to cvs bucket'
         );
         if (uploadErr) {
-          console.error('Profile photo upload failed:', uploadErr);
-          throw new Error(uploadErr.message || 'Profile photo upload failed.');
+          console.error('Cover page upload failed:', uploadErr);
+          throw new Error(uploadErr.message || 'Cover page upload failed.');
         }
-        photoUrl = supabase.storage.from('profile-photo').getPublicUrl(fileName).data.publicUrl;
+        coverPageUrl = supabase.storage.from('cvs').getPublicUrl(fileName).data.publicUrl;
       }
 
       // Save profile data
@@ -209,7 +199,7 @@ const CandidateProfile: React.FC = () => {
       const dataToSave = {
         ...formData,
         cv_url: cvUrl,
-        profile_photo_url: photoUrl,
+        cover_page_url: coverPageUrl,
         profile_completed: true,
         updated_at: new Date().toISOString(),
       };
@@ -238,10 +228,11 @@ const CandidateProfile: React.FC = () => {
       setFormData((previous) => ({
         ...previous,
         cv_url: cvUrl,
-        profile_photo_url: photoUrl,
+        cover_page_url: coverPageUrl,
       }));
       setCvFile(null);
-      setPhotoFile(null);
+      setCoverFile(null);
+      setSubmitted(true);
       setMessage({ type: 'success', text: 'Profile saved successfully!' });
 
       setTimeout(() => setMessage(null), 5000);
@@ -303,8 +294,8 @@ const CandidateProfile: React.FC = () => {
           {message && (
             <div
               className={`mb-6 rounded-lg border p-4 flex gap-3 ${message.type === 'success'
-                  ? 'border-emerald-200 bg-emerald-50'
-                  : 'border-red-200 bg-red-50'
+                ? 'border-emerald-200 bg-emerald-50'
+                : 'border-red-200 bg-red-50'
                 }`}
             >
               {message.type === 'success' ? (
@@ -326,9 +317,9 @@ const CandidateProfile: React.FC = () => {
             <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 <div className="relative">
-                  {photoPreviewUrl || formData.profile_photo_url ? (
+                  {formData.profile_photo_url ? (
                     <img
-                      src={photoPreviewUrl || formData.profile_photo_url || ''}
+                      src={formData.profile_photo_url}
                       alt="Profile"
                       className="w-24 h-24 rounded-full object-cover border-4 border-blue-700"
                     />
@@ -337,15 +328,6 @@ const CandidateProfile: React.FC = () => {
                       <User className="w-12 h-12 text-slate-400" />
                     </div>
                   )}
-                  <label className="absolute bottom-0 right-0 rounded-full bg-blue-700 p-2 cursor-pointer hover:bg-blue-800 transition-colors">
-                    <Camera className="w-4 h-4 text-white" />
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png"
-                      onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                    />
-                  </label>
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-slate-900 mb-1">
@@ -379,8 +361,8 @@ const CandidateProfile: React.FC = () => {
                   type="button"
                   onClick={() => setActiveTab(id as any)}
                   className={`py-4 px-1 border-b-2 font-semibold text-sm flex gap-2 items-center transition-colors ${activeTab === id
-                      ? 'border-blue-700 text-blue-700'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -637,7 +619,10 @@ const CandidateProfile: React.FC = () => {
                       <input
                         type="file"
                         accept=".pdf,.doc,.docx"
-                        onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          setSubmitted(false);
+                          setCvFile(e.target.files?.[0] || null);
+                        }}
                         className="hidden"
                         id="cv-upload"
                       />
@@ -657,23 +642,31 @@ const CandidateProfile: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-3">Profile Photo</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-3">Cover Page</label>
                     <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer group">
                       <input
                         type="file"
-                        accept="image/jpeg,image/png"
-                        onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => {
+                          setSubmitted(false);
+                          setCoverFile(e.target.files?.[0] || null);
+                        }}
                         className="hidden"
-                        id="photo-upload"
+                        id="cover-page-upload"
                       />
-                      <label htmlFor="photo-upload" className="cursor-pointer block">
-                        <Camera className="w-10 h-10 text-slate-400 mx-auto mb-2 group-hover:text-blue-500 transition-colors" />
+                      <label htmlFor="cover-page-upload" className="cursor-pointer block">
+                        <FileText className="w-10 h-10 text-slate-400 mx-auto mb-2 group-hover:text-blue-500 transition-colors" />
                         <p className="text-sm font-semibold text-slate-900 mb-1">
-                          {photoFile ? photoFile.name : 'Upload a profile photo'}
+                          {coverFile ? coverFile.name : 'Upload your cover page'}
                         </p>
-                        <p className="text-xs text-slate-500">JPG or PNG • Max 5MB</p>
+                        <p className="text-xs text-slate-500">PDF, DOC, or DOCX • Max 10MB</p>
                       </label>
                     </div>
+                    {formData.cover_page_url && !coverFile && (
+                      <p className="text-xs text-slate-600 mt-2">
+                        Current cover page: <a href={formData.cover_page_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">View</a>
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -693,7 +686,10 @@ const CandidateProfile: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60 transition-colors"
+                className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60 transition-colors ${submitted
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-blue-700 hover:bg-blue-800'
+                  }`}
               >
                 {saving ? (
                   <>
@@ -702,8 +698,17 @@ const CandidateProfile: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
-                    Save Profile
+                    {submitted ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Submitted
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Save Profile
+                      </>
+                    )}
                   </>
                 )}
               </button>
