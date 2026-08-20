@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Bell } from "lucide-react";
+import { Menu, X, Bell, Loader2 } from "lucide-react";
 import { COMPANY } from "@/lib/constants";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,12 +30,20 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [password, setPassword] = React.useState("");
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
+  const [navigationLoading, setNavigationLoading] = React.useState(false);
   const { user, isAdmin, loading, hydrating, login, logout, storeid } = useAuth();
 
   useSessionRefresh();
 
   const handleAdminRoute = async (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     event.preventDefault();
+
+    if (href === pathname) {
+      setNavigationLoading(false);
+      return;
+    }
+
+    setNavigationLoading(true);
 
     const targetUrl = `/api/products?storeid=${encodeURIComponent(storeid ?? '')}`;
 
@@ -85,6 +93,10 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     console.log('[admin nav] navigation allowed after recovery attempt', { href, storeid });
     router.push(href);
   };
+
+  React.useEffect(() => {
+    setNavigationLoading(false);
+  }, [pathname]);
 
   console.log('AdminLayout render', { userEmail: user?.email, isAdmin, loading, hydrating, loginOpen, loginLoading });
 
@@ -371,6 +383,18 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-slate-700">
+      {navigationLoading && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/20"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-xl">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Loading
+          </div>
+        </div>
+      )}
       <aside
         className={`
                     fixed 
