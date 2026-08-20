@@ -31,9 +31,22 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
   const [navigationLoading, setNavigationLoading] = React.useState(false);
-  const { user, isAdmin, loading, hydrating, login, logout, storeid } = useAuth();
+  const { user, profile, isAdmin, loading, hydrating, login, logout, storeid } = useAuth();
 
   useSessionRefresh();
+
+  const authUserName =
+    (typeof user?.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()) ||
+    (typeof user?.user_metadata?.name === "string" && user.user_metadata.name.trim()) ||
+    profile?.name?.trim() ||
+    user?.email ||
+    "Admin";
+  const authUserInitials = authUserName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "A";
 
   const handleAdminRoute = async (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     event.preventDefault();
@@ -516,14 +529,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 >
                   <Avatar className="h-10 w-10">
                     {profileImage ? (
-                      <AvatarImage src={profileImage} alt="Profile" />
+                      <AvatarImage src={profileImage} alt={authUserName} />
                     ) : (
-                      <AvatarFallback>SM</AvatarFallback>
+                      <AvatarFallback>{authUserInitials}</AvatarFallback>
                     )}
                   </Avatar>
                   <div className="text-left">
-                    <p className="text-sm font-semibold text-white">Admin</p>
-                    <p className="text-xs text-slate-400">Smith Mbele</p>
+                    <p className="text-sm font-semibold text-white">{authUserName}</p>
+                    <p className="text-xs text-slate-400">{user.email}</p>
                   </div>
                 </div>
               </label>
