@@ -8,6 +8,20 @@ function logRecovery(stage: string, message: string, details?: Record<string, un
   console.info(`${RECOVERY_LOG_PREFIX} ${message}`, payload);
 }
 
+const isInvalidRefreshTokenError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /invalid refresh token|refresh token not found/i.test(message);
+};
+
+async function clearInvalidSession() {
+  try {
+    await supabase.auth.signOut({ scope: 'local' });
+    logRecovery('session-recovery', 'Cleared invalid local Supabase session');
+  } catch (error) {
+    console.warn(`${RECOVERY_LOG_PREFIX} Could not clear invalid local session:`, error);
+  }
+}
+
 export async function checkBackendHealth(): Promise<boolean> {
   if (typeof window === 'undefined') return true;
 
@@ -45,6 +59,9 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
   try {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
+      if (isInvalidRefreshTokenError(sessionError)) {
+        await clearInvalidSession();
+      }
       console.warn(`${RECOVERY_LOG_PREFIX} Supabase session rehydration failed:`, sessionError.message ?? sessionError);
       return false;
     }
@@ -71,6 +88,9 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
 
     const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError || !refreshData.session?.access_token) {
+      if (isInvalidRefreshTokenError(refreshError)) {
+        await clearInvalidSession();
+      }
       console.warn(`${RECOVERY_LOG_PREFIX} Session refresh failed:`, refreshError?.message ?? refreshError);
       return false;
     }
@@ -87,6 +107,9 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
     });
     return recovered;
   } catch (error) {
+    if (isInvalidRefreshTokenError(error)) {
+      await clearInvalidSession();
+    }
     console.error(`${RECOVERY_LOG_PREFIX} Session rehydration crashed:`, error);
     return false;
   }

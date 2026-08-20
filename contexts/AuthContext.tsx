@@ -170,6 +170,8 @@ const fetchUserProfile = async (email: string) => {
           ? profileRole
           : null;
 
+      setRole(userRole);
+
       if (userRole) {
         setRole(userRole);
         console.log('fetchUserProfile role resolved:', userRole);

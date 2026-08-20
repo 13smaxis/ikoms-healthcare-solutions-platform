@@ -56,30 +56,19 @@ const JobsList: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadJobs = async () => {
-      const [{ data: userData }, { data, error: jobsError }] = await Promise.all([
-        supabase.auth.getUser(),
-        supabase.from('jobs').select('*').order('posted_at', { ascending: false }),
-      ]);
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(Boolean(data.user));
+    });
 
-      if (jobsError) {
-        setError(jobsError.message);
-      } else {
-        const activeJobs = ((data as JobRecord[]) || []).filter((job) => job.is_active !== false && job.status !== 'Inactive');
-        setJobs(activeJobs);
-      }
-
-      setIsLoggedIn(Boolean(userData.user));
+    supabase
+    .from('jobs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .then(({ data }) => {
+      const activeJobs = ((data as JobRecord[]) || []).filter((job) => job.is_active !== false);
+      setJobs(activeJobs);
       setLoading(false);
-    };
-
-    const handleFocusRefresh = () => {
-      void loadJobs();
-    };
-
-    void loadJobs();
-    window.addEventListener('soft-focus-refresh', handleFocusRefresh);
-    return () => window.removeEventListener('soft-focus-refresh', handleFocusRefresh);
+    });
   }, []);
 
   const departments = useMemo(

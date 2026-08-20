@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function FocusRefresh() {
-  const router = useRouter();
-
   useEffect(() => {
     let mounted = true;
-    const minInterval = 1500;
+    const minInterval = 1500; // ms between refresh events to avoid loops
     let lastRefresh = 0;
-    let leftPage = document.visibilityState === 'hidden';
 
     const shouldSuppressRefresh = () => {
       if (typeof window === 'undefined') return false;
@@ -35,9 +31,12 @@ export default function FocusRefresh() {
         }
         lastRefresh = now;
 
-        console.log('[FocusRefresh] refreshing page data after', reason || 'event');
-        router.refresh();
-        window.dispatchEvent(new CustomEvent('soft-focus-refresh', { detail: { reason } }));
+        // eslint-disable-next-line no-console
+        console.log('[FocusRefresh] soft refresh event due to', reason || 'event');
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('soft-focus-refresh', { detail: { reason } }));
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('[FocusRefresh] soft refresh failed', e);
@@ -45,43 +44,26 @@ export default function FocusRefresh() {
     };
 
     const onVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        leftPage = true;
-      } else if (leftPage) {
-        leftPage = false;
-        doRefresh('visibilitychange');
-      }
+      if (document.visibilityState === 'visible') doRefresh('visibilitychange');
     };
 
-    const onBlur = () => {
-      leftPage = true;
-    };
-
-    const onFocus = () => {
-      if (leftPage) {
-        leftPage = false;
-        doRefresh('focus');
-      }
-    };
+    const onFocus = () => doRefresh('focus');
     const onPageShow = (ev: PageTransitionEvent) => {
-      if (ev.persisted) {
-        doRefresh('pageshow-persisted');
-      }
+      if (ev.persisted) doRefresh('pageshow-persisted');
+      else doRefresh('pageshow');
     };
 
     window.addEventListener('focus', onFocus);
-    window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pageshow', onPageShow as EventListener);
 
     return () => {
       mounted = false;
       window.removeEventListener('focus', onFocus);
-      window.removeEventListener('blur', onBlur);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pageshow', onPageShow as EventListener);
     };
-  }, [router]);
+  }, []);
 
   return null;
 }

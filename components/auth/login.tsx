@@ -11,7 +11,7 @@ const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,16 +27,8 @@ const AdminLoginPage: React.FC = () => {
       return;
     }
 
-    // Check if user has admin role
-    setTimeout(() => {
-      if (isAdmin) 
-      {
-        router.push('/admin/dashboard');
-      } else {
-        setError('Your account does not have admin privileges');
-      }
-      setLoading(false);
-    }, 500);
+    router.push('/admin');
+    setLoading(false);
   };
 
   return (

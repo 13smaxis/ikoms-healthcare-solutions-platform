@@ -80,9 +80,17 @@ type FormState = Omit<ShopProduct, 'id' | 'price'> & { id: ''; price: string };
 
 const emptyForm = (): FormState => ({
 	id: '', handle: '', name: '', sku: '', product_type: PRODUCT_TYPES[0].id,
-	collectionHandle: '', price: '', images: [], tags: [], description: '', model: '',
+	collectionHandle: 'general', price: '', images: [], tags: [], description: '', model: '',
 	key_features: [], medical_information: '', status: 'draft',
 });
+
+const createHandle = (name: string) => name
+	.trim()
+	.toLowerCase()
+	.replace(/[^a-z0-9]+/g, '-')
+	.replace(/^-+|-+$/g, '');
+
+const createSku = () => `SKU-${Math.floor(100 + Math.random() * 900)}`;
 
 function buildPayload(form: FormState): ShopProduct {
 	const parsedPrice = parseFloat(form.price.toString().replace(',', '.'));
@@ -147,8 +155,6 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		const next: Record<string, string> = {};
 		const parsedPrice = parseFloat(form.price.toString().replace(',', '.'));
 		if (!form.name.trim()) next.name = 'Product name is required';
-		if (!form.sku.trim()) next.sku = 'SKU is required';
-		if (!form.handle.trim()) next.handle = 'Handle is required';
 		if (form.price.trim() === '' || Number.isNaN(parsedPrice) || parsedPrice < 0) next.price = 'Enter a valid price like 2.45';
 		if (!form.description.trim()) next.description = 'Description is required';
 		setErrors(next);
@@ -222,7 +228,13 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 		event.preventDefault();
 		if (validate()) {
 			setApiError(null);
-			setPendingProduct(buildPayload(form));
+			setPendingProduct(buildPayload({
+				...form,
+				handle: createHandle(form.name),
+				sku: createSku(),
+				collectionHandle: 'general',
+				tags: [],
+			}));
 		}
 	};
 
@@ -242,6 +254,8 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					handle: pendingProduct.handle,
 					sku: pendingProduct.sku,
 					price: pendingProduct.price,
+					collectionHandle: pendingProduct.collectionHandle,
+					tags: pendingProduct.tags,
 					description: pendingProduct.description,
 					producttypeid: pendingProduct.product_type,
 					model: pendingProduct.model,
@@ -296,7 +310,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					</p>
 				</div>
 
-				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8">
+				<div className="grid h-0 min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto p-6 sm:grid-cols-2 sm:p-8 [&>label:nth-of-type(2)]:!hidden [&>label:nth-of-type(3)]:!hidden [&>label:nth-of-type(6)]:!hidden [&>label:nth-of-type(9)]:!hidden">
 					<label className="space-y-2 text-sm"> 																		  {/* Product name input field */}
 						Product name
 						<input

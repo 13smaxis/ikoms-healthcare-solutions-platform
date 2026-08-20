@@ -113,26 +113,6 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [loading, user]);                                                                                                            //- Dependency array ensures this effect runs when loading or user state changes
 
   React.useEffect(() => {
-    if (loading || hydrating || typeof window === 'undefined') {
-      return;
-    }
-
-    const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    if (navigationEntry?.type !== 'reload' || sessionStorage.getItem('admin-reload-cleanup')) {
-      return;
-    }
-
-    sessionStorage.setItem('admin-reload-cleanup', 'true');
-
-    const cleanupSession = async () => {
-      await logout();
-      router.replace('/admin');
-    };
-
-    void cleanupSession();
-  }, [hydrating, loading, logout, router]);
-
-  React.useEffect(() => {
     if (loading || hydrating || !user || isAdmin) {
       return;
     }
@@ -140,7 +120,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const redirectTimer = window.setTimeout(async () => {
       await logout();
       router.replace('/admin');
-    }, 1500);
+    }, 2000);
 
     return () => window.clearTimeout(redirectTimer);
   }, [hydrating, isAdmin, loading, logout, router, user]);
