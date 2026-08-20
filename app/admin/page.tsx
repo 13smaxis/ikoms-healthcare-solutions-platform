@@ -158,12 +158,6 @@ const AdminDashboard: React.FC = () => {
               ➕ Add Product
             </button>
             <Link
-              href="/admin/collections/new"
-              className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
-            >
-              ➕ Create Collection
-            </Link>
-            <Link
               href="/admin/e-commerce"
               className="block px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
             >

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
 import { fmt } from '@/lib/cart';
 import { getAuthToken } from '@/lib/auth/client';
@@ -100,7 +100,7 @@ function buildPayload(form: FormState): ShopProduct {
 		price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
 		images: form.images.filter(Boolean),
 		tags: form.tags.map((tag) => tag.trim()).filter(Boolean),
-		key_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
+		key_features: (form.key_features || []).map((feature: string) => feature.trim()).filter(Boolean),
 		description: form.description || '',
 		medical_information: form.medical_information || '',
 		status: form.status || 'draft',
@@ -260,6 +260,7 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					description: pendingProduct.description,
 					producttypeid: pendingProduct.product_type,
 					model: pendingProduct.model,
+					product_features: pendingProduct.key_features,
 					medical_information: pendingProduct.medical_information,
 					status: pendingProduct.status,
 					images: uploadedImages.map((image) => ({
@@ -561,7 +562,9 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					</div>
 					<AlertDialogFooter className="border-t border-white/10 px-6 py-4">
 						<AlertDialogCancel disabled={saving} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">Cancel</AlertDialogCancel>
-						<AlertDialogAction type="button" onClick={confirmCreate} disabled={saving} className="rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60">{saving ? 'Creating...' : 'Confirm create'}</AlertDialogAction>
+						<AlertDialogAction type="button" onClick={confirmCreate} disabled={saving} className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-60">
+							{saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</> : 'Confirm create'}
+						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

@@ -23,6 +23,7 @@ const mapBackendProduct = (product: any): ShopProduct => ({
   name: product.name || '',
   sku: product.sku || '',
   product_type: getProductTypeLabel(product.producttypeid),
+  producttypeid: product.producttypeid || '',
   collectionHandle: product.collectionHandle || '',
   price: Number(product.price) || 0,
   images: Array.isArray(product.product_images)
@@ -48,7 +49,7 @@ const buildProductPayload = (product: ShopProduct) => ({
   sku: product.sku,
   price: product.price,
   description: product.description,
-  producttypeid: product.product_type,
+  producttypeid: product.producttypeid || product.product_type,
   model: product.model,
   medical_information: product.medical_information,
   status: product.status,

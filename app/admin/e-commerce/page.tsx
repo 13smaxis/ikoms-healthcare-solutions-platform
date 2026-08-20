@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import ProductFormCreate, { PRODUCT_TYPES } from '@/components/ProductFormCreate';
 import ProductFormEdit from '@/components/ProductFormEdit';
-import { getProductImage, getProducts, type ShopProduct } from '@/lib/category-products';
+import { getProductImage, type ShopProduct } from '@/lib/category-products';
 import { AlertTriangle, Eye, Edit3, Trash2 } from 'lucide-react';
 
 type OrderRow = {
@@ -48,7 +48,7 @@ const AdminOrdersPage: React.FC = () => {
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const { deleteProduct } = useProductAPI();
+  const { deleteProduct, getProductsByStore } = useProductAPI();
 
   const loadOrders = async () => {
     try {
@@ -72,11 +72,13 @@ const AdminOrdersPage: React.FC = () => {
   };
 
   const loadProducts = async () => {
+    if (!storeid) return;
+
     try {
       console.log('📦 Starting loadProducts...');
-      const data = await getProducts(false);
-      console.log('✅ loadProducts done:', data.length);
-      setProducts(data);
+      const data = await getProductsByStore(storeid);
+      console.log('✅ loadProducts done:', data?.length || 0);
+      setProducts(data || []);
     } catch (err) {
       console.error('❌ loadProducts failed:', err);
       setProducts([]);
@@ -127,7 +129,7 @@ const AdminOrdersPage: React.FC = () => {
     };
 
     init();
-  }, []);
+  }, [storeid]);
 
   const updStatus = async (id: string, status: string) => {
     await (supabase as any).from('orders').update({ status }).eq('orderid', id);
@@ -252,9 +254,9 @@ const AdminOrdersPage: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div className="bg-amber-50/50 rounded-xl overflow-hidden">
+        <div className="max-h-[calc(100vh-16rem)] overflow-y-auto rounded-xl bg-amber-50/50">
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
-            <span className="text-sm text-slate-600">{productCount} published products</span>
+            <span className="text-sm text-slate-600">{productCount} products</span>
             <button
               type="button"
               onClick={() => {
@@ -339,7 +341,7 @@ const AdminOrdersPage: React.FC = () => {
               {products.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">
-                    No published products yet.
+                    No products yet.
                   </td>
                 </tr>
               )}
@@ -361,6 +363,7 @@ const AdminOrdersPage: React.FC = () => {
                 category={undefined}
                 categories={[]}
                 relatedProducts={[]}
+                adminMode
               />
             </div>
           ) : null}

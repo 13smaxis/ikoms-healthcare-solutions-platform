@@ -18,9 +18,10 @@ interface ShopProductSpecificationProps {
   category: ShopCategory | undefined;
   categories: ShopCategory[];
   relatedProducts: ShopProduct[];
+  adminMode?: boolean;
 }
 
-export default function ShopProductSpecification({ product, category, relatedProducts }: ShopProductSpecificationProps) {
+export default function ShopProductSpecification({ product, category, relatedProducts, adminMode = false }: ShopProductSpecificationProps) {
   const { wishlist, toggleWishlist } = useWishlist();                                                           //-Allows users to add or remove products from their wishlist and updates the UI accordingly.
   const inWishlist = wishlist.includes(product.id);                                                             //-Checks if the current product is in the user's wishlist to determine the state of the wishlist button.
 
@@ -56,7 +57,7 @@ export default function ShopProductSpecification({ product, category, relatedPro
                     </p>
                   ) : null}
 
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  {!adminMode && <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <button
                       type="button"
                       onClick={() =>
@@ -97,7 +98,7 @@ export default function ShopProductSpecification({ product, category, relatedPro
                       <Heart className="h-4 w-4" fill={inWishlist ? 'currentColor' : 'none'} />
                       {inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                     </button>
-                  </div>
+                  </div>}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">                                                     {/* Displays product price and SKU in styled boxes */}
@@ -156,7 +157,7 @@ export default function ShopProductSpecification({ product, category, relatedPro
               </div>
             </section>
 
-            <section className="grid gap-8">
+            {!adminMode && <section className="grid gap-8">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-rose-600">Related products</p>
@@ -194,7 +195,7 @@ export default function ShopProductSpecification({ product, category, relatedPro
                   );
                 })}
               </div>
-            </section>
+            </section>}
           </main>
         </div>
       </div>

@@ -27,7 +27,20 @@ export async function POST(request: NextRequest)
 //onst userId = '04974986-ed07-4254-ae8d-9a1e67a3a659'; 
                                                                                                 //- For testing - use fake user ID
     const body = await request.json();
-    const { storeid, name, handle, sku, price, images, ...rest } = body;
+    const {
+      storeid,
+      name,
+      handle,
+      sku,
+      price,
+      images,
+      description,
+      producttypeid,
+      model,
+      medical_information,
+      product_features,
+      status,
+    } = body;
 
     console.log(`📦 Creating product in store: ${storeid}`);
 
@@ -98,7 +111,12 @@ export async function POST(request: NextRequest)
                                                         sku: sku.trim(),
                                                         price,
                                                         image_url: imageUrl || undefined,
-                                                        ...rest,                                                                  //- description, producttypeid, model, medical_information, status
+                                                        description,
+                                                        producttypeid,
+                                                        model,
+                                                        medical_information,
+                                                        product_features: Array.isArray(product_features) ? product_features : [],
+                                                        status,
                                                       }
     );
 

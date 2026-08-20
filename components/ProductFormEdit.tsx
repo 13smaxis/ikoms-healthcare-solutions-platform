@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2, Upload } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
 import { getAuthToken } from '@/lib/auth/client';
 import { PRODUCT_TYPES } from '@/components/ProductFormCreate';
@@ -24,6 +24,10 @@ type EditFormState = Omit<ShopProduct, 'price'> & { price: string };
 
 const buildEditFormState = (product: ShopProduct): EditFormState => ({
     ...product,
+    product_type: PRODUCT_TYPES.find((type) => type.id === product.producttypeid)?.id
+        || PRODUCT_TYPES.find((type) => type.type === product.product_type)?.id
+        || product.producttypeid
+        || '',
     price: String(product.price),
     images: product.images?.length ? product.images : [],
     tags: product.tags || [],
@@ -48,6 +52,7 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
     const [products, setProducts] = useState<ShopProduct[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [pending, setPending] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -75,20 +80,48 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
         setErrors(next);
         return Object.keys(next).length === 0;
     };
-    const upload = async (file?: File) => { 
-        if (!file) return; 
-        setUploading(true); 
-        try { 
-                const body = new FormData(); 
-                body.append('file', file); 
-                const response = await fetch('/api/admin/upload-image', { method: 'POST', body }); 
-                const data = await response.json(); 
-                
-                if (data?.path) 
-                    update('images', [data.path, ...(form.images || []).filter(Boolean)]); 
-            } finally { 
-                setUploading(false); 
-            } 
+    const upload = async (file?: File) => {
+        if (!file) return;
+
+        setUploadError(null);
+
+        if (file.size > 5 * 1024 * 1024) {
+            setUploadError('Image too large. Maximum size is 5MB.');
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            setUploadError('Invalid file type. Please upload an image.');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const body = new FormData();
+            body.append('file', file);
+            const token = await getAuthToken();
+            const response = await fetch('/api/admin/upload-image', {
+                method: 'POST',
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                body,
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Image upload failed.');
+            }
+
+            const publicUrl = data.publicUrl || data.url;
+            if (!publicUrl) {
+                throw new Error('Image upload did not return a public URL.');
+            }
+
+            update('images', [publicUrl, ...(form.images || []).filter(Boolean)]);
+        } catch (error) {
+            setUploadError(error instanceof Error ? error.message : 'Upload failed');
+        } finally {
+            setUploading(false);
+        }
     };
     const submit = (event: React.FormEvent) => { 
                                                 event.preventDefault(); 
@@ -114,9 +147,11 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
                     sku: form.sku,
                     price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
                     description: form.description || '',
-                    producttypeid: form.product_type || '',
+                    producttypeid: form.product_type || null,
                     model: form.model || '',
                     medical_information: form.medical_information || '',
+                    product_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
+                    image_url: form.images?.[0] || '',
                     status: form.status || 'draft',
                 }),
             });
@@ -293,19 +328,24 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
 
                 <label className="space-y-2 text-sm">                                                                             {/* Images input field */}
                     Images
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => upload(e.target.files?.[0])}
-                        className="text-sm"
-                    />
-                    {uploading &&
-                        <span>
-                            Uploading...
-                        </span>}
-                    <span className="block text-xs text-slate-400">
-                        {(form.images || []).join(', ')}
-                    </span>
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-blue-400/70 bg-blue-500/10 px-4 py-4 text-sm font-semibold text-blue-200 transition hover:bg-blue-500/20">
+                        <Upload className="h-4 w-4" />
+                        {uploading ? 'Uploading image...' : 'Click to upload an image'}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            disabled={uploading}
+                            onChange={(e) => {
+                                upload(e.target.files?.[0]);
+                                e.currentTarget.value = '';
+                            }}
+                            className="sr-only"
+                        />
+                    </label>
+                    {uploadError && <span className="block text-xs text-rose-400">{uploadError}</span>}
+                    {(form.images || []).map((image) => (
+                        <span key={image} className="block truncate text-xs text-slate-400">{image}</span>
+                    ))}
                 </label>
 
                 <label className="space-y-2 text-sm">                                                                             {/* Tags input field */}
@@ -406,7 +446,9 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
                 </div>
                 <AlertDialogFooter className="border-t border-white/10 px-6 py-4">
                     <AlertDialogCancel disabled={saving} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10">Cancel</AlertDialogCancel>
-                    <AlertDialogAction type="button" onClick={confirmUpdate} disabled={saving} className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60">{saving ? 'Saving...' : 'Confirm update'}</AlertDialogAction>
+                    <AlertDialogAction type="button" onClick={confirmUpdate} disabled={saving} className="rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60">
+                        {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</> : 'Confirm update'}
+                    </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

@@ -24,6 +24,7 @@ export type ShopProduct = {
   name: string;
   sku: string;
   product_type: string;
+  producttypeid?: string;
   collectionHandle: string;
   price: number;
   images: string[];

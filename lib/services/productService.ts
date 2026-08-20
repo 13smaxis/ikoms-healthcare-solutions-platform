@@ -17,6 +17,7 @@ export interface CreateProductInput {
   producttypeid?: string;
   model?: string;
   medical_information?: string;
+  product_features?: string[];
   status?: 'draft' | 'published' | 'archived';
 }
 
@@ -25,10 +26,12 @@ export interface UpdateProductInput {
   handle?: string;
   sku?: string;
   price?: number;
+  image_url?: string;
   description?: string;
   producttypeid?: string;
   model?: string;
   medical_information?: string;
+  product_features?: string[];
   status?: 'draft' | 'published' | 'archived';
 }
 
@@ -86,6 +89,14 @@ export const productService = {
 
       if (error) {
         return { success: false, error: error.message };
+      }
+
+      const features = (input.product_features || []).map((feature) => feature.trim()).filter(Boolean);
+      if (features.length) {
+        const { error: featuresError } = await client.from('product_features').insert(
+          features.map((featuretext) => ({ productid: data.productid, featuretext }))
+        );
+        if (featuresError) return { success: false, error: featuresError.message };
       }
 
       // Log audit
@@ -154,6 +165,22 @@ export const productService = {
 
       if (error) {
         return { success: false, error: error.message };
+      }
+
+      if (input.product_features) {
+        const features = input.product_features.map((feature) => feature.trim()).filter(Boolean);
+        const { error: deleteFeaturesError } = await client
+          .from('product_features')
+          .delete()
+          .eq('productid', productid);
+        if (deleteFeaturesError) return { success: false, error: deleteFeaturesError.message };
+
+        if (features.length) {
+          const { error: insertFeaturesError } = await client.from('product_features').insert(
+            features.map((featuretext) => ({ productid, featuretext }))
+          );
+          if (insertFeaturesError) return { success: false, error: insertFeaturesError.message };
+        }
       }
 
       await productService.logAudit(userId, 'products', productid, 'UPDATE', oldProduct, data);

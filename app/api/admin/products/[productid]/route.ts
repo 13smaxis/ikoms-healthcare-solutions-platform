@@ -55,10 +55,12 @@ export async function PUT(
       'handle',
       'sku',
       'price',
+      'image_url',
       'description',
       'producttypeid',
       'model',
       'medical_information',
+      'product_features',
       'status',
     ];
     const hasValidFields = updateFields.some((field) => field in body);                                                           //- Check if at least one valid field is present in the request body
