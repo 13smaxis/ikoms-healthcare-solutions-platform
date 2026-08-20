@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { Users, Package, ShoppingCart, Settings } from 'lucide-react';
-import { fmt } from '@/lib/cart';
+import { Users, Package, ShoppingCart, CalendarDays } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthToken } from '@/lib/auth/client';
+import { formatPounds } from '@/lib/cart';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ interface DashboardStats {
   products: number;
   orders: number;
   customers: number;
-  collections: number;
+  bookings: number;
   totalRevenue: number;
 }
 
@@ -34,7 +34,7 @@ const AdminDashboard: React.FC = () => {
     products: 0,
     orders: 0,
     customers: 0,
-    collections: 0,
+    bookings: 0,
     totalRevenue: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
@@ -50,34 +50,18 @@ const AdminDashboard: React.FC = () => {
         setStatsLoading(true);                                                                                                    //- Set loading state to true before fetching stats
         setError(null);
 
-        // Fetch stats from actual tables in your schema
-        const [
-          { count: productCount },
-          { count: orderCount },
-          { count: customerCount },
-          { count: collectionCount },
-          { data: orderData }
-        ] = await Promise.all([
-          supabase.from('products').select('*', { count: 'exact', head: true }),
-          supabase.from('orders').select('*', { count: 'exact', head: true }),
-          supabase.from('customers').select('*', { count: 'exact', head: true }),
-          supabase.from('collections').select('*', { count: 'exact', head: true }),
-          supabase.from('orders').select('totalamount'),
-        ]);
+        const token = await getAuthToken();
+        if (!token) throw new Error('Admin session is unavailable');
 
-        const revenue = ((orderData || []) as Array<{ totalamount?: string }>).reduce(
-          (sum, order) => sum + (parseFloat(order.totalamount || '0') || 0),
-          0
-        );
-
-        setStats({
-          products: productCount || 0,
-          orders: orderCount || 0,
-          customers: customerCount || 0,
-          collections: collectionCount || 0,
-          totalRevenue: revenue,
+        const response = await fetch('/api/admin/stats', {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
         });
-        console.log('Dashboard stats load success', { productCount, orderCount, customerCount, collectionCount, revenue });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to load dashboard statistics');
+
+        setStats(result);
+        console.log('Dashboard stats load success', result);
       } catch (err) {
         console.error('Failed to fetch stats:', err);
         setError('Failed to load dashboard statistics');
@@ -144,10 +128,10 @@ const AdminDashboard: React.FC = () => {
           href="/admin/customers"
         />
         <StatCard
-          icon={<Settings className="text-orange-600" size={24} />}
-          label="Collections"
-          value={stats.collections}
-          href="/admin/collections"
+          icon={<CalendarDays className="text-orange-600" size={24} />}
+          label="Bookings"
+          value={stats.bookings}
+          href="/admin/consultancy"
         />
       </div>
 
@@ -155,7 +139,7 @@ const AdminDashboard: React.FC = () => {
       <div className="bg-white rounded-lg border border-slate-200 p-6 mb-8">
         <h2 className="text-2xl font-bold text-slate-900">Total Revenue</h2>
         <p className="text-4xl font-bold text-green-600 mt-4">
-          R {stats.totalRevenue.toFixed(2)}
+          {formatPounds(stats.totalRevenue)}
         </p>
         <p className="text-sm text-slate-500 mt-2">From {stats.orders} orders</p>
       </div>

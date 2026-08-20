@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { getProductImage, type ShopProduct } from '@/lib/category-products';
+import { fmt } from '@/lib/cart';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 const ProductsPage: React.FC = () => (
@@ -192,7 +193,7 @@ const ProductsContent: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 font-mono text-xs text-slate-700">{product.sku}</td>
-                      <td className="px-6 py-4 text-slate-900 font-medium">${product.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-slate-900 font-medium">{fmt(product.price)}</td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                           {product.status}

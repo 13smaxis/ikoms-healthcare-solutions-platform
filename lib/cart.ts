@@ -54,4 +54,11 @@ export function clearCart() {
   saveCart([]);
 }
 
-export const fmt = (cents: number) => `£${(cents / 100).toFixed(2)}`;
+export const fmt = (cents: number) => `£${(Number(cents) / 100).toFixed(2)}`;
+
+export const formatPounds = (amount: number) => `£${Number(amount).toFixed(2)}`;
+
+export const minorUnitsToPounds = (value: number | string | null | undefined) => {
+  const amount = Number(value) || 0;
+  return amount / 100;
+};

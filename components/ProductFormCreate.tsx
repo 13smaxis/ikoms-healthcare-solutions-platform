@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
+import { fmt } from '@/lib/cart';
 import { getAuthToken } from '@/lib/auth/client';
 import {
 	AlertDialog,
@@ -355,13 +356,15 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 					<label className="space-y-2 text-sm"> 																		  {/* Price input field */}
 						Price
 						<input
-							type="number"
+							type="text"
 							min="0"
-							step="0.01"
 							inputMode="decimal"
-							placeholder="2.45"
-							value={form.price}
-							onChange={(e) => update('price', e.target.value)}
+							placeholder="£18.22"
+							value={form.price ? fmt(Number(form.price)) : ''}
+							onChange={(e) => {
+								const value = e.target.value.replace(/[^0-9]/g, '');
+								update('price', value);
+							}}
 							className={CONTROL_CLASS}
 						/>
 						{errors.price &&
