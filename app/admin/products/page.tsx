@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,12 @@ const ProductsContent: React.FC = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [pendingDeleteProduct, setPendingDeleteProduct] = useState<ShopProduct | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const refreshInFlightRef = useRef(false);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     setError(apiError);
@@ -45,27 +51,39 @@ const ProductsContent: React.FC = () => {
 
   // Load products on mount or when storeid changes
   useEffect(() => {
+    let cancelled = false;
+
     const loadProducts = async () => {
       console.log('Admin products load start', { storeid });
       if (!storeid) {
         console.warn('Admin products load aborted because storeid is missing');
-        setLoadingProducts(false);
+        if (!cancelled) setLoadingProducts(false);
         return;
       }
 
-      setLoadingProducts(true);
-      const data = await getProductsByStore(storeid);
-      if (data) {
-        console.log('Admin products load success', { count: data.length });
-        setProducts(data);
-      } else {
-        console.warn('Admin products load returned no data');
+      if (!cancelled) setLoadingProducts(true);
+      try {
+        const data = await getProductsByStore(storeid);
+        if (cancelled) return;
+
+        if (data) {
+          console.log('Admin products load success', { count: data.length });
+          setProducts(data);
+        } else {
+          console.warn('Admin products load returned no data');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingProducts(false);
+          console.log('Admin products load finished');
+        }
       }
-      setLoadingProducts(false);
-      console.log('Admin products load finished');
     };
 
-    loadProducts();
+    void loadProducts();
+    return () => {
+      cancelled = true;
+    };
   }, [getProductsByStore, storeid]);
 
   const handleOpenModal = (product?: ShopProduct) => {
@@ -79,9 +97,15 @@ const ProductsContent: React.FC = () => {
   };
 
   const refreshProducts = async () => {
-    if (!storeid) return;
-    const updatedProducts = await getProductsByStore(storeid);
-    if (updatedProducts) setProducts(updatedProducts);
+    if (!storeid || refreshInFlightRef.current) return;
+
+    refreshInFlightRef.current = true;
+    try {
+      const updatedProducts = await getProductsByStore(storeid);
+      if (mountedRef.current && updatedProducts) setProducts(updatedProducts);
+    } finally {
+      refreshInFlightRef.current = false;
+    }
   };
 
   useEffect(() => {

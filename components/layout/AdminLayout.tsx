@@ -20,6 +20,8 @@ const navLinks = [
   { href: "/admin/e-commerce", label: "E-commerce" },
 ];
 
+const ADMIN_NAVIGATION_TIMEOUT_MS = 10000;
+
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -31,6 +33,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loginError, setLoginError] = React.useState<string | null>(null);
   const [loginLoading, setLoginLoading] = React.useState(false); 
   const [navigationLoading, setNavigationLoading] = React.useState(false);
+  const navigationAttemptRef = React.useRef(0);
   const { user, profile, isAdmin, loading, hydrating, login, logout, storeid } = useAuth();
 
   useSessionRefresh();
@@ -56,55 +59,70 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       return;
     }
 
+    const navigationAttempt = navigationAttemptRef.current + 1;
+    navigationAttemptRef.current = navigationAttempt;
     setNavigationLoading(true);
 
     const targetUrl = `/api/products?storeid=${encodeURIComponent(storeid ?? '')}`;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), ADMIN_NAVIGATION_TIMEOUT_MS);
 
-    console.log('[admin nav] step 1: health check before navigation', { href, targetUrl, storeid });
-    const healthy = await checkBackendHealth();
-    console.log('[admin nav] step 1 result', { href, healthy });
+    try {
+      console.log('[admin nav] step 1: health check before navigation', { href, targetUrl, storeid });
+      const healthy = await checkBackendHealth();
+      console.log('[admin nav] step 1 result', { href, healthy });
 
-    console.log('[admin nav] step 2: rehydrating session before navigation', { href, storeid });
-    const rehydrated = await rehydrateSupabaseSession();
-    console.log('[admin nav] step 2 result', { href, rehydrated });
+      console.log('[admin nav] step 2: rehydrating session before navigation', { href, storeid });
+      const rehydrated = await rehydrateSupabaseSession();
+      console.log('[admin nav] step 2 result', { href, rehydrated });
 
-    const token = await getAuthToken();
-    if (!token) {
-      console.warn('[admin nav] step 3 no auth token after rehydration; continuing navigation anyway', { href, storeid });
-    } else {
-      console.log('[admin nav] step 3: sending authenticated GET request', {
-        href,
-        url: targetUrl,
-        hasToken: true,
-      });
+      const token = await getAuthToken();
+      if (!token) {
+        console.warn('[admin nav] step 3 no auth token after rehydration; continuing navigation anyway', { href, storeid });
+      } else {
+        console.log('[admin nav] step 3: sending authenticated GET request', {
+          href,
+          url: targetUrl,
+          hasToken: true,
+        });
 
-      const response = await fetch(targetUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        cache: 'no-store',
-        credentials: 'include',
-      });
+        const response = await fetch(targetUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          cache: 'no-store',
+          credentials: 'include',
+          signal: controller.signal,
+        });
 
-      console.log('[admin nav] step 3 result', {
-        href,
-        status: response.status,
-        ok: response.ok,
-      });
-
-      if (!response.ok) {
-        console.warn('[admin nav] authenticated GET failed before navigation; continuing to route', {
+        console.log('[admin nav] step 3 result', {
           href,
           status: response.status,
-          body: await response.text().catch(() => 'unable to read body'),
+          ok: response.ok,
         });
+
+        if (!response.ok) {
+          console.warn('[admin nav] authenticated GET failed before navigation; continuing to route', {
+            href,
+            status: response.status,
+            body: await response.text().catch(() => 'unable to read body'),
+          });
+        }
+      }
+
+      console.log('[admin nav] navigation allowed after recovery attempt', { href, storeid });
+      router.push(href);
+    } catch (error) {
+      console.error('[admin nav] pre-navigation recovery failed; continuing to route', { href, error });
+      router.push(href);
+    } finally {
+      window.clearTimeout(timeoutId);
+      if (navigationAttemptRef.current === navigationAttempt) {
+        setNavigationLoading(false);
       }
     }
-
-    console.log('[admin nav] navigation allowed after recovery attempt', { href, storeid });
-    router.push(href);
   };
 
   React.useEffect(() => {

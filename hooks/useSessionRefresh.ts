@@ -3,7 +3,6 @@ import { ensureSessionRecovery } from '@/lib/auth/recovery';
 
 export function useSessionRefresh() {
   const refreshPendingRef = useRef(false);
-  const wasHiddenRef = useRef(typeof document !== 'undefined' ? document.hidden : false);
 
   const shouldSuppressRefresh = () => {
     if (typeof window === 'undefined') return false;
@@ -41,30 +40,6 @@ export function useSessionRefresh() {
       }
     };
 
-    const reloadOnResume = () => {
-      if (document.hidden) {
-        wasHiddenRef.current = true;
-        return;
-      }
-
-      if (wasHiddenRef.current) {
-        wasHiddenRef.current = false;
-        if (shouldSuppressRefresh()) return;
-        refreshSession('resume');
-      }
-    };
-
-    const handleFocus = () => {
-      reloadOnResume();
-      refreshSession('focus-gain');
-    };
-    const handleVisibility = () => {
-      reloadOnResume();
-      if (document.visibilityState === 'visible') {
-        refreshSession('visibility-visible');
-      }
-    };
-
     const handleSoftFocusRefresh = () => {
       if (shouldSuppressRefresh()) return;
       refreshSession('soft-focus');
@@ -75,14 +50,10 @@ export function useSessionRefresh() {
     }, 4 * 60 * 1000);
 
     refreshSession('startup');
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
 
     return () => {
       window.clearInterval(keepAlive);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('soft-focus-refresh', handleSoftFocusRefresh as EventListener);
     };
   }, []);

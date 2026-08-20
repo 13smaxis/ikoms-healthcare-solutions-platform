@@ -1,7 +1,27 @@
 import { supabase } from '@/lib/supabase';
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
+const SUPABASE_REQUEST_TIMEOUT_MS = 8000;
 const RECOVERY_LOG_PREFIX = '[auth recovery]';
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error(`${operation} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      },
+    );
+  });
+}
 
 function logRecovery(stage: string, message: string, details?: Record<string, unknown>) {
   const payload = details ? { stage, ...details } : { stage };
@@ -31,20 +51,23 @@ export async function checkBackendHealth(): Promise<boolean> {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
 
-    const response = await fetch('/api/health', {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-store',
-      signal: controller.signal,
-    });
+    try {
+      const response = await fetch('/api/health', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
 
-    window.clearTimeout(timeoutId);
-    const healthy = response.ok;
-    logRecovery('health-check', healthy ? 'Backend health check succeeded' : 'Backend health check returned an unhealthy response', {
-      status: response.status,
-      healthy,
-    });
-    return healthy;
+      const healthy = response.ok;
+      logRecovery('health-check', healthy ? 'Backend health check succeeded' : 'Backend health check returned an unhealthy response', {
+        status: response.status,
+        healthy,
+      });
+      return healthy;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   } catch (error) {
     console.error(`${RECOVERY_LOG_PREFIX} Health check failed:`, error);
     return false;
@@ -57,7 +80,11 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
   logRecovery('session-recovery', 'Starting Supabase session rehydration');
 
   try {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await withTimeout(
+      supabase.auth.getSession(),
+      SUPABASE_REQUEST_TIMEOUT_MS,
+      'Supabase getSession',
+    );
     if (sessionError) {
       if (isInvalidRefreshTokenError(sessionError)) {
         await clearInvalidSession();
@@ -71,7 +98,11 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
         hasAccessToken: true,
       });
 
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } = await withTimeout(
+        supabase.auth.getUser(),
+        SUPABASE_REQUEST_TIMEOUT_MS,
+        'Supabase getUser',
+      );
       if (userError) {
         console.warn(`${RECOVERY_LOG_PREFIX} Supabase user rehydration returned an error:`, userError.message ?? userError);
       }
@@ -86,7 +117,11 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
 
     logRecovery('session-recovery', 'No usable Supabase session found; attempting refresh');
 
-    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    const { data: refreshData, error: refreshError } = await withTimeout(
+      supabase.auth.refreshSession(),
+      SUPABASE_REQUEST_TIMEOUT_MS,
+      'Supabase refreshSession',
+    );
     if (refreshError || !refreshData.session?.access_token) {
       if (isInvalidRefreshTokenError(refreshError)) {
         await clearInvalidSession();
@@ -95,7 +130,11 @@ export async function rehydrateSupabaseSession(): Promise<boolean> {
       return false;
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await withTimeout(
+      supabase.auth.getUser(),
+      SUPABASE_REQUEST_TIMEOUT_MS,
+      'Supabase getUser',
+    );
     if (userError) {
       console.warn(`${RECOVERY_LOG_PREFIX} Supabase user refresh returned an error:`, userError.message ?? userError);
     }
