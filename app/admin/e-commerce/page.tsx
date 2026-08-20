@@ -254,7 +254,7 @@ const AdminOrdersPage: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div className="max-h-[calc(100vh-16rem)] overflow-y-auto rounded-xl bg-amber-50/50">
+        <div className="h-[calc(100vh-16rem)] overflow-y-scroll rounded-xl border border-amber-200 bg-amber-50/50 overscroll-contain pb-8">
           <div className="p-3 border-b border-amber-200 flex justify-between items-center">
             <span className="text-sm text-slate-600">{productCount} products</span>
             <button

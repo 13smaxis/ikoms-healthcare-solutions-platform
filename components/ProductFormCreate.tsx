@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Upload } from 'lucide-react';
 import { getProducts, type ShopProduct } from '@/lib/category-products';
 import { fmt } from '@/lib/cart';
 import { getAuthToken } from '@/lib/auth/client';
@@ -423,22 +423,27 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 					<label className="space-y-2 text-sm"> 																		  {/* Images input field */}
 						Images
-						<input
-							type="file"
-							accept="image/*"
-							onPointerDown={suppressFocusRefreshForFileUpload}
-							onMouseDown={suppressFocusRefreshForFileUpload}
-							onClick={suppressFocusRefreshForFileUpload}
-							onFocus={suppressFocusRefreshForFileUpload}
-							onKeyDown={suppressFocusRefreshForFileUpload}
-							onBlur={suppressFocusRefreshForFileUpload}
-							onChange={(e) => {
-								suppressFocusRefreshForFileUpload();
-								handleUpload(e.target.files?.[0]);
-								e.currentTarget.value = '';
-							}}
-							className="text-sm rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-white"
-						/>
+						<label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-blue-400/70 bg-blue-500/10 px-4 py-4 text-sm font-semibold text-blue-200 transition hover:bg-blue-500/20">
+							<Upload className="h-4 w-4" />
+							{uploading ? 'Uploading image...' : 'Click to upload an image'}
+							<input
+								type="file"
+								accept="image/*"
+								disabled={uploading}
+								onPointerDown={suppressFocusRefreshForFileUpload}
+								onMouseDown={suppressFocusRefreshForFileUpload}
+								onClick={suppressFocusRefreshForFileUpload}
+								onFocus={suppressFocusRefreshForFileUpload}
+								onKeyDown={suppressFocusRefreshForFileUpload}
+								onBlur={suppressFocusRefreshForFileUpload}
+								onChange={(e) => {
+									suppressFocusRefreshForFileUpload();
+									handleUpload(e.target.files?.[0]);
+									e.currentTarget.value = '';
+								}}
+								className="sr-only"
+							/>
+						</label>
 						{uploading &&
 							<span>
 								Uploading...
@@ -528,9 +533,10 @@ export default function ProductFormCreate({ storeid, onSuccess, onClose }: Props
 
 					<button
 						type="submit"
-						className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white"
+						disabled={Boolean(pendingProduct) || saving || uploading}
+						className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
 					>
-						Submit
+						{pendingProduct || saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</> : 'Submit'}
 					</button>
 				</div>
 			</form>

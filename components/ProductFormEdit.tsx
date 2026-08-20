@@ -29,7 +29,7 @@ const buildEditFormState = (product: ShopProduct): EditFormState => ({
         || product.producttypeid
         || '',
     price: String(product.price),
-    images: product.images?.length ? product.images : [],
+    images: product.images?.length ? product.images : product.image_url ? [product.image_url] : [],
     tags: product.tags || [],
     key_features: product.key_features || [],
     description: product.description || '',
@@ -151,7 +151,7 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
                     model: form.model || '',
                     medical_information: form.medical_information || '',
                     product_features: (form.key_features || []).map((feature) => feature.trim()).filter(Boolean),
-                    image_url: form.images?.[0] || '',
+                    image_url: form.images?.[0] || product.image_url || '',
                     status: form.status || 'draft',
                 }),
             });
@@ -412,9 +412,10 @@ export default function ProductFormEdit({ product, storeid, onSuccess, onClose }
 
                 <button
                     type="submit"
-                    className="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white"
+                    disabled={pending || saving || uploading}
+                    className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    Submit
+                    {pending || saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</> : 'Submit'}
                 </button>
             </div>
         </form>
