@@ -25,12 +25,7 @@ const JobDetail: React.FC = () => {
     const loadJob = async () => {
       const { data, error } = await supabase
         .from('jobs')
-        .select(`
-          *,
-          employment_type:employment_types(id, name),
-          job_level:job_levels(id, name),
-          location:locations(id, city, country)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
@@ -41,13 +36,13 @@ const JobDetail: React.FC = () => {
       }
 
       const row = (data ?? {}) as Record<string, any>;
-      const loc = row?.location as { city?: string; country?: string } | null;
+      const loc = row?.location as { city?: string; country?: string } | string | null;
       const mappedJob: Record<string, any> = {
         ...row,
         id: row?.id,
         title: row?.title,
         department: row?.healthcare_specialization,
-        location: loc ? [loc.city, loc.country].filter(Boolean).join(', ') : row?.facility_name,
+        location: typeof loc === 'string' ? loc : loc ? [loc.city, loc.country].filter(Boolean).join(', ') : row?.facility_name,
         job_type: row?.employment_type?.name || 'Full-time',
         employment_type: row?.employment_type?.name || 'Full-time',
         job_level: row?.job_level?.name || 'Mid',

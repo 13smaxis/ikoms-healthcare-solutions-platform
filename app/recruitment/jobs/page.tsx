@@ -63,9 +63,10 @@ const JobsList: React.FC = () => {
     supabase
     .from('jobs')
     .select('*')
-    .order('created_at', { ascending: false })
+    .eq('is_active', true)
+    .order('posted_at', { ascending: false })
     .then(({ data }) => {
-      const activeJobs = ((data as JobRecord[]) || []).filter((job) => job.is_active !== false);
+      const activeJobs = (data as JobRecord[]) || [];
       setJobs(activeJobs);
       setLoading(false);
     });

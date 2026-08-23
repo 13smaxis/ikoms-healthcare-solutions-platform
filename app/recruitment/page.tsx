@@ -80,13 +80,8 @@ const RecruitmentHome: React.FC = () => {
     const loadJobs = async () => {
       const { data, error } = await supabase
         .from('jobs')
-        .select(`
-          *,
-          employment_type:employment_types(id, name),
-          job_level:job_levels(id, name),
-          location:locations(id, city, country)
-        `)
-        .eq('status', 'Active')
+        .select('*')
+        .eq('is_active', true)
         .order('posted_at', { ascending: false });
 
       if (error) {
@@ -97,7 +92,9 @@ const RecruitmentHome: React.FC = () => {
 
       const mappedJobs = (data || []).map((job: any) => {
         const loc = job.location;
-        const locationText = loc
+        const locationText = typeof loc === 'string'
+          ? loc
+          : loc
           ? [loc.city, loc.country].filter(Boolean).join(', ')
           : job.facility_name;
 
