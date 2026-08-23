@@ -51,6 +51,8 @@ const empty: JobForm = {
   application_deadline: '', contact_email: '', contact_phone: '', hiring_manager_name: '', hiring_manager_email: '',
 };
 
+const jobFormDraftKey = 'admin-jobs-form-draft';
+
 const AdminJobsPage: React.FC = () => {
   const [jobs, setJobs] = useState<JobForm[]>([]);
   const [apps, setApps] = useState<JobApplication[]>([]);
@@ -59,6 +61,33 @@ const AdminJobsPage: React.FC = () => {
   const [jobToDelete, setJobToDelete] = useState<JobForm | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [view, setView] = useState<'jobs' | 'applications'>('jobs');
+  const draftRestored = React.useRef(false);
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.sessionStorage.getItem(jobFormDraftKey);
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft) as { editing?: JobForm; modal?: boolean };
+        if (draft.editing) setEditing({ ...empty, ...draft.editing });
+        if (draft.modal) setModal(true);
+      }
+    } catch (error) {
+      console.error('Unable to restore job form draft:', error);
+    } finally {
+      draftRestored.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftRestored.current) return;
+
+    if (!modal) {
+      window.sessionStorage.removeItem(jobFormDraftKey);
+      return;
+    }
+
+    window.sessionStorage.setItem(jobFormDraftKey, JSON.stringify({ editing, modal: true }));
+  }, [editing, modal]);
 
   const load = async () => {
     const { data: jobsData, error: jobsError } = await supabase
@@ -182,6 +211,7 @@ const AdminJobsPage: React.FC = () => {
       alert(error.message);
       return;
     }
+    window.sessionStorage.removeItem(jobFormDraftKey);
     setModal(false); setEditing(empty); load();
   };
   
@@ -223,7 +253,7 @@ const AdminJobsPage: React.FC = () => {
         <div className="flex items-center">
           <button onClick={() => setView('jobs')} className={`inline-flex items-center px-5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${view === 'jobs' ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'}`}>Jobs ({jobs.length})</button>
           <button onClick={() => setView('applications')} className={`inline-flex items-center px-5 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${view === 'applications' ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'}`}>Applications ({apps.length})</button>
-          {view === 'jobs' && <button onClick={() => { setEditing(empty); setModal(true); }} className="ml-auto mr-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold inline-flex items-center gap-1"><Plus className="w-4 h-4" /> Add job</button>}
+          {view === 'jobs' && <button onClick={() => { window.sessionStorage.removeItem(jobFormDraftKey); setEditing(empty); setModal(true); }} className="ml-auto mr-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold inline-flex items-center gap-1"><Plus className="w-4 h-4" /> Add job</button>}
         </div>
       </div>
 
@@ -243,7 +273,7 @@ const AdminJobsPage: React.FC = () => {
                   <td className="p-3">{j.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-slate-500">Inactive</span>}</td>
                   <td className="p-3 text-right">
                     <Link href={`/recruitment/jobs/${j.id}`} aria-label={`View ${j.title}`} title="View job" className="inline-flex p-1.5 text-slate-600 hover:text-emerald-700"><Eye className="w-4 h-4" /></Link>
-                    <button onClick={() => { setEditing(j); setModal(true); }} className="p-1.5 text-slate-600 hover:text-blue-700"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => { window.sessionStorage.removeItem(jobFormDraftKey); setEditing(j); setModal(true); }} className="p-1.5 text-slate-600 hover:text-blue-700"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => setJobToDelete(j)} aria-label={`Delete ${j.title}`} className="p-1.5 text-slate-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
@@ -281,7 +311,7 @@ const AdminJobsPage: React.FC = () => {
           <div className="scrollbar-hide bg-white rounded-xl max-w-2xl w-full max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain" onWheel={(event) => event.stopPropagation()}>
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-lg font-bold">{editing.id ? 'Edit job' : 'New job'}</h3>
-              <button onClick={() => setModal(false)}><X className="w-5 h-5" /></button>
+              <button onClick={() => { window.sessionStorage.removeItem(jobFormDraftKey); setModal(false); }}><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-3">
               <input required placeholder="Title" value={editing.title} onChange={e => setEditing({ ...editing, title: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
@@ -321,7 +351,7 @@ const AdminJobsPage: React.FC = () => {
               </div>
             </div>
             <div className="p-6 border-t border-slate-200 flex justify-end gap-2">
-              <button onClick={() => setModal(false)} className="px-4 py-2 border border-slate-300 rounded-lg">Cancel</button>
+              <button onClick={() => { window.sessionStorage.removeItem(jobFormDraftKey); setModal(false); }} className="px-4 py-2 border border-slate-300 rounded-lg">Cancel</button>
               <button onClick={save} className="px-4 py-2 bg-blue-700 text-white rounded-lg font-semibold">Save</button>
             </div>
           </div>
