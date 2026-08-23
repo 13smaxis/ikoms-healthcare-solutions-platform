@@ -54,6 +54,8 @@ const AdminJobsPage: React.FC = () => {
   const [apps, setApps] = useState<JobApplication[]>([]);
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<JobForm>(empty);
+  const [jobToDelete, setJobToDelete] = useState<JobForm | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [view, setView] = useState<'jobs' | 'applications'>('jobs');
 
   const load = async () => {
@@ -167,13 +169,21 @@ const AdminJobsPage: React.FC = () => {
     setModal(false); setEditing(empty); load();
   };
   
-  const del = async (id: string) => {
-    if (!confirm('Delete this job?')) return;
-    await (supabase as any)
-    .from('jobs')
-    .delete()
-    .eq('id', id); 
-    load();
+  const del = async () => {
+    if (!jobToDelete?.id) return;
+    setDeleting(true);
+    const { error } = await (supabase as any)
+      .from('jobs')
+      .delete()
+      .eq('id', jobToDelete.id);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      setJobToDelete(null);
+      await load();
+    }
+    setDeleting(false);
   };
 
   const updateAppStatus = async (id: string, status: string) => {
@@ -217,7 +227,7 @@ const AdminJobsPage: React.FC = () => {
                   <td className="p-3">{j.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-slate-500">Inactive</span>}</td>
                   <td className="p-3 text-right">
                     <button onClick={() => { setEditing(j); setModal(true); }} className="p-1.5 text-slate-600 hover:text-blue-700"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => j.id && del(j.id)} className="p-1.5 text-slate-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setJobToDelete(j)} aria-label={`Delete ${j.title}`} className="p-1.5 text-slate-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -295,6 +305,30 @@ const AdminJobsPage: React.FC = () => {
             <div className="p-6 border-t border-slate-200 flex justify-end gap-2">
               <button onClick={() => setModal(false)} className="px-4 py-2 border border-slate-300 rounded-lg">Cancel</button>
               <button onClick={save} className="px-4 py-2 bg-blue-700 text-white rounded-lg font-semibold">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {jobToDelete && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-job-title">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+              <h3 id="delete-job-title" className="text-lg font-bold text-slate-900">Delete job?</h3>
+              <button type="button" onClick={() => setJobToDelete(null)} aria-label="Close delete confirmation" disabled={deleting}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-slate-600">
+                Are you sure you want to delete <span className="font-semibold text-slate-900">{jobToDelete.title}</span>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="p-6 border-t border-slate-200 flex justify-end gap-2">
+              <button type="button" onClick={() => setJobToDelete(null)} disabled={deleting} className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50">Cancel</button>
+              <button type="button" onClick={del} disabled={deleting} className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold disabled:opacity-50">
+                {deleting ? 'Deleting...' : 'Delete job'}
+              </button>
             </div>
           </div>
         </div>
