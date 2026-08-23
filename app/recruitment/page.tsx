@@ -50,6 +50,7 @@ const getExperience = (job: JobRecord) => job.experience_required || 'Not specif
 const RecruitmentHome: React.FC = () => {
   const [jobs, setJobs] = useState<JobRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('all');
   const [type, setType] = useState('all');
@@ -78,14 +79,15 @@ const RecruitmentHome: React.FC = () => {
 
   useEffect(() => {
     const loadJobs = async () => {
+      setLoadError('');
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
-        .eq('is_active', true)
         .order('posted_at', { ascending: false });
 
       if (error) {
         console.error('Error loading jobs:', error);
+        setLoadError(`Unable to load vacancies: ${error.message}`);
         setLoading(false);
         return;
       }
@@ -107,19 +109,18 @@ const RecruitmentHome: React.FC = () => {
           id: job.id,
           title: job.title,
           department: job.healthcare_specialization,
-          location: locationText,
-          job_type: job.employment_type?.name || 'Full-time',
-          employment_type: job.employment_type?.name || 'Full-time',
-          job_level: job.job_level?.name || 'Mid',
-          status: job.status || 'Active',
-          is_active: job.status === 'Active',
+          location: locationText || '',
+          job_type: job.job_type || 'Full-time',
+          employment_type: job.job_type || 'Full-time',
+          status: job.is_active === false ? 'Closed' : 'Active',
+          is_active: job.is_active !== false,
           closing_date: job.application_deadline,
           posted_date: job.posted_at,
           created_at: job.posted_at,
           salary_range: salaryRange,
-          description: job.description,
-          short_description: job.description,
-          requirements: job.requirements,
+          description: job.description || '',
+          short_description: job.description || '',
+          requirements: job.requirements || '',
           required_qualifications: job.qualifications_required || job.requirements,
           experience_required: job.min_years_experience ? `${job.min_years_experience}+ years` : undefined,
         } as JobRecord;
@@ -415,6 +416,8 @@ const handleLoginSubmit = async (e: React.FormEvent) => {
 
           {loading ? (
             <div className="text-center py-12 text-slate-500">Loading roles...</div>
+          ) : loadError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-12 text-center text-red-700">{loadError}</div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-slate-500">No roles available at this time.</div>
           ) : (

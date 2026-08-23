@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Edit2, Eye, Trash2, X } from 'lucide-react';
 
 type JobForm = {
   id?: string;
   title: string;
+  department: string;
   location: string;
   job_type: string;
   description: string;
@@ -42,7 +44,7 @@ type JobApplication = {
 };
 
 const empty: JobForm = {
-  title: '', location: '', job_type: 'Full-time', description: '', requirements: '',
+  title: '', department: '', location: '', job_type: 'Full-time', description: '', requirements: '',
   salary_range: '', salary_min: '', salary_max: '', salary_currency: 'ZAR', benefits: '',
   qualifications_required: '', min_years_experience: '', required_skills: '', healthcare_specialization: '',
   shift_type: 'Day', total_positions: '1', positions_filled: '0', is_active: true, is_urgent: false,
@@ -74,6 +76,7 @@ const AdminJobsPage: React.FC = () => {
       ...empty,
       ...job,
       title: job.title || '',
+      department: job.department || job.healthcare_specialization || '',
       location: job.location || '',
       job_type: job.job_type || 'Full-time',
       description: job.description || '',
@@ -105,7 +108,19 @@ const AdminJobsPage: React.FC = () => {
       .order('createdat', { ascending: false });
     setApps(a || []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); //- Calls load() on component mount to fetch jobs and applications from the database.
+  
+  /*
+   * Applies a soft refresh when the window gains focus, unless suppressed by a global variable.
+   * This is useful for keeping the job and application data up-to-date without requiring a full page reload.
+   * The soft refresh is triggered by dispatching a 'soft-focus-refresh' event, which is listened for in the useEffect below.
+   * If the global variable __suppressFocusRefreshUntil is set to a future timestamp, the refresh will be suppressed until that time.
+   * This allows for temporary suppression of automatic refreshes, for example when editing a job or application. 
+   */
+  useEffect(() => {
+    window.addEventListener('soft-focus-refresh', load);                                                                          //- Adds event listener for soft focus refresh
+    return () => window.removeEventListener('soft-focus-refresh', load);                                                          //- Removes event listener on component unmount
+  }, []);                                                                                                                         //- Empty dependency array ensures this effect runs only once on mount and cleanup on unmount
 
   const save = async () => {
     const salaryMin = editing.salary_min === '' ? null : Number(editing.salary_min);
@@ -114,8 +129,8 @@ const AdminJobsPage: React.FC = () => {
     const totalPositions = Number(editing.total_positions);
     const positionsFilled = editing.positions_filled === '' ? 0 : Number(editing.positions_filled);
 
-    if (!editing.title.trim() || !editing.location.trim() || !editing.description.trim() || !editing.requirements.trim()) {
-      alert('Title, location, description, and requirements are required.');
+    if (!editing.title.trim() || !editing.department.trim() || !editing.location.trim() || !editing.description.trim() || !editing.requirements.trim()) {
+      alert('Title, department, location, description, and requirements are required.');
       return;
     }
     if ([salaryMin, salaryMax, minYears, totalPositions, positionsFilled].some(value => value !== null && !Number.isFinite(value))) {
@@ -133,6 +148,8 @@ const AdminJobsPage: React.FC = () => {
 
     const payload = {
       title: editing.title.trim(),
+      department: editing.department.trim(),
+      healthcare_specialization: editing.department.trim() || null,
       location: editing.location.trim(),
       job_type: editing.job_type,
       description: editing.description.trim(),
@@ -145,7 +162,6 @@ const AdminJobsPage: React.FC = () => {
       qualifications_required: editing.qualifications_required.trim() || null,
       min_years_experience: minYears,
       required_skills: editing.required_skills.trim() || null,
-      healthcare_specialization: editing.healthcare_specialization.trim() || null,
       shift_type: editing.shift_type || null,
       total_positions: totalPositions,
       positions_filled: positionsFilled,
@@ -221,11 +237,12 @@ const AdminJobsPage: React.FC = () => {
               {jobs.map(j => (
                 <tr key={j.id} className="border-b border-amber-100">
                   <td className="p-3 font-semibold">{j.title}</td>
-                  <td className="p-3">{j.healthcare_specialization || 'General'}</td>
+                  <td className="p-3">{j.department || 'General'}</td>
                   <td className="p-3">{j.location}</td>
                   <td className="p-3">{j.job_type}</td>
                   <td className="p-3">{j.is_active ? <span className="text-emerald-700">Active</span> : <span className="text-slate-500">Inactive</span>}</td>
                   <td className="p-3 text-right">
+                    <Link href={`/recruitment/jobs/${j.id}`} aria-label={`View ${j.title}`} title="View job" className="inline-flex p-1.5 text-slate-600 hover:text-emerald-700"><Eye className="w-4 h-4" /></Link>
                     <button onClick={() => { setEditing(j); setModal(true); }} className="p-1.5 text-slate-600 hover:text-blue-700"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => setJobToDelete(j)} aria-label={`Delete ${j.title}`} className="p-1.5 text-slate-600 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
                   </td>
@@ -260,8 +277,8 @@ const AdminJobsPage: React.FC = () => {
       )}
 
       {modal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="scrollbar-hide fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto overscroll-contain p-4 sm:items-center" role="dialog" aria-modal="true" data-state="open">
+          <div className="scrollbar-hide bg-white rounded-xl max-w-2xl w-full max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain" onWheel={(event) => event.stopPropagation()}>
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-lg font-bold">{editing.id ? 'Edit job' : 'New job'}</h3>
               <button onClick={() => setModal(false)}><X className="w-5 h-5" /></button>
@@ -269,6 +286,7 @@ const AdminJobsPage: React.FC = () => {
             <div className="p-6 space-y-3">
               <input required placeholder="Title" value={editing.title} onChange={e => setEditing({ ...editing, title: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input required placeholder="Department" value={editing.department} onChange={e => setEditing({ ...editing, department: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg" />
                 <input required placeholder="Location" value={editing.location} onChange={e => setEditing({ ...editing, location: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg" />
                 <input placeholder="Healthcare specialization" value={editing.healthcare_specialization} onChange={e => setEditing({ ...editing, healthcare_specialization: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg" />
                 <select value={editing.job_type} onChange={e => setEditing({ ...editing, job_type: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg">

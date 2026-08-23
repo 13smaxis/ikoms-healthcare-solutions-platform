@@ -112,6 +112,15 @@
   max-width: none;
 }
 
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .markdown-preview pre {
   background-color: hsl(var(--secondary));
   padding: 1rem;
