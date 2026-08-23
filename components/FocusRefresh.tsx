@@ -4,25 +4,17 @@ import { useEffect } from 'react';
 
 export default function FocusRefresh() {
   useEffect(() => {
-    let lastRefreshAt = 0;
+    const onFocus = () => {
+      const suppressUntil = Number((window as any).__suppressFocusRefreshUntil ?? 0);
+      if (suppressUntil > Date.now()) return;
 
-    const refreshOnFocus = () => {
-      const now = Date.now();
-      if (now - lastRefreshAt < 500) return;
-      lastRefreshAt = now;
-
-      window.dispatchEvent(new Event('soft-focus-refresh'));
-    };
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') refreshOnFocus();
+      window.location.reload();
     };
 
-    window.addEventListener('focus', refreshOnFocus);
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onFocus);
 
     return () => {
-      window.removeEventListener('focus', refreshOnFocus);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onFocus);
     };
   }, []);
 
