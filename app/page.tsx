@@ -98,7 +98,7 @@ const Home: React.FC = () => {
     if (!email) return;
     try {
       await subscribeEmail({ email, source: 'home-hero', tags: ['newsletter', 'home'] });
-    } catch {}
+    } catch { }
     setSent(true); setEmail('');
   };
 
@@ -138,19 +138,19 @@ const Home: React.FC = () => {
                                   bg-clip-text text-transparent
                                 "
                 >
-                    Delivered End-to-End
-                  </span>
+                  Delivered End-to-End
+                </span>
               </h1>
               <p className="hidden sm:block text-lg text-blue-100 mb-8 max-w-xl">                             {/* Hides 'hidden' text on small screen and visible on larger screens 'sm:block" */}
-                From clinical recruitment to accredited training, strategic consultancy and clinical supplies — 
+                From clinical recruitment to accredited training, strategic consultancy and clinical supplies —
                 the complete partner for modern healthcare organisations.
               </p>
-              
+
               <div className="block sm:hidden h-70" />                                                           {/* Mobile-only gap between hero paragraph and action links */}
-              
+
               <div className="mt-2 flex flex-wrap gap-3 mb-8">
-                <Link href="/recruitment/jobs" 
-                      className="
+                <Link href="/recruitment/jobs"
+                  className="
                                   relative z-10 inline-flex 
                                   items-center 
                                   gap-2 
@@ -164,7 +164,7 @@ const Home: React.FC = () => {
                                   hover:bg-slate-100 transition
                                 "
                 >
-                      Browse Jobs <ArrowRight className="w-4 h-4" />
+                  Browse Jobs <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/contact" className="relative z-10 inline-flex items-center gap-2 px-4 py-2.5 text-sm sm:px-6 sm:py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-500 transition">
                   Talk to an Expert
@@ -197,19 +197,44 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20">                                                                               {/* Modules */}
+      <section className="py-20">                                                                                                 {/* Modules */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <div className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-2">Four Integrated Modules</div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">One platform for your entire healthcare operation</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Each module works independently or as part of a unified solution. Scale up as your business grows.</p>
+            <div className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-2">
+                Four Integrated Modules
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+                One platform for your entire healthcare operation
+            </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {modules.map((m, i) => {
               const Icon = m.icon;
               return (
-                <Link key={i} href={m.to} className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 hover:border-transparent hover:shadow-2xl transition-all duration-300">
-                  <div className={`absolute inset-0 bg-linear-to-br ${m.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <Link key={i} 
+                      href={m.to} 
+                      className="
+                                  group relative 
+                                  overflow-hidden 
+                                  rounded-2xl 
+                                  bg-white 
+                                  border border-slate-200 
+                                  hover:border-transparent hover:shadow-2xl 
+                                  transition-all 
+                                  duration-300
+                                "
+                >
+                  <div className={`
+                                    absolute 
+                                    inset-0 
+                                    bg-linear-to-br 
+                                    ${m.color} 
+                                    opacity-0 
+                                    group-hover:opacity-100 
+                                    transition-opacity 
+                                    duration-300
+                                  `} 
+                  />
                   <div className="relative p-8">
                     <div className={`w-14 h-14 rounded-xl bg-linear-to-br ${m.color} flex items-center justify-center mb-5 group-hover:bg-white/20`}>
                       <Icon className="w-7 h-7 text-white" />

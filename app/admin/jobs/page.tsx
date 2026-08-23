@@ -10,10 +10,27 @@ type JobForm = {
   department: string;
   location: string;
   job_type: string;
-  salary_range: string;
   description: string;
   requirements: string;
+  salary_range: string;
+  salary_min: string;
+  salary_max: string;
+  salary_currency: string;
+  benefits: string;
+  qualifications_required: string;
+  min_years_experience: string;
+  required_skills: string;
+  healthcare_specialization: string;
+  shift_type: string;
+  total_positions: string;
+  positions_filled: string;
   is_active: boolean;
+  is_urgent: boolean;
+  application_deadline: string;
+  contact_email: string;
+  contact_phone: string;
+  hiring_manager_name: string;
+  hiring_manager_email: string;
 };
 
 type JobApplication = {
@@ -25,16 +42,13 @@ type JobApplication = {
   job?: { title?: string | null } | null;
 };
 
-const empty: JobForm = { 
-                          title: '', 
-                          department: '', 
-                          location: '', 
-                          job_type: 'Full-time', 
-                          salary_range: '', 
-                          description: '', 
-                          requirements: '', 
-                          is_active: true 
-                        };
+const empty: JobForm = {
+  title: '', department: '', location: '', job_type: 'Full-time', description: '', requirements: '',
+  salary_range: '', salary_min: '', salary_max: '', salary_currency: 'ZAR', benefits: '',
+  qualifications_required: '', min_years_experience: '', required_skills: '', healthcare_specialization: '',
+  shift_type: 'Day', total_positions: '1', positions_filled: '0', is_active: true, is_urgent: false,
+  application_deadline: '', contact_email: '', contact_phone: '', hiring_manager_name: '', hiring_manager_email: '',
+};
 
 const AdminJobsPage: React.FC = () => {
   const [jobs, setJobs] = useState<JobForm[]>([]);
@@ -46,12 +60,7 @@ const AdminJobsPage: React.FC = () => {
   const load = async () => {
     const { data: jobsData, error: jobsError } = await supabase
       .from('jobs')
-      .select(`
-        *,
-        employment_type:employment_types(id, name),
-        job_level:job_levels(id, name),
-        location:locations(id, city, country)
-      `)
+      .select('*')
       .order('posted_at', { ascending: false });
 
     if (jobsError) {
@@ -61,18 +70,16 @@ const AdminJobsPage: React.FC = () => {
     }
 
     setJobs((jobsData || []).map((job: any) => ({
+      ...empty,
       ...job,
-      id: job.id,
-      title: job.title,
-      department: job.healthcare_specialization,
-      location: job.location ? [job.location.city, job.location.country].filter(Boolean).join(', ') : job.facility_name,
-      job_type: job.employment_type?.name || 'Full-time',
-      salary_range: job.salary_min != null || job.salary_max != null
-        ? `${job.salary_currency || 'ZAR'} ${Number(job.salary_min || 0).toLocaleString()} - ${Number(job.salary_max || 0).toLocaleString()}`
-        : 'Not disclosed',
-      description: job.description,
-      requirements: job.requirements,
-      is_active: job.status === 'Active',
+      salary_min: job.salary_min == null ? '' : String(job.salary_min),
+      salary_max: job.salary_max == null ? '' : String(job.salary_max),
+      min_years_experience: job.min_years_experience == null ? '' : String(job.min_years_experience),
+      total_positions: String(job.total_positions ?? 1),
+      positions_filled: String(job.positions_filled ?? 0),
+      application_deadline: job.application_deadline || '',
+      is_active: job.is_active ?? true,
+      is_urgent: job.is_urgent ?? false,
     })));
 
     const { data: a } = await supabase
@@ -84,11 +91,41 @@ const AdminJobsPage: React.FC = () => {
   useEffect(() => { load(); }, []);
 
   const save = async () => {
-    if (editing.id) 
-    {
-      await (supabase as any).from('jobs').update(editing as any).eq('id', editing.id);
-    } else {
-      await (supabase as any).from('jobs').insert(editing as any);
+    const payload = {
+      title: editing.title.trim(),
+      department: editing.department.trim(),
+      location: editing.location.trim(),
+      job_type: editing.job_type,
+      description: editing.description.trim(),
+      requirements: editing.requirements.trim(),
+      salary_range: editing.salary_range.trim() || null,
+      salary_min: editing.salary_min === '' ? null : Number(editing.salary_min),
+      salary_max: editing.salary_max === '' ? null : Number(editing.salary_max),
+      salary_currency: editing.salary_currency.trim() || null,
+      benefits: editing.benefits.trim() || null,
+      qualifications_required: editing.qualifications_required.trim() || null,
+      min_years_experience: editing.min_years_experience === '' ? null : Number(editing.min_years_experience),
+      required_skills: editing.required_skills.trim() || null,
+      healthcare_specialization: editing.healthcare_specialization.trim() || null,
+      shift_type: editing.shift_type || null,
+      total_positions: Number(editing.total_positions),
+      positions_filled: editing.positions_filled === '' ? 0 : Number(editing.positions_filled),
+      is_active: editing.is_active,
+      is_urgent: editing.is_urgent,
+      application_deadline: editing.application_deadline || null,
+      contact_email: editing.contact_email.trim() || null,
+      contact_phone: editing.contact_phone.trim() || null,
+      hiring_manager_name: editing.hiring_manager_name.trim() || null,
+      hiring_manager_email: editing.hiring_manager_email.trim() || null,
+    };
+
+    const query = editing.id
+      ? (supabase as any).from('jobs').update(payload).eq('id', editing.id)
+      : (supabase as any).from('jobs').insert(payload);
+    const { error } = await query;
+    if (error) {
+      alert(error.message);
+      return;
     }
     setModal(false); setEditing(empty); load();
   };
