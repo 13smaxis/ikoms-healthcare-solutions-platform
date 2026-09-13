@@ -2,10 +2,10 @@ export const COMPANY = {
   name: 'IKOMS Healthcare Solutions',
   logo: '/logo-removebg.png',
   phone: '+44 7916 341456',
-  email: 'info@ikoms.co.uk',
+  email: 'info@ikomscare.co.uk',
   contact: {
     phone: '+44 7916 341456',
-    email: 'info@ikoms.co.uk',
+    email: 'info@ikomscare.co.uk',
   },
   address: {
     line1: '87 Newlaithes Crescent',

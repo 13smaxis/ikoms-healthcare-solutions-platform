@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const phone = COMPANY.phone || COMPANY.contact?.phone || '+44 7916 341456';
-  const contactEmail = COMPANY.email || COMPANY.contact?.email || 'info@ikoms.co.uk';
+  const contactEmail = COMPANY.email || COMPANY.contact?.email || 'info@ikomscare.co.uk';
 
   const subscribe = async (e: React.FormEvent) => {
     e.preventDefault();
